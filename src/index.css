@@ -1,0 +1,45 @@
+@import "tailwindcss";
+
+@theme {
+  --color-sky-blue: #4f7ffe;
+  --color-blanco: #fff7f5;
+  --color-prussian-blue: #023047ff;
+  --color-selective-yellow: #ffa41b;
+  --color-ut-orange: #f86f03;
+  --font-tanker: "Tanker", sans-serif;
+  --font-bebas: "Bebas", sans-serif;
+  --font-nunito: "Nunito", sans-serif;
+  --font-coffeecake: "CoffeeCake", sans-serif;
+}
+
+@font-face {
+  font-family: "CoffeeCake";
+  src: url("/src/assets/fonts/CoffeCake 400.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Tanker";
+  src: url("/src/assets/fonts/Tanker-Regular.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Bebas";
+  src: url("/src/assets/fonts/BebasNeue-Regular.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Nunito";
+  src: url("/src/assets/fonts/Nunito-Regular.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
