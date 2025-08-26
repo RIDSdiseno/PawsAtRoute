@@ -22,7 +22,9 @@ function Hero() {
             </p>
             <img
               className="size-28 md:size-32 rounded-t-4xl rounded-b-lg object-cover"
-              src="perro-1.webp"
+              src="/src/assets/img/perro-1.webp"
+              decoding="async"
+              loading="lazy"
               alt="Dog smiling"
             />
           </div>
@@ -32,7 +34,9 @@ function Hero() {
             </strong>
             <img
               className="size-30 md:size-40 lg:size-48 rounded-full object-cover"
-              src="perro-2.webp"
+              src="/src/assets/img/perro-2.webp"
+              decoding="async"
+              loading="lazy"
               alt="Dog with a leash"
             />
             <p className="font-bebas font-extrabold text-3xl md:text-4xl lg:text-5xl text-white tracking-wide antialiased">
@@ -48,7 +52,9 @@ function Hero() {
             </p>
             <img
               className="size-28 md:size-32 rounded-t-4xl rounded-b-lg object-cover"
-              src="perro-3.webp"
+              src="/src/assets/img/perro-3.webp"
+              decoding="async"
+              loading="lazy"
               alt="Dog playing in a park"
             />
           </div>
