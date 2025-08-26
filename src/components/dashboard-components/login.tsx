@@ -37,7 +37,6 @@ function Login() {
         </label>
 
         <button
-          type="submit"
           className="bg-prussian-blue text-blanco rounded-md p-2 cursor-pointer hover:bg-prussian-blue/80 -ml-2"
         >
           Iniciar Sesión
