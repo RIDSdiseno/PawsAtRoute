@@ -50,8 +50,8 @@ function Navbar() {
           } w-full md:block md:w-auto`}
           id="navbar-default"
         >
-          <ul className="text-md flex flex-col p-4 md:p-0 mt-4 border border-gray-300 rounded-xl bg-blanco/80 md:flex-row md:space-x-8 rtl:space-x-reverse md:mt-0 md:border-0 md:bg-transparent font-bold tracking-wide">
-            <li className="hover:bg-ut-orange/80 rounded-full transition-colors duration-300">
+          <ul className="text-md flex flex-col p-4 md:p-0 mt-4 border border-blue-green rounded-xl bg-sky-blue/80 md:flex-row md:space-x-8 rtl:space-x-reverse md:mt-0 md:border-0 md:bg-transparent font-semibold">
+            <li className="hover:bg-blue-green/80 rounded-full transition-colors duration-300">
               <Link
                 to="/"
                 className="block py-2 px-3"
@@ -61,7 +61,7 @@ function Navbar() {
                 Inicio
               </Link>
             </li>
-            <li className="hover:bg-ut-orange/80 rounded-full transition-colors duration-300">
+            <li className="hover:bg-blue-green/80 rounded-full transition-colors duration-300">
               <a
                 href="#beneficios"
                 className="block py-2 px-3"
@@ -70,12 +70,12 @@ function Navbar() {
                 Beneficios
               </a>
             </li>
-            <li className="hover:bg-ut-orange/80 rounded-full transition-colors duración-300">
+            <li className="hover:bg-blue-green/80 rounded-full transition-colors duración-300">
               <a href="#pasos" className="block py-2 px-3" onClick={closeMenu}>
                 Pasos
               </a>
             </li>
-            <li className="bg-prussian-blue hover:bg-blue-green rounded-full transition-colors duration-300 text-white">
+            <li className="bg-prussian-blue hover:bg-prussian-blue/80 rounded-full transition-colors duration-300 text-white">
               <Link to="/login" className="block py-2 px-3" onClick={closeMenu}>
                 Ingresar
               </Link>
