@@ -7,10 +7,14 @@ function Navbar() {
   const closeMenu = () => setIsMenuOpen(false);
 
   return (
-    <nav className="bg-selective-yellow text-prussian-blue antialiased">
+    <nav className="bg-selective-yellow">
       <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
-        <Link to="/" className="flex items-center space-x-3 rtl:space-x-reverse" onClick={closeMenu}>
-          <span className="text-3xl font-coffeecake tracking-wide antialiased font-bold">
+        <Link
+          to="/App.tsx"
+          className="flex items-center space-x-3 rtl:space-x-reverse"
+          onClick={closeMenu}
+        >
+          <span className="text-3xl font-coffeecake text-prussian-blue">
             Paws At Route
           </span>
         </Link>
@@ -41,17 +45,28 @@ function Navbar() {
         </button>
 
         <div
-          className={`${isMenuOpen ? "block" : "hidden"} w-full md:block md:w-auto`}
+          className={`${
+            isMenuOpen ? "block" : "hidden"
+          } w-full md:block md:w-auto`}
           id="navbar-default"
         >
-          <ul className="text-md flex flex-col p-4 md:p-0 mt-4 border border-gray-300 rounded-xl bg-blanco/80 md:flex-row md:space-x-8 rtl:space-x-reverse md:mt-0 md:border-0 md:bg-transparent font-nunito font-semibold tracking-wide">
+          <ul className="text-md flex flex-col p-4 md:p-0 mt-4 border border-gray-300 rounded-xl bg-blanco/80 md:flex-row md:space-x-8 rtl:space-x-reverse md:mt-0 md:border-0 md:bg-transparent font-bold tracking-wide">
             <li className="hover:bg-ut-orange/80 rounded-full transition-colors duration-300">
-              <Link to="/" className="block py-2 px-3" aria-current="page" onClick={closeMenu}>
+              <Link
+                to="/"
+                className="block py-2 px-3"
+                aria-current="page"
+                onClick={closeMenu}
+              >
                 Inicio
               </Link>
             </li>
             <li className="hover:bg-ut-orange/80 rounded-full transition-colors duration-300">
-              <a href="#beneficios" className="block py-2 px-3" onClick={closeMenu}>
+              <a
+                href="#beneficios"
+                className="block py-2 px-3"
+                onClick={closeMenu}
+              >
                 Beneficios
               </a>
             </li>
@@ -60,7 +75,7 @@ function Navbar() {
                 Pasos
               </a>
             </li>
-            <li className="hover:bg-prussian-blue/80 rounded-full transition-colors duration-300 bg-prussian-blue text-white">
+            <li className="bg-prussian-blue hover:bg-blue-green rounded-full transition-colors duration-300 text-white">
               <Link to="/login" className="block py-2 px-3" onClick={closeMenu}>
                 Ingresar
               </Link>
