@@ -34,3 +34,9 @@
   font-style: normal;
   font-display: swap;
 }
+
+html {
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+  overflow-y: scroll;
+}

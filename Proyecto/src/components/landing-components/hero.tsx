@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 
 function Hero() {
-  return (
+  return ( 
     <section className="bg-selective-yellow min-h-screen flex items-center justify-center p-6">
       <div className="container mx-auto flex flex-col md:flex-row items-center justify-between gap-8 max-w-6xl">
         {/*Title*/}

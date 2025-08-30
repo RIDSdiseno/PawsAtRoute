@@ -14,7 +14,7 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* Página de inicio (landing): muestra todo el contenido */}
+        {/* Página de inicio (landing) */}
         <Route
           path="/"
           element={
