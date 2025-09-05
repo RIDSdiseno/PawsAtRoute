@@ -2,7 +2,7 @@ function Pasos() {
   return (
     <>
       {/* Sección principal */}
-      <section className="min-h-screen bg-prussian-blue">
+      <section id="pasos" className="min-h-screen bg-prussian-blue">
         <div className="overflow-hidden">
           <svg
             preserveAspectRatio="none"

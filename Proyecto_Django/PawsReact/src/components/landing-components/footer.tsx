@@ -63,7 +63,7 @@ function Footer() {
       {isVisible && (
         <button
           onClick={scrollToTop}
-          className="fixed bottom-8 right-8 bg-prussian-blue text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg hover:bg-opacity-90 transition-opacity duration-300"
+          className="fixed bottom-8 right-8 bg-prussian-blue text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg cursor-pointer shadow-prussian-blue/50 hover:bg-prussian-blue/80 focus:ring-2 focus:ring-cyan-900 transition-colors duration-300"
           aria-label="Volver arriba"
         >
           <svg
