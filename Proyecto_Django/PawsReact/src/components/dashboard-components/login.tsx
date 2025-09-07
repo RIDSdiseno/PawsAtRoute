@@ -22,6 +22,8 @@ function Login() {
                   required
                   name="correo"
                   id="correo"
+                  minLength={10}
+                  maxLength={30}
                   className="p-2 border-2 border-gray-300 rounded-lg peer focus:invalid:border-red-500 focus:outline-none focus:border-blue-500 invalid:text-red-500 invalid:border-red-500"
                 />
                 <p className="invisible text-xs text-red-500 peer-invalid:visible">
@@ -37,6 +39,8 @@ function Login() {
                   required
                   name="contraseña"
                   id="contraseña"
+                  minLength={10}
+                  maxLength={30}
                   className="p-2 border-2 border-gray-300 rounded-lg peer focus:invalid:border-red-500 focus:outline-none focus:border-blue-500 invalid:text-red-500 invalid:border-red-500"
                 />
                 <p className="invisible text-xs text-red-500 peer-invalid:visible">
@@ -46,7 +50,7 @@ function Login() {
               <p className="text-center gap-2 flex justify-center">
                 ¿Olvidaste tu contraseña?
                 <Link
-                  to="/forgot-password"
+                  to="/recuperar-clave"
                   className="text-ut-orange font-semibold hover:underline"
                 >
                   Recupera tu contraseña
@@ -72,7 +76,7 @@ function Login() {
             <img
               src="/src/assets/img/perros jugando 1.webp"
               alt="Perros jugando"
-              className="object-cover w-full h-full max-h-[450px] drop-shadow-lg"
+              className="object-cover w-full h-full max-h-[400px] drop-shadow-lg"
             />
           </div>
         </div>

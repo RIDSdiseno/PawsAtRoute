@@ -9,6 +9,7 @@ import Login from "./components/dashboard-components/login";
 import Register from "./components/dashboard-components/register";
 import Home from "./components/dashboard-components/home";
 import NuevoPaseo from "./components/dashboard-components/nuevo-paseo";
+import RecuperarClave from "./components/dashboard-components/recuperar-clave";
 
 function App() {
   return (
@@ -28,7 +29,7 @@ function App() {
           }
         />
 
-        {/* Página de login: SOLO el login (sin landing) */}
+        {/* Ruta de las páginas individuales */}
         <Route
           path="/login"
           element={
@@ -58,6 +59,14 @@ function App() {
           element={
             <>
               <NuevoPaseo />
+            </>
+          }
+        />
+        <Route
+          path="/recuperar-clave"
+          element={
+            <>
+              <RecuperarClave />
             </>
           }
         />
