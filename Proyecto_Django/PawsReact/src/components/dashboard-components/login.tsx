@@ -43,6 +43,15 @@ function Login() {
                   Por favor, ingresa una contraseña segura.
                 </p>
               </label>
+              <p className="text-center gap-2 flex justify-center">
+                ¿Olvidaste tu contraseña?
+                <Link
+                  to="/forgot-password"
+                  className="text-ut-orange font-semibold hover:underline"
+                >
+                  Recupera tu contraseña
+                </Link>
+              </p>
 
               <button className="bg-blue-green text-white rounded-full p-4 cursor-pointer hover:bg-blue-green/80 font-semibold border-2 border-cyan-600 shadow-lg shadow-blue-green/50">
                 Iniciar Sesión
