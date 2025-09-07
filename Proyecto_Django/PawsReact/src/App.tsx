@@ -10,6 +10,7 @@ import Register from "./components/dashboard-components/register";
 import Home from "./components/dashboard-components/home";
 import NuevoPaseo from "./components/dashboard-components/nuevo-paseo";
 import RecuperarClave from "./components/dashboard-components/recuperar-clave";
+import Postulantes from "./components/dashboard-components/postulantes";
 
 function App() {
   return (
@@ -67,6 +68,14 @@ function App() {
           element={
             <>
               <RecuperarClave />
+            </>
+          }
+        />
+        <Route
+          path="/postulantes"
+          element={
+            <>
+              <Postulantes />
             </>
           }
         />

@@ -16,7 +16,7 @@ function Footer() {
               <h3 className="text-xl font-bold mb-4">Navegación</h3>
               <ul>
                 <li className="mb-2">
-                  <a href="#hero" className="hover:underline">
+                  <a href="/" className="hover:underline">
                     Inicio
                   </a>
                 </li>

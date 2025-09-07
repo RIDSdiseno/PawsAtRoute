@@ -10,7 +10,7 @@ function Navbar() {
     <nav className="bg-selective-yellow">
       <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
         <Link
-          to="/App.tsx"
+          to="/"
           className="flex items-center space-x-3 rtl:space-x-reverse"
           onClick={closeMenu}
         >
@@ -51,16 +51,6 @@ function Navbar() {
           id="navbar-default"
         >
           <ul className="text-md flex flex-col p-4 md:p-0 mt-4 border-2 border-gray-300/50 rounded-xl bg-gray-300/50 md:flex-row md:space-x-8 rtl:space-x-reverse md:mt-0 md:border-0 md:bg-transparent font-semibold">
-            <li className="hover:bg-blue-green/80 hover:border-2 hover:border-cyan-600 rounded-full transition-colors duration-300">
-              <Link
-                to="/"
-                className="block py-2 px-3"
-                aria-current="page"
-                onClick={closeMenu}
-              >
-                Inicio
-              </Link>
-            </li>
             <li className="hover:bg-blue-green/80 hover:border-2 hover:border-cyan-600 rounded-full transition-colors duration-300">
               <a
                 href="#beneficios"

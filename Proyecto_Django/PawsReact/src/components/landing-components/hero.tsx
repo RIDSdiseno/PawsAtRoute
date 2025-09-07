@@ -22,7 +22,7 @@ function Hero() {
               <Link to="/login">Publicar un paseo</Link>
             </button>
             <button className="bg-white text-prussian-blue rounded-full p-4 cursor-pointer hover:bg-white/80 transition-colors duration-300 shadow-lg shadow-white/50 border-2 border-gray-200">
-              <Link to="/login">Se un paseador</Link>
+              <Link to="/register">Se un paseador</Link>
             </button>
           </div>
         </div>
@@ -47,7 +47,7 @@ function Hero() {
           </div>
           <div className="relative flex items-center justify-center space-x-4 bg-prussian-blue rounded-lg p-4 pt-12 -rotate-6 shadow-lg shadow-prussian-blue/50 border-2 border-cyan-900">
             <strong className="absolute top-2 left-2 text-sm uppercase bg-ut-orange/80 text-selective-yellow brightness-110 rounded-xs p-1">
-              Confiable
+              Personalizado
             </strong>
             <img
               className="size-30 lg:size-44 rounded-full object-cover"
@@ -64,7 +64,7 @@ function Hero() {
           </div>
           <div className="relative flex items-center space-x-4 bg-blanco rounded-lg p-4 pt-12 rotate-6 bg-white shadow-lg shadow-white/50 border-2 border-gray-200">
             <strong className="absolute top-2 left-2 text-xs uppercase bg-prussian-blue/80 text-sky-blue brightness-110 rounded-xs p-1">
-              Personalizado
+              Confiable
             </strong>
             <p className="font-work-sans leading-5 md:leading-6 text-2xl uppercase">
               Deja sus pasos en
