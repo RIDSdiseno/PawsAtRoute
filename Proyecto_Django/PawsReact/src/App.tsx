@@ -11,6 +11,7 @@ import Home from "./components/dashboard-components/home";
 import NuevoPaseo from "./components/dashboard-components/nuevo-paseo";
 import RecuperarClave from "./components/dashboard-components/recuperar-clave";
 import Postulantes from "./components/dashboard-components/postulantes";
+import PerfilPaseador from "./components/dashboard-components/perfil-paseador";
 
 function App() {
   return (
@@ -76,6 +77,14 @@ function App() {
           element={
             <>
               <Postulantes />
+            </>
+          }
+        />
+        <Route
+          path="/perfil-paseador"
+          element={
+            <>
+              <PerfilPaseador />
             </>
           }
         />

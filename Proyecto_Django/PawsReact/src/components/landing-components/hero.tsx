@@ -15,7 +15,7 @@ function Hero() {
             bienestar para tu mascota.
           </h1>
           <p className="text-2xl font-bold my-6">
-            Conecta con pesadores locales y confía en su experiencia.
+            Conecta con paseadores locales y confía en su experiencia.
           </p>
           <div className="flex gap-4 my-6 font-semibold justify-center md:justify-start">
             <button className="bg-prussian-blue text-white rounded-full p-4 cursor-pointer hover:bg-prussian-blue/80 transition-colors duration-300 shadow-lg shadow-prussian-blue/50 border-2 border-cyan-900">

@@ -23,18 +23,24 @@ function Postulantes() {
               <thead className="bg-gray-50 text-gray-600">
                 <tr>
                   <th className="px-6 py-3 text-left">Nombre</th>
-                  <th className="px-6 py-3 text-left">Apellido</th>
                   <th className="px-6 py-3 text-left">Telefono</th>
                   <th className="px-6 py-3 text-left">Calificacion</th>
+                  <th className="px-6 py-3 text-left">Perfil</th>
                   <th className="px-6 py-3 text-left">Elije</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
                 <tr>
                   <td className="px-6 py-4">Juan</td>
-                  <td className="px-6 py-4">Perez</td>
                   <td className="px-6 py-4">12345678</td>
                   <td className="px-6 py-4">3.5</td>
+                  <td className="px-6 py-4">
+                    <button className="bg-ut-orange text-white rounded-lg p-2 cursor-pointer hover:bg-ut-orange/80 font-semibold border-2 border-orange-500 shadow-lg shadow-ut-orange/50">
+                      <Link to="/perfil-paseador">
+                        Ver Perfil
+                      </Link>
+                    </button>
+                  </td>
                   <td className="px-6 py-4">
                     <label className="flex-1">
                       <input
@@ -52,9 +58,15 @@ function Postulantes() {
                 </tr>
                 <tr>
                   <td className="px-6 py-4">Maria</td>
-                  <td className="px-6 py-4">Garcia</td>
-                  <td className="px-6 py-4">87654321</td>
+                  <td className="px-6 py-4">12345678</td>
                   <td className="px-6 py-4">4.5</td>
+                  <td className="px-6 py-4">
+                    <button className="bg-ut-orange text-white rounded-lg p-2 cursor-pointer hover:bg-ut-orange/80 font-semibold border-2 border-orange-500 shadow-lg shadow-ut-orange/50">
+                      <Link to="/perfil-paseador">
+                        Ver Perfil
+                      </Link>
+                    </button>
+                  </td>
                   <td className="px-6 py-4">
                     <label className="flex-1">
                       <input
@@ -72,9 +84,15 @@ function Postulantes() {
                 </tr>
                 <tr>
                   <td className="px-6 py-4">Pedro</td>
-                  <td className="px-6 py-4">Garcia</td>
                   <td className="px-6 py-4">12345678</td>
                   <td className="px-6 py-4">5</td>
+                  <td className="px-6 py-4">
+                    <button className="bg-ut-orange text-white rounded-lg p-2 cursor-pointer hover:bg-ut-orange/80 font-semibold border-2 border-orange-500 shadow-lg shadow-ut-orange/50">
+                      <Link to="/perfil-paseador">
+                        Ver Perfil
+                      </Link>
+                    </button>
+                  </td>
                   <td className="px-6 py-4">
                     <label className="flex-1">
                       <input

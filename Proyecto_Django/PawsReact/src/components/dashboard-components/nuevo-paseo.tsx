@@ -47,9 +47,7 @@ function NuevoPaseo() {
           <h1 className="text-3xl md:text-5xl font-extrabold">
             Publica tu paseo!
           </h1>
-          <p className="mt-2">
-            Aquí puedes personalizar tu solicitud.
-          </p>
+          <p className="mt-2">Aquí puedes personalizar tu solicitud.</p>
         </header>
         <section className="max-w-md mx-auto gap-4 md:gap-6 mb-10 flex flex-col justify-center">
           <form
@@ -69,14 +67,34 @@ function NuevoPaseo() {
                 placeholder="1"
                 required
                 min={1}
-                max={5}
+                max={3}
               />
+              <p className="invisible text-xs text-red-500 peer-invalid:visible">
+                Se admiten hasta 3 mascotas.
+              </p>
+            </label>
+            <label htmlFor="tamaño">
+              <p>Tamaño de la(s) mascota(s)</p>
+              <select
+                className="w-full p-2 -ml-2 border-2 border-gray-300 rounded-lg peer focus:invalid:border-red-500 focus:outline-none focus:border-blue-500 invalid:text-red-500 invalid:border-red-500"
+                name="tamaño"
+                id="tamaño"
+                required
+              >
+                <option value="">Seleccione un tamaño</option>
+                <option value="pequeño">Pequeño</option>
+                <option value="mediano">Mediano</option>
+                <option value="grande">Grande</option>
+              </select>
+              <p className="invisible text-xs text-red-500 peer-invalid:visible">
+                Selecciona un tamaño.
+              </p>
             </label>
             <label className="flex flex-col gap-3">
               <p className="font-semibold">Horario del paseo</p>
               <div className="flex gap-4">
                 <input
-                  className="w-full p-2 -ml-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 invalid:border-red-500 invalid:text-red-500"
+                  className="w-full p-2 -ml-2 border-2 border-gray-300 rounded-lg peer focus:invalid:border-red-500 focus:outline-none focus:border-blue-500 invalid:text-red-500 invalid:border-red-500"
                   type="time"
                   name="hora-inicio"
                   id="hora-inicio"
@@ -85,7 +103,7 @@ function NuevoPaseo() {
                   onChange={(e) => handleChange(e.target.value, "inicio")}
                 />
                 <input
-                  className="w-full p-2 -ml-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 invalid:border-red-500 invalid:text-red-500"
+                  className="w-full p-2 -ml-2 border-2 border-gray-300 rounded-lg peer focus:invalid:border-red-500 focus:outline-none focus:border-blue-500 invalid:text-red-500 invalid:border-red-500"
                   type="time"
                   name="hora-termino"
                   id="hora-termino"
@@ -155,6 +173,9 @@ function NuevoPaseo() {
                 <option value="Tiltil">Tiltil</option>
                 <option value="Vitacura">Vitacura</option>
               </select>
+              <p className="invisible text-xs text-red-500 peer-invalid:visible">
+                Selecciona una ubicación.
+              </p>
             </label>
             <label htmlFor="precio">
               <p className="font-semibold">Precio (CLP)</p>
@@ -166,8 +187,12 @@ function NuevoPaseo() {
                 placeholder="10000"
                 required
                 min={1000}
-                max={100000}
+                max={15000}
+                maxLength={5}
               />
+              <p className="invisible text-xs text-red-500 peer-invalid:visible">
+                Rango de precios admitidos: 1000 - 15000 CLP
+              </p>
             </label>
             <button
               className="bg-prussian-blue text-white font-semibold rounded-full p-2 cursor-pointer hover:bg-prussian-blue/80 -ml-2 border-2 border-cyan-900 shadow-lg shadow-prussian-blue/50"
