@@ -13,6 +13,7 @@ import RecuperarClave from "./components/dashboard-components/recuperar-clave";
 import Postulantes from "./components/dashboard-components/postulantes";
 import PerfilPaseador from "./components/dashboard-components/perfil-paseador";
 
+
 function App() {
   return (
     <Router>
