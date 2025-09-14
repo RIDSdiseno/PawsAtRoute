@@ -1,14 +1,26 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 
-function Navbar() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+// Definimos el tipo de link
+interface NavLink {
+  label: string;
+  to?: string; // rutas internas con react-router-dom
+  href?: string; // enlaces externos o anclas (#)
+  primary?: boolean; // estilo destacado
+}
 
+interface NavbarProps {
+  links?: NavLink[];
+}
+
+function Navbar({ links = [] }: NavbarProps) {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const closeMenu = () => setIsMenuOpen(false);
 
   return (
     <nav className="bg-selective-yellow">
       <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
+        {/* Logo */}
         <Link
           to="/"
           className="flex items-center space-x-3 rtl:space-x-reverse"
@@ -19,6 +31,7 @@ function Navbar() {
           </span>
         </Link>
 
+        {/* Botón menú móvil */}
         <button
           type="button"
           className="inline-flex items-center p-2 w-10 h-10 justify-center text-sm rounded-lg md:hidden text-white bg-prussian-blue hover:bg-prussian-blue/80 focus:ring-2 focus:ring-cyan-900"
@@ -44,6 +57,7 @@ function Navbar() {
           </svg>
         </button>
 
+        {/* Links dinámicos */}
         <div
           className={`${
             isMenuOpen ? "block" : "hidden"
@@ -51,25 +65,34 @@ function Navbar() {
           id="navbar-default"
         >
           <ul className="text-md flex flex-col p-4 md:p-0 mt-4 border-2 border-gray-300/50 rounded-xl bg-gray-300/50 md:flex-row md:space-x-8 rtl:space-x-reverse md:mt-0 md:border-0 md:bg-transparent font-semibold">
-            <li className="hover:bg-blue-green/80 hover:border-2 hover:border-cyan-600 rounded-full transition-colors duration-300">
-              <a
-                href="#beneficios"
-                className="block py-2 px-3"
-                onClick={closeMenu}
+            {links.map((link, index) => (
+              <li
+                key={index}
+                className={`rounded-full transition-colors duration-300 ${
+                  link.primary
+                    ? "bg-prussian-blue text-white border-2 border-cyan-900 shadow-lg shadow-prussian-blue/50 hover:bg-prussian-blue/80"
+                    : "hover:bg-blue-green/80"
+                }`}
               >
-                Beneficios
-              </a>
-            </li>
-            <li className="hover:bg-blue-green/80 hover:border-2 hover:border-cyan-600 rounded-full transition-colors duración-300">
-              <a href="#pasos" className="block py-2 px-3" onClick={closeMenu}>
-                Pasos
-              </a>
-            </li>
-            <li className="bg-prussian-blue hover:bg-prussian-blue/80 rounded-full transition-colors duration-300 text-white border-2 border-cyan-900 shadow-lg shadow-prussian-blue/50">
-              <Link to="/login" className="block py-2 px-3" onClick={closeMenu}>
-                Ingresar
-              </Link>
-            </li>
+                {link.to ? (
+                  <Link
+                    to={link.to}
+                    className="block py-2 px-3"
+                    onClick={closeMenu}
+                  >
+                    {link.label}
+                  </Link>
+                ) : (
+                  <a
+                    href={link.href}
+                    className="block py-2 px-3"
+                    onClick={closeMenu}
+                  >
+                    {link.label}
+                  </a>
+                )}
+              </li>
+            ))}
           </ul>
         </div>
       </div>

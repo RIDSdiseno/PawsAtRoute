@@ -1,11 +1,9 @@
 import { Link } from "react-router-dom";
-import Navbar from "../landing-components/navbar";
 import Footer from "../landing-components/footer";
 
 function Login() {
   return (
     <>
-      <Navbar />
       <section className="flex flex-col justify-center items-center min-h-screen text-prussian-blue py-12 px-4">
         <h1 className="text-4xl md:text-5xl font-bold mb-8 text-center">
           ¡Bienvenido de nuevo!
@@ -81,7 +79,6 @@ function Login() {
           </div>
         </div>
       </section>
-      <Footer />
     </>
   );
 }

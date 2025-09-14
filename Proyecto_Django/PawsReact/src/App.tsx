@@ -13,17 +13,22 @@ import RecuperarClave from "./components/dashboard-components/recuperar-clave";
 import Postulantes from "./components/dashboard-components/postulantes";
 import PerfilPaseador from "./components/dashboard-components/perfil-paseador";
 
-
 function App() {
   return (
     <Router>
       <Routes>
-        {/* Página de inicio (landing) */}
+        {/* Rutas de las páginas */}
         <Route
           path="/"
           element={
             <>
-              <Navbar />
+              <Navbar
+                links={[
+                  { href: "#beneficios", label: "Beneficios" },
+                  { href: "#pasos", label: "Pasos" },
+                  { to: "/login", label: "Ingresar", primary: true },
+                ]}
+              />
               <Hero />
               <Beneficios />
               <Pasos />
@@ -32,20 +37,35 @@ function App() {
           }
         />
 
-        {/* Ruta de las páginas individuales */}
         <Route
           path="/login"
           element={
             <>
+              <Navbar
+                links={[
+                  { to: "/", label: "Inicio" },
+                  { to: "/recuperar-clave", label: "Recuperar clave" },
+                  { to: "/register", label: "Registrarse", primary: true },
+                ]}
+              />
               <Login />
+              <Footer />
             </>
           }
         />
+
         <Route
           path="/register"
           element={
             <>
+              <Navbar
+                links={[
+                  { to: "/", label: "Inicio" },
+                  { to: "/login", label: "Ingresar", primary: true },
+                ]}
+              />
               <Register />
+              <Footer />
             </>
           }
         />
@@ -53,7 +73,14 @@ function App() {
           path="/home"
           element={
             <>
+              <Navbar
+                links={[
+                  { to: "/nuevo-paseo", label: "Nuevo Paseo" },
+                  { to: "/perfil", label: "Mi perfil", primary: true },
+                ]}
+              />
               <Home />
+              <Footer />
             </>
           }
         />
@@ -61,7 +88,14 @@ function App() {
           path="/nuevo-paseo"
           element={
             <>
+              <Navbar
+                links={[
+                  { to: "/home", label: "Menú" },
+                  { to: "/perfil", label: "Mi perfil", primary: true },
+                ]}
+              />
               <NuevoPaseo />
+              <Footer />
             </>
           }
         />
@@ -69,7 +103,14 @@ function App() {
           path="/recuperar-clave"
           element={
             <>
+              <Navbar
+                links={[
+                  { to: "/", label: "Inicio" },
+                  { to: "/login", label: "Ingresar", primary: true },
+                ]}
+              />
               <RecuperarClave />
+              <Footer />
             </>
           }
         />
@@ -77,7 +118,14 @@ function App() {
           path="/postulantes"
           element={
             <>
+              <Navbar
+                links={[
+                  { to: "/home", label: "Menú" },
+                  { to: "/perfil", label: "Mi perfil", primary: true },
+                ]}
+              />
               <Postulantes />
+              <Footer />
             </>
           }
         />
@@ -85,7 +133,14 @@ function App() {
           path="/perfil-paseador"
           element={
             <>
+              <Navbar
+                links={[
+                  { to: "/home", label: "Menú" },
+                  { to: "/perfil", label: "Mi perfil", primary: true },
+                ]}
+              />
               <PerfilPaseador />
+              <Footer />
             </>
           }
         />

@@ -1,11 +1,8 @@
-import Navbar from "../landing-components/navbar";
-import Footer from "../landing-components/footer";
 import { Link } from "react-router-dom";
 
 function Postulantes() {
   return (
     <>
-      <Navbar />
       <section className="min-h-screen bg-gray-50 text-prussian-blue font-nunito p-4 sm:p-6 lg:p-8 my-6">
         <header className="max-w-6xl mx-auto mb-8">
           <h1 className="text-3xl md:text-5xl font-extrabold">Postulantes</h1>
@@ -24,7 +21,7 @@ function Postulantes() {
                 <tr>
                   <th className="px-6 py-3 text-left">Nombre</th>
                   <th className="px-6 py-3 text-left">Telefono</th>
-                  <th className="px-6 py-3 text-left">Calificacion</th>
+                  <th className="px-6 py-3 text-left">Calificacion ⭐</th>
                   <th className="px-6 py-3 text-left">Perfil</th>
                   <th className="px-6 py-3 text-left">Elije</th>
                 </tr>
@@ -122,7 +119,6 @@ function Postulantes() {
           </div>
         </section>
       </section>
-      <Footer />
     </>
   );
 }

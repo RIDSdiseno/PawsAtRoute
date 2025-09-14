@@ -1,6 +1,3 @@
-import Navbar from "../landing-components/navbar";
-import Footer from "../landing-components/footer";
-
 function PerfilPaseador() {
   const paseador = {
     nombre: "Carlos",
@@ -29,7 +26,6 @@ function PerfilPaseador() {
 
   return (
     <>
-      <Navbar />
       <section className="min-h-screen bg-gray-50 text-prussian-blue font-nunito px-4 py-10 sm:px-6 lg:px-12 max-w-6xl mx-auto">
         <h1 className="text-3xl md:text-5xl font-extrabold mb-6">
           Perfil del Paseador
@@ -43,7 +39,12 @@ function PerfilPaseador() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Información */}
             <div className="flex flex-col gap-4">
-              <h2 className="text-2xl font-bold">
+              <img
+                src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij4KCTxwYXRoIGZpbGw9ImN1cnJlbnRDb2xvciIgZD0iTTEyIDRhNCA0IDAgMCAxIDQgNGE0IDQgMCAwIDEtNCA0YTQgNCAwIDAgMS00LTRhNCA0IDAgMCAxIDQtNG0wIDEwYzQuNDIgMCA4IDEuNzkgOCA0djJINHYtMmMwLTIuMjEgMy41OC00IDgtNCIgLz4KPC9zdmc+"
+                alt="foto-perfil"
+                className="size-36 rounded-lg bg-gray-300 mx-auto"
+              />
+              <h2 className="text-3xl font-bold text-center mb-4">
                 {paseador.nombre} {paseador.apellido}
               </h2>
               <p>
@@ -53,9 +54,10 @@ function PerfilPaseador() {
               <p>
                 <span className="font-semibold">Comuna:</span> {paseador.comuna}
               </p>
-              <div>
+              <div className="flex items-center gap-1">
                 <span className="font-semibold">Calificación:</span>{" "}
                 {paseador.calificacion}
+                <span className="text-yellow-400 inline">⭐</span>
               </div>
             </div>
 
@@ -77,7 +79,6 @@ function PerfilPaseador() {
           </div>
         </div>
       </section>
-      <Footer />
     </>
   );
 }

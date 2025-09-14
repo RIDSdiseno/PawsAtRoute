@@ -1,11 +1,8 @@
 import { Link } from "react-router-dom";
-import Navbar from "../landing-components/navbar";
-import Footer from "../landing-components/footer";
 
 function Home() {
   return (
     <>
-      <Navbar />
       <section className="min-h-screen text-prussian-blue font-nunito p-4 sm:p-6 lg:p-8 my-6">
         <header className="max-w-6xl mx-auto mb-8">
           <h1 className="text-3xl md:text-5xl font-extrabold">Hola, Nombre!</h1>
@@ -102,7 +99,6 @@ function Home() {
           </div>
         </section>
       </section>
-      <Footer />
     </>
   );
 }

@@ -1,6 +1,4 @@
 import { useState } from "react";
-import Footer from "../landing-components/footer";
-import Navbar from "../landing-components/navbar";
 
 function NuevoPaseo() {
   const [inicio, setInicio] = useState<string>("");
@@ -41,7 +39,6 @@ function NuevoPaseo() {
   };
   return (
     <>
-      <Navbar />
       <section className="min-h-screen text-prussian-blue font-nunito p-4 sm:p-6 lg:p-8 my-6">
         <header className="max-w-6xl mx-auto mb-8">
           <h1 className="text-3xl md:text-5xl font-extrabold">
@@ -203,7 +200,6 @@ function NuevoPaseo() {
           </form>
         </section>
       </section>
-      <Footer />
     </>
   );
 }

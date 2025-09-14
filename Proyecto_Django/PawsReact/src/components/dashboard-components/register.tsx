@@ -1,14 +1,11 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import Navbar from "../landing-components/navbar";
-import Footer from "../landing-components/footer";
 
 function Register() {
   const [userType, setUserType] = useState("");
 
   return (
     <>
-      <Navbar />
       <section className="flex flex-col justify-center items-center min-h-screen text-prussian-blue py-12 px-4">
         <h1 className="text-4xl md:text-5xl font-bold mb-8 text-center">
           ¡Únete a <strong className="font-coffeecake">Paws At Route</strong>!
@@ -184,7 +181,6 @@ function Register() {
           </div>
         </div>
       </section>
-      <Footer />
     </>
   );
 }

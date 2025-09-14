@@ -1,6 +1,4 @@
 import { useState } from "react";
-import Navbar from "../landing-components/navbar";
-import Footer from "../landing-components/footer";
 
 function RecuperarClave() {
   const [step, setStep] = useState<"email" | "codigo" | "reset">("email");
@@ -19,7 +17,6 @@ function RecuperarClave() {
 
   return (
     <>
-      <Navbar />
       <section className="flex flex-col justify-center items-center min-h-screen bg-gray-50 text-prussian-blue py-12 px-4">
         <h1 className="text-3xl md:text-4xl font-bold mb-6 text-center">
           Recupera tu contraseña
@@ -132,7 +129,6 @@ function RecuperarClave() {
           )}
         </div>
       </section>
-      <Footer />
     </>
   );
 }
