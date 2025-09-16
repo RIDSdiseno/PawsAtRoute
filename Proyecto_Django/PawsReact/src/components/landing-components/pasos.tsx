@@ -1,8 +1,7 @@
 function Pasos() {
   return (
     <>
-      {/* Sección principal */}
-      <section id="pasos" className="min-h-screen bg-prussian-blue">
+      <main id="pasos" className="min-h-screen bg-prussian-blue">
         <div className="overflow-hidden">
           <svg
             preserveAspectRatio="none"
@@ -13,7 +12,7 @@ function Pasos() {
             <path d="M60 120L0 0h120L60 120zm120 0L120 0h120l-60 120zm120 0L240 0h120l-60 120zm120 0L360 0h120l-60 120zm120 0L480 0h120l-60 120zm120 0L600 0h120l-60 120zm120 0L720 0h120l-60 120zm120 0L840 0h120l-60 120zm120 0L960 0h120l-60 120zm120 0L1080 0h120l-60 120z" />
           </svg>
         </div>
-        <div className="text-selective-yellow p-4 max-w-6xl mx-auto py-24">
+        <section className="text-selective-yellow p-4 max-w-6xl mx-auto py-24">
           <div className="flex flex-col mb-16">
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold">
               Cómo funciona
@@ -74,8 +73,8 @@ function Pasos() {
               </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </main>
     </>
   );
 }

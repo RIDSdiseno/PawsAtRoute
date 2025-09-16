@@ -1,6 +1,6 @@
 function Beneficios() {
   return (
-    <section id="beneficios" className="min-h-screen">
+    <main id="beneficios" className="min-h-screen">
       {/* Divider superior */}
       <div className="overflow-hidden">
         <svg
@@ -20,7 +20,7 @@ function Beneficios() {
           <path d="M0 0v5.63C149.93 59 314.09 71.32 475.83 42.57c43-7.64 84.23-20.12 127.61-26.46 59-8.63 112.48 12.24 165.56 35.4C827.93 77.22 886 95.24 951.2 90c86.53-7 172.46-45.71 248.8-84.81V0z" />
         </svg>
       </div>
-      <div className="p-4 max-w-6xl mx-auto py-24">
+      <section className="p-4 max-w-6xl mx-auto py-24">
         <div className="flex flex-col mb-16 text-prussian-blue">
           <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold ">
             Beneficios clave
@@ -69,8 +69,8 @@ function Beneficios() {
             </p>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
+    </main>
   );
 }
 

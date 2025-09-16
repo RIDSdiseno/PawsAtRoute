@@ -2,13 +2,13 @@ import { Link } from "react-router-dom";
 
 function Hero() {
   return (
-    <section
+    <main
       id="hero"
       className="bg-selective-yellow min-h-screen flex items-center justify-center p-6"
     >
       <div className="container mx-auto flex flex-col md:flex-row items-center justify-between gap-8 max-w-6xl">
         {/*Title*/}
-        <div className="md:w-1/2 text-center md:text-left">
+        <section className="md:w-1/2 text-center md:text-left">
           <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold">
             Paz para ti,
             <br />
@@ -25,10 +25,10 @@ function Hero() {
               <Link to="/register">Se un paseador</Link>
             </button>
           </div>
-        </div>
+        </section>
 
         {/*Cards*/}
-        <div className="md:w-1/2 flex flex-col gap-4 tracking-tighter">
+        <section className="md:w-1/2 flex flex-col gap-4 tracking-tighter">
           <div className="relative flex items-center space-x-4 bg-blanco rounded-lg p-4 pt-12 rotate-6 bg-white shadow-lg shadow-white/50 border-2 border-gray-200">
             <strong className="absolute top-2 left-2 rounded-xs p-1 uppercase text-xs bg-blue-green text-prussian-blue brightness-110">
               Accesible
@@ -79,9 +79,9 @@ function Hero() {
               alt="Dog playing in a park"
             />
           </div>
-        </div>
+        </section>
       </div>
-    </section>
+    </main>
   );
 }
 

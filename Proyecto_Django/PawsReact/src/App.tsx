@@ -12,6 +12,8 @@ import NuevoPaseo from "./components/dashboard-components/nuevo-paseo";
 import RecuperarClave from "./components/dashboard-components/recuperar-clave";
 import Postulantes from "./components/dashboard-components/postulantes";
 import PerfilPaseador from "./components/dashboard-components/perfil-paseador";
+import MiPerfil from "./components/dashboard-components/mi-perfil";
+import EditarPerfil from "./components/dashboard-components/editar-perfil";
 
 function App() {
   return (
@@ -76,7 +78,7 @@ function App() {
               <Navbar
                 links={[
                   { to: "/nuevo-paseo", label: "Nuevo Paseo" },
-                  { to: "/perfil", label: "Mi perfil", primary: true },
+                  { to: "/mi-perfil", label: "Mi perfil", primary: true },
                 ]}
               />
               <Home />
@@ -91,7 +93,7 @@ function App() {
               <Navbar
                 links={[
                   { to: "/home", label: "Menú" },
-                  { to: "/perfil", label: "Mi perfil", primary: true },
+                  { to: "/mi-perfil", label: "Mi perfil", primary: true },
                 ]}
               />
               <NuevoPaseo />
@@ -121,7 +123,7 @@ function App() {
               <Navbar
                 links={[
                   { to: "/home", label: "Menú" },
-                  { to: "/perfil", label: "Mi perfil", primary: true },
+                  { to: "/mi-perfil", label: "Mi perfil", primary: true },
                 ]}
               />
               <Postulantes />
@@ -136,10 +138,40 @@ function App() {
               <Navbar
                 links={[
                   { to: "/home", label: "Menú" },
-                  { to: "/perfil", label: "Mi perfil", primary: true },
+                  { to: "/mi-perfil", label: "Mi perfil", primary: true },
                 ]}
               />
               <PerfilPaseador />
+              <Footer />
+            </>
+          }
+        />
+        <Route
+          path="/mi-perfil"
+          element={
+            <>
+              <Navbar
+                links={[
+                  { to: "/editar-perfil", label: "Editar Perfil" },
+                  { to: "/home", label: "Menú", primary: true },
+                ]}
+              />
+              <MiPerfil />
+              <Footer />
+            </>
+          }
+        />
+        <Route
+          path="/editar-perfil"
+          element={
+            <>
+              <Navbar
+                links={[
+                  { to: "/home", label: "Menú" },
+                  { to: "/mi-perfil", label: "Mi perfil", primary: true },
+                ]}
+              />
+              <EditarPerfil />
               <Footer />
             </>
           }
