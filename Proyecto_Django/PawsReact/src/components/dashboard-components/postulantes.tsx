@@ -123,7 +123,7 @@ function Postulantes() {
         <div className="px-6 py-6 flex">
           <Link
             to="/home"
-            className="inline-flex items-center justify-center rounded-full px-6 py-3 bg-prussian-blue hover:bg-prussian-blue/80 border-2 border-cyan-900 text-white font-semibold shadow-lg shadow-prussian-blue/50"
+            className="inline-flex items-center justify-center rounded-full px-6 py-3 bg-prussian-blue hover:bg-prussian-blue/80 border-2 border-cyan-900 text-white font-semibold shadow-lg shadow-prussian-blue/50 active:scale-95 transition-all duration-200"
           >
             ¡Listo!
           </Link>

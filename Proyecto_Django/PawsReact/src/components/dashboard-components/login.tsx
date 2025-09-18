@@ -55,7 +55,7 @@ function Login() {
                 </Link>
               </p>
 
-              <button className="bg-blue-green text-white rounded-full p-4 cursor-pointer hover:bg-blue-green/80 font-semibold border-2 border-cyan-600 shadow-lg shadow-blue-green/50">
+              <button className="bg-blue-green text-white rounded-full p-4 cursor-pointer hover:bg-blue-green/80 font-semibold border border-cyan-600 shadow-lg shadow-blue-green/50 active:scale-95 transition-all duration-200">
                 Iniciar Sesión
               </button>
               <p className="text-center gap-2 flex justify-center">

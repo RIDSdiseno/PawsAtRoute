@@ -8,27 +8,21 @@ function Home() {
   };
 
   const proximoPaseo = {
-    hora: "10:00 AM - 11:30 AM",
+    hora: "10:00 - 11:30",
     paseador: "Carlos",
   };
 
   const historial = [
     {
       fecha: "15 de Mayo",
-      hora: "10:00 AM",
+      hora: "10:00",
       paseador: "Carlos",
       estado: "Completado",
     },
     {
       fecha: "12 de Mayo",
-      hora: "3:00 PM",
+      hora: "3:00",
       paseador: "Ana",
-      estado: "Completado",
-    },
-    {
-      fecha: "10 de Mayo",
-      hora: "11:00 AM",
-      paseador: "Carlos",
       estado: "Completado",
     },
   ];
@@ -67,7 +61,7 @@ function Home() {
           <div className="py-4 flex">
             <Link
               to="/postulantes"
-              className="inline-flex items-center justify-center rounded-full px-6 py-3 bg-prussian-blue hover:bg-prussian-blue/80 border-2 border-cyan-900 text-white font-semibold shadow-lg shadow-prussian-blue/50"
+              className="inline-flex items-center justify-center rounded-full px-6 py-3 bg-prussian-blue hover:bg-prussian-blue/80 border-2 border-cyan-900 text-white font-semibold shadow-lg shadow-prussian-blue/50 active:scale-95 transition-all duration-200"
             >
               Ver Postulantes
             </Link>
@@ -112,7 +106,7 @@ function Home() {
         <div className="px-6 py-6 flex">
           <Link
             to="/nuevo-paseo"
-            className="inline-flex items-center justify-center rounded-full px-6 py-3 bg-prussian-blue hover:bg-prussian-blue/80 border-2 border-cyan-900 text-white font-semibold shadow-lg shadow-prussian-blue/50"
+            className="inline-flex items-center justify-center rounded-full px-6 py-3 bg-prussian-blue hover:bg-prussian-blue/80 border-2 border-cyan-900 text-white font-semibold shadow-lg shadow-prussian-blue/50 active:scale-95 transition-all duration-200"
           >
             Solicitar Nuevo Paseo
           </Link>

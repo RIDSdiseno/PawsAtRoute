@@ -17,7 +17,7 @@ function MiPerfil() {
       <header className="mb-10 text-pretty md:text-left">
         <h1 className="text-3xl md:text-5xl font-bold mb-3">Mi Perfil</h1>
         <p className="text-lg md:text-xl text-gray-700 max-w-2xl mx-auto md:mx-0">
-          Aquí podrás ver tu información, como tu foto de perfil, rol, nombre,
+          Aquí podrás ver tu información, como foto de perfil, rol, nombre,
           apellido, correo y teléfono.
         </p>
       </header>

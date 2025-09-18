@@ -14,6 +14,7 @@ import Postulantes from "./components/dashboard-components/postulantes";
 import PerfilPaseador from "./components/dashboard-components/perfil-paseador";
 import MiPerfil from "./components/dashboard-components/mi-perfil";
 import EditarPerfil from "./components/dashboard-components/editar-perfil";
+import DashboardPaseador from "./components/dashboard-components/dashboard-paseador";
 
 function App() {
   return (
@@ -172,6 +173,21 @@ function App() {
                 ]}
               />
               <EditarPerfil />
+              <Footer />
+            </>
+          }
+        />
+        <Route
+          path="/dashboard-paseador"
+          element={
+            <>
+              <Navbar
+                links={[
+                  { to: "/dashboard-paseador", label: "Menú" },
+                  { to: "/mi-perfil", label: "Mi perfil", primary: true },
+                ]}
+              />
+              <DashboardPaseador />
               <Footer />
             </>
           }

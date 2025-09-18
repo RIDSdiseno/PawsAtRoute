@@ -163,7 +163,7 @@ function Register() {
 
               <button
                 type="submit"
-                className="bg-prussian-blue text-white rounded-full p-4 hover:bg-prussian-blue/80 border-2 border-cyan-900 shadow-lg shadow-prussian-blue/50 font-semibold mt-2"
+                className="bg-prussian-blue text-white rounded-full p-4 hover:bg-prussian-blue/80 border-2 border-cyan-900 shadow-lg shadow-prussian-blue/50 font-semibold mt-2 active:scale-95 transition-all duration-200"
               >
                 Registrarse
               </button>
