@@ -4,8 +4,7 @@ interface Paseo {
   id: number;
   mascota: string;
   ubicacion: string;
-  horaInicio: string;
-  horaFin: string;
+  duracion: string;
   precio: string;
   imagen: string;
 }
@@ -27,7 +26,7 @@ function DashboardPaseador() {
 
   const user: User = {
     nombre: "Carlos",
-    paseosCompletados: 5,
+    paseosCompletados: 2,
   };
 
   const solicitudes: Paseo[] = [
@@ -35,27 +34,24 @@ function DashboardPaseador() {
       id: 1,
       mascota: "Firulais",
       ubicacion: "Huechuraba",
-      horaInicio: "10:00",
-      horaFin: "11:30",
-      precio: "1000",
+      duracion: "30 minutos",
+      precio: "5000",
       imagen: "/src/assets/img/perro-3.webp",
     },
     {
       id: 2,
       mascota: "Tito",
       ubicacion: "Colina",
-      horaInicio: "12:00",
-      horaFin: "13:30",
-      precio: "1500",
+      duracion: "60 minutos",
+      precio: "10000",
       imagen: "/src/assets/img/perro-2.webp",
     },
     {
       id: 3,
       mascota: "Chispa",
       ubicacion: "Conchalí",
-      horaInicio: "12:00",
-      horaFin: "14:30",
-      precio: "1500",
+      duracion: "120 minutos",
+      precio: "20000",
       imagen: "/src/assets/img/perro-3.webp",
     },
   ];
@@ -76,7 +72,6 @@ function DashboardPaseador() {
   ];
 
   const handleConfirm = () => {
-    // Aquí conectas al backend para "postularse"
     if (selectedPaseo) {
       alert(`Te has postulado al paseo con ${selectedPaseo.mascota}`);
       setSelectedPaseo(null);
@@ -85,7 +80,6 @@ function DashboardPaseador() {
 
   return (
     <main className="min-h-screen text-prussian-blue px-4 py-10 sm:px-6 lg:px-12 max-w-6xl mx-auto">
-      {/* Header */}
       <header className="mb-10 text-center md:text-left">
         <h1 className="text-3xl md:text-5xl font-bold mb-3">
           Hola, Paseador {user.nombre}!
@@ -96,19 +90,18 @@ function DashboardPaseador() {
         </p>
       </header>
 
-      {/* Métricas */}
       <section className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
-        <article className="bg-white border border-gray-200 rounded-xl p-6 shadow-md hover:shadow-lg transition-shadow">
+        <article className="p-6 card-neumorphism">
           <p className="text-gray-600">Paseos Completados</p>
           <p className="text-3xl md:text-4xl font-extrabold mt-1">
             {user.paseosCompletados}
           </p>
         </article>
 
-        <article className="bg-white border border-gray-200 rounded-xl p-6 shadow-md hover:shadow-lg transition-shadow">
+        <article className="p-6 card-neumorphism">
           <p className="text-gray-600">Paseo Activo</p>
           <p className="text-2xl md:text-3xl font-extrabold mt-1">
-            {solicitudes[0].horaInicio} - {solicitudes[0].horaFin}
+            {solicitudes[0].duracion}
           </p>
           <p className="text-gray-600 mt-2">Mascota</p>
           <p className="text-2xl md:text-3xl font-extrabold">
@@ -116,7 +109,7 @@ function DashboardPaseador() {
           </p>
         </article>
 
-        <article className="bg-white border border-gray-200 rounded-xl p-6 shadow-md hover:shadow-lg transition-shadow md:col-span-2">
+        <article className="p-6 card-neumorphism md:col-span-2">
           <h2 className="text-xl md:text-2xl font-bold">Historial de Paseos</h2>
           <div className="mt-4 overflow-x-auto">
             <table className="w-full text-sm">
@@ -147,7 +140,6 @@ function DashboardPaseador() {
         </article>
       </section>
 
-      {/* Solicitudes */}
       <section>
         <h2 className="text-2xl md:text-3xl font-bold mb-6">
           Solicitudes de Paseos
@@ -169,7 +161,7 @@ function DashboardPaseador() {
                   <strong>Ubicación:</strong> {s.ubicacion}
                 </p>
                 <p className="text-gray-600 mb-1">
-                  <strong>Hora:</strong> {s.horaInicio} - {s.horaFin}
+                  <strong>Duración:</strong> {s.duracion}
                 </p>
                 <p className="text-gray-600 mb-4">
                   <strong>Precio: $</strong> {s.precio}
@@ -186,7 +178,6 @@ function DashboardPaseador() {
         </div>
       </section>
 
-      {/* Alerta de confirmación */}
       {selectedPaseo && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-2xl shadow-xl max-w-lg w-full p-6">
@@ -202,8 +193,7 @@ function DashboardPaseador() {
                 <strong>Ubicación:</strong> {selectedPaseo?.ubicacion}
               </li>
               <li>
-                <strong>Hora:</strong> {selectedPaseo?.horaInicio} -{" "}
-                {selectedPaseo?.horaFin}
+                <strong>Duración:</strong> {selectedPaseo?.duracion}
               </li>
               <li>
                 <strong>Precio:</strong> ${selectedPaseo?.precio}

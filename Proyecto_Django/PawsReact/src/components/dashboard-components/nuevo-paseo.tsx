@@ -1,38 +1,15 @@
 import { useState } from "react";
 
 function NuevoPaseo() {
-  const [inicio, setInicio] = useState<string>("");
-  const [termino, setTermino] = useState<string>("");
-  const [error, setError] = useState("");
+  const [duracion, setDuracion] = useState<number>(0);
   const [cantidad, setCantidad] = useState<number>(1);
   const [mascotas, setMascotas] = useState<
     { nombre: string; foto: string | null }[]
   >([{ nombre: "", foto: null }]);
 
-  // Tarifa por minuto
-  const TARIFA_POR_MINUTO = 250;
-
-  // Calcula diferencia en minutos
-  const calcularDiferencia = (hora1: string, hora2: string) => {
-    const [h1, m1] = hora1.split(":").map(Number);
-    const [h2, m2] = hora2.split(":").map(Number);
-    return Math.abs(h2 * 60 + m2 - (h1 * 60 + m1));
-  };
-
-  // Maneja cambios en los inputs de tiempo
-  const handleChange = (value: string, type: "inicio" | "termino") => {
-    if (type === "inicio") {
-      setInicio(value);
-      if (termino && calcularDiferencia(value, termino) > 120) {
-        setError("La diferencia no puede ser mayor a 2 horas.");
-      } else setError("");
-    } else {
-      setTermino(value);
-      if (inicio && calcularDiferencia(inicio, value) > 120) {
-        setError("La diferencia no puede ser mayor a 2 horas.");
-      } else setError("");
-    }
-  };
+  // Tarifa por cada 30 minutos
+  const TARIFA_POR_BLOQUE = 5000;
+  const BLOQUE_MINUTOS = 30;
 
   // Maneja cambios en cantidad de mascotas
   const handleCantidadChange = (num: number) => {
@@ -56,10 +33,19 @@ function NuevoPaseo() {
     setMascotas(nuevas);
   };
 
-  // Esta constante calcula el precio, decidí que la duración máxima del paseo sea de 2 horas y como precio máxmimo se cobra $30.000, lo que da una tarifa por minuto de $250.
-  const minutos =
-    inicio && termino && !error ? calcularDiferencia(inicio, termino) : 0;
-  const precio = minutos * TARIFA_POR_MINUTO;
+  // Duraciones disponibles (en minutos)
+  const DURACIONES = [
+    { label: "30 minutos", value: 30 },
+    { label: "1 hora", value: 60 },
+    { label: "1 hora 30 minutos", value: 90 },
+    { label: "2 horas", value: 120 },
+  ];
+
+  // Calcular bloques de 30 min (redondeando hacia arriba)
+  const bloques = Math.ceil(duracion / BLOQUE_MINUTOS);
+
+  // Precio con máximo $20.000
+  const precio = Math.min(bloques * TARIFA_POR_BLOQUE, 20000);
 
   return (
     <section className="min-h-screen text-prussian-blue font-nunito p-4 sm:p-6 lg:p-8 my-6">
@@ -98,9 +84,6 @@ function NuevoPaseo() {
                 </label>
               ))}
             </div>
-            <p className="invisible text-xs text-red-500 peer-invalid:visible">
-              Selecciona una cantidad de mascotas.
-            </p>
           </fieldset>
 
           {/* Inputs dinámicos de acuerdo a la cantidad de mascotas */}
@@ -121,11 +104,8 @@ function NuevoPaseo() {
                   }
                   placeholder="Firulais"
                   required
-                  className="w-full p-2 -ml-2 border-2 border-gray-300 rounded-lg peer focus:invalid:border-red-500 focus:outline-none focus:border-blue-500 invalid:text-red-500 invalid:border-red-500"
+                  className="w-full p-2 border-2 border-gray-300 rounded-lg peer focus:outline-none focus:border-blue-500 invalid:border-red-500 invalid:text-red-500"
                 />
-                <p className="invisible text-xs text-red-500 peer-invalid:visible">
-                  El nombre es obligatorio.
-                </p>
               </label>
 
               <label>
@@ -145,9 +125,6 @@ function NuevoPaseo() {
                   }
                   className="peer w-full"
                 />
-                <p className="invisible text-xs text-red-500 peer-invalid:visible">
-                  La foto es obligatoria.
-                </p>
                 {mascota.foto && (
                   <img
                     src={mascota.foto}
@@ -159,89 +136,40 @@ function NuevoPaseo() {
             </div>
           ))}
 
-          {/* Horario */}
-          <label className="flex flex-col gap-3">
-            <p className="font-semibold">Horario del paseo</p>
-            <div className="flex gap-4">
-              <input
-                type="time"
-                required
-                value={inicio}
-                onChange={(e) => handleChange(e.target.value, "inicio")}
-                className="w-full p-2 -ml-2 border-2 border-gray-300 rounded-lg peer focus:invalid:border-red-500 focus:outline-none focus:border-blue-500 invalid:text-red-500 invalid:border-red-500"
-              />
-              <input
-                type="time"
-                required
-                value={termino}
-                onChange={(e) => handleChange(e.target.value, "termino")}
-                className="w-full p-2 -ml-2 border-2 border-gray-300 rounded-lg peer focus:invalid:border-red-500 focus:outline-none focus:border-blue-500 invalid:text-red-500 invalid:border-red-500"
-              />
+          {/* Duración del paseo con radio */}
+          <fieldset className="flex flex-col gap-2">
+            <legend className="font-semibold">Duración del paseo</legend>
+            <div className="flex flex-col gap-2">
+              {DURACIONES.map((op) => (
+                <label key={op.value} className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    name="duracion"
+                    value={op.value}
+                    checked={duracion === op.value}
+                    onChange={() => setDuracion(op.value)}
+                    className="peer cursor-pointer"
+                    required
+                  />
+                  {op.label}
+                </label>
+              ))}
             </div>
-            {error && <p className="text-xs text-red-500">{error}</p>}
-          </label>
+          </fieldset>
 
           {/* Ubicación */}
-          <label htmlFor="ubicacion">
+          <label className="flex flex-col gap-1" htmlFor="ubicacion">
             <p className="font-semibold">Ubicación</p>
-            <select
-              id="ubicacion"
+            <input
+              className="p-2 border-2 border-gray-300 rounded-lg peer focus:outline-none focus:border-blue-500 invalid:border-red-500 invalid:text-red-500"
+              type="text"
               required
-              className="w-full p-2 -ml-2 border-2 border-gray-300 rounded-lg peer focus:invalid:border-red-500 focus:outline-none focus:border-blue-500 invalid:text-red-500 invalid:border-red-500"
-            >
-              <option value="">Seleccione una ubicación</option>
-              <option value="Alhué">Alhué</option>
-              <option value="Buin">Buin</option>
-              <option value="Calera de Tango">Calera de Tango</option>
-              <option value="Cerrillos">Cerrillos</option>
-              <option value="Cerro Navia">Cerro Navia</option>
-              <option value="Colina">Colina</option>
-              <option value="Conchalí">Conchalí</option>
-              <option value="Curacaví">Curacaví</option>
-              <option value="El Bosque">El Bosque</option>
-              <option value="El Monte">El Monte</option>
-              <option value="Estación Central">Estación Central</option>
-              <option value="Huechuraba">Huechuraba</option>
-              <option value="Independencia">Independencia</option>
-              <option value="Isla de Maipo">Isla de Maipo</option>
-              <option value="La Cisterna">La Cisterna</option>
-              <option value="La Florida">La Florida</option>
-              <option value="La Granja">La Granja</option>
-              <option value="La Pintana">La Pintana</option>
-              <option value="La Reina">La Reina</option>
-              <option value="Lampa">Lampa</option>
-              <option value="Las Condes">Las Condes</option>
-              <option value="Lo Barnechea">Lo Barnechea</option>
-              <option value="Lo Espejo">Lo Espejo</option>
-              <option value="Lo Prado">Lo Prado</option>
-              <option value="Macul">Macul</option>
-              <option value="Maipú">Maipú</option>
-              <option value="María Pinto">María Pinto</option>
-              <option value="Ñuñoa">Ñuñoa</option>
-              <option value="Padre Hurtado">Padre Hurtado</option>
-              <option value="Paine">Paine</option>
-              <option value="Pedro Aguirre Cerda">Pedro Aguirre Cerda</option>
-              <option value="Peñalolén">Peñalolén</option>
-              <option value="Pirque">Pirque</option>
-              <option value="Providencia">Providencia</option>
-              <option value="Pudahuel">Pudahuel</option>
-              <option value="Puente Alto">Puente Alto</option>
-              <option value="Quilicura">Quilicura</option>
-              <option value="Quinta Normal">Quinta Normal</option>
-              <option value="Recoleta">Recoleta</option>
-              <option value="Renca">Renca</option>
-              <option value="San Bernardo">San Bernardo</option>
-              <option value="San Joaquín">San Joaquín</option>
-              <option value="San José de Maipo">San José de Maipo</option>
-              <option value="San Miguel">San Miguel</option>
-              <option value="San Ramón">San Ramón</option>
-              <option value="Santiago">Santiago</option>
-              <option value="Talagante">Talagante</option>
-              <option value="Tiltil">Tiltil</option>
-              <option value="Vitacura">Vitacura</option>
-            </select>
+              id="ubicacion"
+              minLength={10}
+              maxLength={30}
+            />
             <p className="invisible text-xs text-red-500 peer-invalid:visible">
-              Selecciona una ubicación.
+              Por favor, ingresa una ubicación.
             </p>
           </label>
 
@@ -252,15 +180,15 @@ function NuevoPaseo() {
               {precio > 0 ? `$${precio.toLocaleString("es-CL")}` : "--"}
             </p>
             <p className="text-xs text-gray-500">
-              Se cobra $250 por minuto (máx. $30.000).
+              Se cobra $5.000 por cada 30 minutos (máx. $20.000).
             </p>
           </div>
 
           {/* Botón publicar */}
           <button
             type="submit"
-            disabled={!inicio || !termino || !!error}
-            className="bg-prussian-blue text-white font-semibold rounded-full p-2 hover:bg-prussian-blue/80 -ml-2 border-2 border-cyan-900 shadow-lg shadow-prussian-blue/50 disabled:bg-gray-400 disabled:cursor-not-allowed"
+            disabled={!duracion}
+            className="bg-prussian-blue text-white font-semibold rounded-full p-2 hover:bg-prussian-blue/80 border-2 border-cyan-900 shadow-lg shadow-prussian-blue/50 disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
             Publicar
           </button>

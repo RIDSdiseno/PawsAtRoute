@@ -1,7 +1,6 @@
 @import "tailwindcss";
 
 @theme {
-  --color-sky-blue: #8ecae6ff;
   --color-blue-green: #219ebcff;
   --color-prussian-blue: #023047ff;
   --color-selective-yellow: #ffb703ff;
@@ -35,8 +34,19 @@
   font-display: swap;
 }
 
-html {
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100vw;
+  height: 100vh;
   scroll-behavior: smooth;
   overflow-x: hidden;
   overflow-y: scroll;
+}
+
+.card-neumorphism {
+  border-radius: 50px;
+  background: #ffffff;
+  box-shadow: 20px 20px 60px #d9d9d9, -20px -20px 60px #ffffff;
 }

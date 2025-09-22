@@ -4,7 +4,7 @@ function Home() {
   // Datos de ejemplo (deberían venir de la base de datos)
   const user = {
     nombre: "María",
-    paseosCompletados: 5,
+    paseosCompletados: 2,
   };
 
   const proximoPaseo = {
@@ -42,14 +42,14 @@ function Home() {
 
       {/* Métricas */}
       <section className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mb-10">
-        <article className="bg-white border border-gray-200 rounded-xl p-6 shadow-lg">
+        <article className="p-6 card-neumorphism">
           <p className="text-gray-600">Paseos Completados</p>
           <p className="text-3xl md:text-4xl font-extrabold">
             {user.paseosCompletados}
           </p>
         </article>
 
-        <article className="bg-white border border-gray-200 rounded-xl p-6 shadow-lg">
+        <article className="p-6 card-neumorphism">
           <p className="text-gray-600">Nuevo Paseo</p>
           <p className="text-2xl md:text-3xl font-extrabold">
             {proximoPaseo.hora}
@@ -70,7 +70,7 @@ function Home() {
       </section>
 
       {/* Historial */}
-      <section className="max-w-6xl mx-auto bg-white border border-gray-200 rounded-xl overflow-hidden shadow-lg">
+      <section className="max-w-6xl mx-auto p-6 card-neumorphism overflow-hidden">
         <h2 className="px-6 pt-6 text-xl md:text-2xl font-bold">
           Historial de Paseos Recientes
         </h2>
@@ -102,7 +102,7 @@ function Home() {
           </table>
         </div>
 
-        {/* Acción */}
+        {/* Solicitar Nuevo Paseo */}
         <div className="px-6 py-6 flex">
           <Link
             to="/nuevo-paseo"
