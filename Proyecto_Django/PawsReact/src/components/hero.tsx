@@ -7,7 +7,6 @@ function Hero() {
       className="bg-selective-yellow min-h-screen flex items-center justify-center p-6"
     >
       <div className="container mx-auto flex flex-col md:flex-row items-center justify-between gap-8 max-w-6xl">
-        {/*Title*/}
         <section className="md:w-1/2 text-center md:text-left">
           <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold">
             Paz para ti,
@@ -27,7 +26,6 @@ function Hero() {
           </div>
         </section>
 
-        {/*Cards*/}
         <section className="md:w-1/2 flex flex-col gap-4 tracking-tighter">
           <div className="relative flex items-center space-x-4 bg-blanco rounded-lg p-4 pt-12 rotate-6 bg-white shadow-lg shadow-white/50 border-2 border-gray-200">
             <span className="absolute top-2 left-2 rounded-full px-2 py-1 uppercase text-xs bg-cyan-700 text-cyan-50 font-bold">
@@ -38,10 +36,9 @@ function Hero() {
               merece cuidado.
             </p>
             <img
-              className="size-28 md:size-30 rounded-t-4xl rounded-b-lg object-cover"
-              src="/src/assets/img/perro-1.webp"
+              className="size-28 md:size-30 object-cover"
+              src="/img/gato-paseando.webp"
               decoding="async"
-              loading="lazy"
               alt="Dog smiling"
             />
           </div>
@@ -50,10 +47,9 @@ function Hero() {
               Personalizado
             </span>
             <img
-              className="size-30 lg:size-44 rounded-full object-cover"
-              src="/src/assets/img/perro-2.webp"
+              className="size-30 lg:size-44 object-cover"
+              src="/img/perro-paseando.webp"
               decoding="async"
-              loading="lazy"
               alt="Dog with a leash"
             />
             <p className="font-work-sans leading-5 md:leading-6 lg:leading-8 text-2xl lg:text-4xl text-blanco uppercase text-white">
@@ -72,11 +68,10 @@ function Hero() {
               manos seguras.
             </p>
             <img
-              className="size-28 md:size-30 rounded-t-4xl rounded-b-lg object-cover"
-              src="/src/assets/img/perro-3.webp"
+              className="size-28 md:size-30 object-cover"
+              src="/img/tortuga-paseando.webp"
               decoding="async"
-              loading="lazy"
-              alt="Dog playing in a park"
+              alt="Tortuga paseando"
             />
           </div>
         </section>

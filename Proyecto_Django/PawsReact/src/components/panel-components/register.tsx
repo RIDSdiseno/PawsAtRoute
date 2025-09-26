@@ -13,8 +13,9 @@ function Register() {
         <div className="w-full max-w-4xl bg-white rounded-xl shadow-lg border-2 border-gray-300 flex flex-col md:flex-row overflow-hidden">
           <div className="hidden md:flex w-1/2 bg-prussian-blue items-center justify-center p-4">
             <img
-              src="/src/assets/img/perros jugando 2.webp"
+              src="/img/perros jugando 2.webp"
               alt="Perros jugando"
+              loading="lazy"
               className="object-cover w-full h-full max-h-[350px] drop-shadow-lg"
             />
           </div>
@@ -63,9 +64,10 @@ function Register() {
                   minLength={3}
                   maxLength={15}
                   placeholder="Ej: María"
+                  pattern="^[A-Za-zÁÉÍÓÚÑáéíóúñ\s]+$"
                 />
                 <p className="invisible text-xs text-red-500 peer-invalid:visible">
-                  Por favor, ingresa un nombre.
+                  El nombre solo puede contener letras.
                 </p>
               </label>
 
@@ -79,9 +81,10 @@ function Register() {
                   minLength={3}
                   maxLength={15}
                   placeholder="Ej: Pérez"
+                  pattern="^[A-Za-zÁÉÍÓÚÑáéíóúñ\s]+$"
                 />
                 <p className="invisible text-xs text-red-500 peer-invalid:visible">
-                  Por favor, ingresa un apellido.
+                  El apellido solo puede contener letras.
                 </p>
               </label>
 
@@ -93,10 +96,15 @@ function Register() {
                   required
                   id="telefono"
                   name="telefono"
+                  inputMode="numeric"
                   minLength={9}
                   maxLength={12}
                   pattern="^[0-9]{9,12}$"
                   placeholder="Ej: 987654321"
+                  onInput={(e) => {
+                    const target = e.currentTarget;
+                    target.value = target.value.replace(/[^0-9]/g, "");
+                  }}
                 />
                 <p className="invisible text-xs text-red-500 peer-invalid:visible">
                   Por favor, ingresa un teléfono válido (solo números, 9 a 12
@@ -123,16 +131,87 @@ function Register() {
               <label className="flex flex-col gap-1" htmlFor="contraseña">
                 <p className="font-semibold">Contraseña</p>
                 <input
-                  className="p-2 border-2 border-gray-300 rounded-lg peer focus:outline-none focus:border-blue-500 invalid:border-red-500 invalid:text-red-500"
+                  className="p-2 border-2 border-gray-300 rounded-lg peer 
+               focus:outline-none focus:border-blue-500 
+               invalid:border-red-500 invalid:text-red-500"
                   type="password"
                   required
                   id="contraseña"
                   minLength={10}
-                  maxLength={30}
+                  maxLength={20}
+                  pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&._-])[A-Za-z\d@$!%*?&._-]{10,20}$"
+                  placeholder="Ej: ClaveSegura1!"
                 />
-                <p className="invisible text-xs text-red-500 peer-invalid:visible">
-                  Por favor, ingresa una contraseña segura.
-                </p>
+                <ul className="invisible text-xs text-red-500 peer-invalid:visible list-disc list-inside">
+                  <li>La contraseña debe tener entre 10 y 20 caracteres</li>
+                  <li>Incluir al menos una mayúscula</li>
+                  <li>Incluir al menos una minúscula</li>
+                  <li>Incluir al menos un número</li>
+                  <li>Incluir al menos un caracter especial</li>
+                </ul>
+              </label>
+
+              <label className="flex flex-col gap-1" htmlFor="comuna">
+                <p className="font-semibold">Comuna</p>
+                <select
+                  className="p-2 border-2 border-gray-300 rounded-lg peer focus:outline-none focus:border-blue-500 invalid:border-red-500 invalid:text-red-500"
+                  required
+                  id="comuna"
+                  name="comuna"
+                >
+                  <option value="">Seleccione una comuna</option>
+                  <option value="Alhué">Alhué</option>
+                  <option value="Buin">Buin</option>
+                  <option value="Calera de Tango">Calera de Tango</option>
+                  <option value="Cerrillos">Cerrillos</option>
+                  <option value="Cerro Navia">Cerro Navia</option>
+                  <option value="Colina">Colina</option>
+                  <option value="Conchalí">Conchalí</option>
+                  <option value="Curacaví">Curacaví</option>
+                  <option value="El Bosque">El Bosque</option>
+                  <option value="El Monte">El Monte</option>
+                  <option value="Estación Central">Estación Central</option>
+                  <option value="Huechuraba">Huechuraba</option>
+                  <option value="Independencia">Independencia</option>
+                  <option value="Isla de Maipo">Isla de Maipo</option>
+                  <option value="La Cisterna">La Cisterna</option>
+                  <option value="La Florida">La Florida</option>
+                  <option value="La Granja">La Granja</option>
+                  <option value="La Pintana">La Pintana</option>
+                  <option value="La Reina">La Reina</option>
+                  <option value="Lampa">Lampa</option>
+                  <option value="Las Condes">Las Condes</option>
+                  <option value="Lo Barnechea">Lo Barnechea</option>
+                  <option value="Lo Espejo">Lo Espejo</option>
+                  <option value="Lo Prado">Lo Prado</option>
+                  <option value="Macul">Macul</option>
+                  <option value="Maipú">Maipú</option>
+                  <option value="María Pinto">María Pinto</option>
+                  <option value="Ñuñoa">Ñuñoa</option>
+                  <option value="Padre Hurtado">Padre Hurtado</option>
+                  <option value="Paine">Paine</option>
+                  <option value="Pedro Aguirre Cerda">
+                    Pedro Aguirre Cerda
+                  </option>
+                  <option value="Peñalolén">Peñalolén</option>
+                  <option value="Pirque">Pirque</option>
+                  <option value="Providencia">Providencia</option>
+                  <option value="Pudahuel">Pudahuel</option>
+                  <option value="Puente Alto">Puente Alto</option>
+                  <option value="Quilicura">Quilicura</option>
+                  <option value="Quinta Normal">Quinta Normal</option>
+                  <option value="Recoleta">Recoleta</option>
+                  <option value="Renca">Renca</option>
+                  <option value="San Bernardo">San Bernardo</option>
+                  <option value="San Joaquín">San Joaquín</option>
+                  <option value="San José de Maipo">San José de Maipo</option>
+                  <option value="San Miguel">San Miguel</option>
+                  <option value="San Ramón">San Ramón</option>
+                  <option value="Santiago">Santiago</option>
+                  <option value="Talagante">Talagante</option>
+                  <option value="Tiltil">Tiltil</option>
+                  <option value="Vitacura">Vitacura</option>
+                </select>
               </label>
 
               {userType === "paseador" && (

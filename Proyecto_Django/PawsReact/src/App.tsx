@@ -1,20 +1,20 @@
 import "./App.css";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Navbar from "./components/landing-components/navbar";
-import Hero from "./components/landing-components/hero";
-import Beneficios from "./components/landing-components/beneficios";
-import Pasos from "./components/landing-components/pasos";
-import Footer from "./components/landing-components/footer";
-import Login from "./components/dashboard-components/login";
-import Register from "./components/dashboard-components/register";
-import Home from "./components/dashboard-components/home";
-import NuevoPaseo from "./components/dashboard-components/nuevo-paseo";
-import RecuperarClave from "./components/dashboard-components/recuperar-clave";
-import Postulantes from "./components/dashboard-components/postulantes";
-import PerfilPaseador from "./components/dashboard-components/perfil-paseador";
-import MiPerfil from "./components/dashboard-components/mi-perfil";
-import EditarPerfil from "./components/dashboard-components/editar-perfil";
-import DashboardPaseador from "./components/dashboard-components/dashboard-paseador";
+import Navbar from "./components/navbar";
+import Hero from "./components/hero";
+import Beneficios from "./components/beneficios";
+import Pasos from "./components/pasos";
+import Footer from "./components/footer";
+import Login from "./components/panel-components/login";
+import Register from "./components/panel-components/register";
+import PanelDueño from "./components/panel-components/panel-dueño";
+import NuevoPaseo from "./components/panel-components/nuevo-paseo";
+import RecuperarClave from "./components/panel-components/recuperar-clave";
+import Postulantes from "./components/panel-components/postulantes";
+import PerfilPaseador from "./components/panel-components/perfil-paseador";
+import MiPerfil from "./components/panel-components/mi-perfil";
+import EditarPerfil from "./components/panel-components/editar-perfil";
+import PanelPaseador from "./components/panel-components/panel-paseador";
 
 function App() {
   return (
@@ -73,7 +73,7 @@ function App() {
           }
         />
         <Route
-          path="/home"
+          path="/panel-dueño"
           element={
             <>
               <Navbar
@@ -82,7 +82,7 @@ function App() {
                   { to: "/mi-perfil", label: "Mi perfil", primary: true },
                 ]}
               />
-              <Home />
+              <PanelDueño />
               <Footer />
             </>
           }
@@ -93,7 +93,7 @@ function App() {
             <>
               <Navbar
                 links={[
-                  { to: "/home", label: "Menú" },
+                  { to: "/panel-dueño", label: "Menú" },
                   { to: "/mi-perfil", label: "Mi perfil", primary: true },
                 ]}
               />
@@ -123,7 +123,7 @@ function App() {
             <>
               <Navbar
                 links={[
-                  { to: "/home", label: "Menú" },
+                  { to: "/panel-dueño", label: "Menú" },
                   { to: "/mi-perfil", label: "Mi perfil", primary: true },
                 ]}
               />
@@ -138,7 +138,7 @@ function App() {
             <>
               <Navbar
                 links={[
-                  { to: "/home", label: "Menú" },
+                  { to: "/panel-paseador", label: "Menú" },
                   { to: "/mi-perfil", label: "Mi perfil", primary: true },
                 ]}
               />
@@ -154,7 +154,7 @@ function App() {
               <Navbar
                 links={[
                   { to: "/editar-perfil", label: "Editar Perfil" },
-                  { to: "/home", label: "Menú", primary: true },
+                  { to: "/panel-dueño", label: "Menú", primary: true },
                 ]}
               />
               <MiPerfil />
@@ -168,7 +168,7 @@ function App() {
             <>
               <Navbar
                 links={[
-                  { to: "/home", label: "Menú" },
+                  { to: "/panel-dueño", label: "Menú" },
                   { to: "/mi-perfil", label: "Mi perfil", primary: true },
                 ]}
               />
@@ -178,16 +178,16 @@ function App() {
           }
         />
         <Route
-          path="/dashboard-paseador"
+          path="/panel-paseador"
           element={
             <>
               <Navbar
                 links={[
-                  { to: "/dashboard-paseador", label: "Menú" },
+                  { to: "/panel-paseador", label: "Menú" },
                   { to: "/mi-perfil", label: "Mi perfil", primary: true },
                 ]}
               />
-              <DashboardPaseador />
+              <PanelPaseador />
               <Footer />
             </>
           }

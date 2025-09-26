@@ -2,6 +2,7 @@ import { useState } from "react";
 
 interface Paseo {
   id: number;
+  dueno: string;
   mascota: string;
   ubicacion: string;
   duracion: string;
@@ -32,27 +33,30 @@ function DashboardPaseador() {
   const solicitudes: Paseo[] = [
     {
       id: 1,
+      dueno: "Andrea",
       mascota: "Firulais",
-      ubicacion: "Huechuraba",
+      ubicacion: "Psj. Water seven 2500, Huechuraba",
       duracion: "30 minutos",
       precio: "5000",
-      imagen: "/src/assets/img/perro-3.webp",
+      imagen: "/img/perro-3.webp",
     },
     {
       id: 2,
+      dueno: "Martín",
       mascota: "Tito",
-      ubicacion: "Colina",
+      ubicacion: "Psj. Wano 2323, Colina",
       duracion: "60 minutos",
       precio: "10000",
-      imagen: "/src/assets/img/perro-2.webp",
+      imagen: "/img/perro-2.webp",
     },
     {
       id: 3,
+      dueno: "Fernanda",
       mascota: "Chispa",
-      ubicacion: "Conchalí",
+      ubicacion: "Psj. Dressrosa 1244, Conchalí",
       duracion: "120 minutos",
       precio: "20000",
-      imagen: "/src/assets/img/perro-3.webp",
+      imagen: "/img/perro-3.webp",
     },
   ];
 
@@ -99,14 +103,26 @@ function DashboardPaseador() {
         </article>
 
         <article className="p-6 card-neumorphism">
-          <p className="text-gray-600">Paseo Activo</p>
-          <p className="text-2xl md:text-3xl font-extrabold mt-1">
-            {solicitudes[0].duracion}
+          <p className="text-gray-600 text-xl md:text-2xl font-bold">
+            Paseo Activo
           </p>
-          <p className="text-gray-600 mt-2">Mascota</p>
-          <p className="text-2xl md:text-3xl font-extrabold">
-            {solicitudes[0].mascota}
-          </p>
+          <div className="mt-3 space-y-2">
+            <p className="text-gray-600">
+              <strong>Dueño:</strong> {solicitudes[0].dueno}
+            </p>
+            <p className="text-gray-600">
+              <strong>Mascota:</strong> {solicitudes[0].mascota}
+            </p>
+            <p className="text-gray-600">
+              <strong>Duración:</strong> {solicitudes[0].duracion}
+            </p>
+            <p className="text-gray-600">
+              <strong>Ubicación:</strong> {solicitudes[0].ubicacion}
+            </p>
+            <p className="text-gray-600">
+              <strong>Precio:</strong> ${solicitudes[0].precio}
+            </p>
+          </div>
         </article>
 
         <article className="p-6 card-neumorphism md:col-span-2">
@@ -158,6 +174,9 @@ function DashboardPaseador() {
               <div className="flex flex-col flex-1 p-5">
                 <h3 className="text-xl font-bold mb-2">{s.mascota}</h3>
                 <p className="text-gray-600 mb-1">
+                  <strong>Dueño:</strong> {s.dueno}
+                </p>
+                <p className="text-gray-600 mb-1">
                   <strong>Ubicación:</strong> {s.ubicacion}
                 </p>
                 <p className="text-gray-600 mb-1">
@@ -186,17 +205,20 @@ function DashboardPaseador() {
             </h3>
             <p className="text-gray-700 mb-2">
               Vas a postularte al paseo de{" "}
-              <strong>{selectedPaseo?.mascota}</strong>
+              <strong>{selectedPaseo.mascota}</strong>
             </p>
             <ul className="text-gray-600 mb-6">
               <li>
-                <strong>Ubicación:</strong> {selectedPaseo?.ubicacion}
+                <strong>Dueño:</strong> {selectedPaseo.dueno}
               </li>
               <li>
-                <strong>Duración:</strong> {selectedPaseo?.duracion}
+                <strong>Ubicación:</strong> {selectedPaseo.ubicacion}
               </li>
               <li>
-                <strong>Precio:</strong> ${selectedPaseo?.precio}
+                <strong>Duración:</strong> {selectedPaseo.duracion}
+              </li>
+              <li>
+                <strong>Precio:</strong> ${selectedPaseo.precio}
               </li>
             </ul>
             <div className="flex justify-end gap-4">

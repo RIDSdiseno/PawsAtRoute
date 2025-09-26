@@ -25,7 +25,8 @@ function Pasos() {
             <div className="flex flex-col rounded-2xl bg-white shadow-xl overflow-hidden">
               <figure>
                 <img
-                  src="/src/assets/img/publicar.webp"
+                  src="/img/publicar.webp"
+                  decoding="async"
                   alt="Publicar un paseo"
                   className="w-full h-48 object-cover"
                 />
@@ -42,7 +43,8 @@ function Pasos() {
             <div className="flex flex-col rounded-2xl bg-white shadow-xl overflow-hidden">
               <figure>
                 <img
-                  src="/src/assets/img/postular.webp"
+                  src="/img/postular.webp"
+                  decoding="async"
                   alt="Paseadores postulan"
                   className="w-full h-48 object-cover"
                 />
@@ -60,7 +62,8 @@ function Pasos() {
             <div className="flex flex-col rounded-2xl bg-white shadow-xl overflow-hidden">
               <figure>
                 <img
-                  src="/src/assets/img/paseo.webp"
+                  src="/img/paseo.webp"
+                  decoding="async"
                   alt="Elige y relájate"
                   className="w-full h-48 object-cover"
                 />

@@ -1,6 +1,5 @@
 import { Link } from "react-router-dom";
 
-// Datos de ejemplo (deberían venir de la base de datos)
 const postulantesData = [ // Las estrellas son dinámicas de acuerdo al valor de la variable calificacion.
   { id: 1, nombre: "Juan", telefono: "987654321", calificacion: 3 },
   { id: 2, nombre: "Maria", telefono: "912345678", calificacion: 4 },
@@ -40,7 +39,6 @@ function Postulantes() {
       <section className="max-w-6xl mx-auto bg-white border border-gray-200 rounded-xl overflow-hidden shadow-lg">
         <h2 className="px-6 pt-6 text-xl md:text-2xl font-bold">Información</h2>
 
-        {/* Responsive: tabla en desktop, tarjetas en móvil */}
         <div className="mt-4 overflow-x-auto hidden md:block">
           <table className="w-full text-sm">
             <thead className="bg-gray-50 text-gray-600">
@@ -87,7 +85,6 @@ function Postulantes() {
           </table>
         </div>
 
-        {/* Vista tipo tarjetas en móvil */}
         <div className="grid gap-4 p-4 md:hidden">
           {postulantesData.map((p) => (
             <div
@@ -122,7 +119,7 @@ function Postulantes() {
 
         <div className="px-6 py-6 flex">
           <Link
-            to="/home"
+            to="/panel-dueño"
             className="inline-flex items-center justify-center rounded-full px-6 py-3 bg-prussian-blue hover:bg-prussian-blue/80 border-2 border-cyan-900 text-white font-semibold shadow-lg shadow-prussian-blue/50 active:scale-95 transition-all duration-200"
           >
             ¡Listo!
