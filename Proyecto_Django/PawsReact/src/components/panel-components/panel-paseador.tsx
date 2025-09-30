@@ -158,7 +158,7 @@ function DashboardPaseador() {
 
       <section>
         <h2 className="text-2xl md:text-3xl font-bold mb-6">
-          Solicitudes de Paseos
+          Paseos Publicados
         </h2>
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {solicitudes.map((s) => (

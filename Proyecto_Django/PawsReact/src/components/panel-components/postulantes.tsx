@@ -120,7 +120,7 @@ function Postulantes() {
         <div className="px-6 py-6 flex">
           <Link
             to="/panel-dueño"
-            className="inline-flex items-center justify-center rounded-full px-6 py-3 bg-prussian-blue hover:bg-prussian-blue/80 border-2 border-cyan-900 text-white font-semibold shadow-lg shadow-prussian-blue/50 active:scale-95 transition-all duration-200"
+            className="inline-flex items-center justify-center rounded-full py-2 px-4 bg-prussian-blue hover:bg-prussian-blue/80 border border-cyan-900 text-white font-semibold shadow-lg shadow-prussian-blue/50 active:scale-90 transition-all duration-100"
           >
             ¡Listo!
           </Link>

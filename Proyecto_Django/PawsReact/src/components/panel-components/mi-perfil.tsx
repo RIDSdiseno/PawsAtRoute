@@ -36,13 +36,13 @@ function MiPerfil() {
           <p className="text-2xl font-bold">
             {user.nombre} {user.apellido}
           </p>
-          <p className="text-md bg-selective-yellow px-3 py-1 rounded-md font-semibold border border-amber-500">
+          <p className="text-md bg-selective-yellow px-2 py-1 rounded-lg font-semibold border border-amber-500">
             {user.rol}
           </p>
           <div>
             <Link
               to="/editar-perfil"
-              className="inline-flex items-center justify-center rounded-full px-4 py-2 bg-ut-orange hover:bg-ut-orange/80 border-2 border-amber-400 text-white font-semibold shadow-lg shadow-ut-orange/50 transition-colors duration-300"
+              className="inline-flex items-center justify-center rounded-full px-4 py-2 bg-ut-orange hover:bg-ut-orange/80 border border-amber-400 text-white font-semibold shadow-lg shadow-ut-orange/50 active:scale-90 transition-all duration-100"
             >
               Editar Perfil
             </Link>

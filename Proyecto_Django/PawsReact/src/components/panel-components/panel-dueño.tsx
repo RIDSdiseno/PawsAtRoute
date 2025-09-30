@@ -84,25 +84,25 @@ function Home() {
           <div className="mt-6 flex flex-wrap gap-3">
             <Link
               to="/postulantes"
-              className="inline-flex items-center justify-center rounded-full px-6 py-3 bg-prussian-blue hover:bg-prussian-blue/80 border-2 border-cyan-900 text-white font-semibold shadow-lg active:scale-95 transition-all duration-200"
+              className="inline-flex items-center justify-center rounded-full py-2 px-4 bg-prussian-blue hover:bg-prussian-blue/80 border border-cyan-900 text-white font-semibold shadow-lg shadow-prussian-blue/50 active:scale-90 transition-all duration-100"
             >
               Ver Postulantes
             </Link>
             <button
               onClick={() => abrirModal("iniciar")}
-              className="rounded-full px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold shadow-lg active:scale-95 transition-all duration-200"
+              className="cursor-pointer rounded-full py-2 px-4 bg-green-600 hover:bg-green-700 text-white font-semibold shadow-lg active:scale-90 transition-all duration-100"
             >
               Iniciar
             </button>
             <button
               onClick={() => abrirModal("finalizar")}
-              className="rounded-full px-6 py-3 bg-yellow-500 hover:bg-yellow-600 text-white font-semibold shadow-lg active:scale-95 transition-all duration-200"
+              className="cursor-pointer rounded-full py-2 px-4 bg-yellow-500 hover:bg-yellow-600 text-white font-semibold shadow-lg active:scale-90 transition-all duration-100"
             >
               Finalizar
             </button>
             <button
               onClick={() => abrirModal("pagar")}
-              className="rounded-full px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-lg active:scale-95 transition-all duration-200"
+              className="cursor-pointer rounded-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-lg active:scale-90 transition-all duration-100"
             >
               Pagar
             </button>
@@ -145,9 +145,9 @@ function Home() {
         <div className="px-6 py-6 flex">
           <Link
             to="/nuevo-paseo"
-            className="inline-flex items-center justify-center rounded-full px-6 py-3 bg-prussian-blue hover:bg-prussian-blue/80 border-2 border-cyan-900 text-white font-semibold shadow-lg shadow-prussian-blue/50 active:scale-95 transition-all duration-200"
+            className="inline-flex items-center justify-center rounded-full py-2 px-4 bg-prussian-blue hover:bg-prussian-blue/80 border border-cyan-900 text-white font-semibold shadow-lg shadow-prussian-blue/50 active:scale-90 transition-all duration-100"
           >
-            Solicitar Nuevo Paseo
+            Nuevo Paseo
           </Link>
         </div>
       </section>

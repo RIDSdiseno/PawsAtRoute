@@ -17,17 +17,17 @@ function Hero() {
             Conecta con paseadores locales y confía en su experiencia.
           </p>
           <div className="flex gap-4 my-6 font-semibold justify-center md:justify-start">
-            <button className="bg-prussian-blue text-white rounded-full p-4 cursor-pointer hover:bg-prussian-blue/80  shadow-lg shadow-prussian-blue/50 border-2 border-cyan-900 active:scale-95 transition-all duration-200">
-              <Link to="/login">Publicar un paseo</Link>
+            <button className="bg-prussian-blue text-white rounded-full py-3 px-4 cursor-pointer hover:bg-prussian-blue/80 border border-cyan-900 active:scale-90 transition-all duration-100">
+              <Link to="/login">Publica un paseo</Link>
             </button>
-            <button className="bg-white text-prussian-blue rounded-full p-4 cursor-pointer hover:bg-white/80 shadow-lg shadow-white/50 border-2 border-gray-200 active:scale-95 transition-all duration-200">
+            <button className="bg-white text-prussian-blue rounded-full py-3 px-4 cursor-pointer hover:bg-white/80 border border-gray-300 active:scale-90 transition-all duration-100">
               <Link to="/register">Se un paseador</Link>
             </button>
           </div>
         </section>
 
         <section className="md:w-1/2 flex flex-col gap-4 tracking-tighter">
-          <div className="relative flex items-center space-x-4 bg-blanco rounded-lg p-4 pt-12 rotate-6 bg-white shadow-lg shadow-white/50 border-2 border-gray-200">
+          <div className="relative flex items-center space-x-4 bg-blanco rounded-lg p-4 pt-12 rotate-6 bg-white shadow-lg shadow-white/50 border border-gray-200">
             <span className="absolute top-2 left-2 rounded-full px-2 py-1 uppercase text-xs bg-cyan-700 text-cyan-50 font-bold">
               Accesible
             </span>
@@ -42,7 +42,7 @@ function Hero() {
               alt="Dog smiling"
             />
           </div>
-          <div className="relative flex items-center justify-center space-x-4 bg-prussian-blue rounded-lg p-4 pt-12 -rotate-6 shadow-lg shadow-prussian-blue/50 border-2 border-cyan-900">
+          <div className="relative flex items-center justify-center space-x-4 bg-prussian-blue rounded-lg p-4 pt-12 -rotate-6 shadow-lg shadow-prussian-blue/50 border border-cyan-900">
             <span className="absolute top-2 left-2 text-sm uppercase bg-amber-50 text-amber-700 rounded-full px-2 py-1 font-bold">
               Personalizado
             </span>
@@ -58,7 +58,7 @@ function Hero() {
               tranquilidad asegurada.
             </p>
           </div>
-          <div className="relative flex items-center space-x-4 bg-blanco rounded-lg p-4 pt-12 rotate-6 bg-white shadow-lg shadow-white/50 border-2 border-gray-200">
+          <div className="relative flex items-center space-x-4 bg-blanco rounded-lg p-4 pt-12 rotate-6 bg-white shadow-lg shadow-white/50 border border-gray-200">
             <span className="absolute top-2 left-2 text-xs uppercase bg-cyan-700 text-cyan-50 rounded-full px-2 py-1 font-bold">
               Confiable
             </span>

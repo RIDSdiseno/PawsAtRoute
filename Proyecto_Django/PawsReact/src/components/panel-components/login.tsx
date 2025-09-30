@@ -107,7 +107,7 @@ function Login() {
 
             <button
               type="submit"
-              className="bg-blue-green text-white rounded-full p-4 cursor-pointer hover:bg-blue-green/80 font-semibold border border-cyan-600 shadow-lg shadow-blue-green/50 active:scale-95 transition-all duration-200"
+              className="bg-blue-green text-white rounded-full py-2 px-4 cursor-pointer hover:bg-blue-green/80 font-semibold border border-cyan-600 shadow-lg shadow-blue-green/50 active:scale-90 transition-all duration-100"
             >
               Iniciar Sesión
             </button>

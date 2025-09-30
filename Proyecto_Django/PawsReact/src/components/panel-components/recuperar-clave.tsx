@@ -46,7 +46,7 @@ function RecuperarClave() {
                 </div>
                 <button
                   type="submit"
-                  className="w-full bg-blue-green text-white rounded-full p-3 hover:bg-blue-green/90 font-semibold border-2 border-cyan-600 shadow-md shadow-blue-green/50"
+                  className="w-full bg-blue-green text-white rounded-full py-2 px-4 hover:bg-blue-green/90 font-semibold border border-cyan-600 shadow-lg shadow-blue-green/50"
                 >
                   Enviar código de recuperación
                 </button>

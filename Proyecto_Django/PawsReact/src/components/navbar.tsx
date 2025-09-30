@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 
-// Definimos el tipo de link
+// tipo de link
 interface NavLink {
   label: string;
   to?: string; // rutas internas con react-router-dom
@@ -70,14 +70,14 @@ function Navbar({ links = [] }: NavbarProps) {
                 key={index}
                 className={`rounded-full transition-colors duration-300 ${
                   link.primary
-                    ? "bg-prussian-blue text-white border-2 border-cyan-900 shadow-lg shadow-prussian-blue/50 hover:bg-prussian-blue/80"
-                    : "hover:bg-blue-green/80"
+                    ? "bg-prussian-blue text-white border border-cyan-900  hover:bg-prussian-blue/80 active:scale-90 transition-all duration-100"
+                    : "hover:bg-ut-orange active:scale-90 transition-all duration-100"
                 }`}
               >
                 {link.to ? (
                   <Link
                     to={link.to}
-                    className="block py-2 px-3"
+                    className="block py-2 px-4"
                     onClick={closeMenu}
                   >
                     {link.label}
@@ -85,7 +85,7 @@ function Navbar({ links = [] }: NavbarProps) {
                 ) : (
                   <a
                     href={link.href}
-                    className="block py-2 px-3"
+                    className="block py-2 px-4"
                     onClick={closeMenu}
                   >
                     {link.label}

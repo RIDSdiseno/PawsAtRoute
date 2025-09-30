@@ -159,7 +159,7 @@ function Register() {
                   id="comuna"
                   name="comuna"
                 >
-                  <option value="">Seleccione una comuna</option>
+                  <option value="">Su comuna de residencia</option>
                   <option value="Alhué">Alhué</option>
                   <option value="Buin">Buin</option>
                   <option value="Calera de Tango">Calera de Tango</option>
@@ -242,7 +242,7 @@ function Register() {
 
               <button
                 type="submit"
-                className="bg-prussian-blue text-white rounded-full p-4 hover:bg-prussian-blue/80 border-2 border-cyan-900 shadow-lg shadow-prussian-blue/50 font-semibold mt-2 active:scale-95 transition-all duration-200"
+                className="cursor-pointer bg-prussian-blue text-white rounded-full py-2 px-4 hover:bg-prussian-blue/80 border-2 border-cyan-900 shadow-lg shadow-prussian-blue/50 font-semibold mt-2 active:scale-90 transition-all duration-100"
               >
                 Registrarse
               </button>

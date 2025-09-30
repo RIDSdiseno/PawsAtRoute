@@ -139,7 +139,7 @@ function PerfilPaseador() {
               />
               <button
                 onClick={publicarReseña}
-                className="w-full rounded-full px-6 py-3 bg-prussian-blue hover:bg-prussian-blue/80 text-white font-semibold shadow-lg active:scale-95 transition-all duration-200"
+                className="w-full rounded-full py-2 px-4 bg-prussian-blue hover:bg-prussian-blue/80 text-white font-semibold shadow-lg shadow-prussian-blue/50 border border-cyan-900 active:scale-90 transition-all duration-100"
               >
                 Publicar Reseña
               </button>
@@ -150,7 +150,7 @@ function PerfilPaseador() {
         <div className="mt-10 flex justify-center md:justify-end">
           <Link
             to="/postulantes"
-            className="inline-flex items-center justify-center rounded-full px-6 py-3 bg-prussian-blue hover:bg-prussian-blue/80 border-2 border-cyan-900 text-white font-semibold shadow-lg shadow-prussian-blue/50 active:scale-95 transition-all duration-200"
+            className="inline-flex items-center justify-center rounded-full py-2 px-4 bg-prussian-blue hover:bg-prussian-blue/80 border border-cyan-900 text-white font-semibold shadow-lg shadow-prussian-blue/50 active:scale-90 transition-all duration-100"
           >
             Ver otros
           </Link>

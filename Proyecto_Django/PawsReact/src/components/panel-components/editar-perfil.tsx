@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import { Link } from "react-router-dom";
 
 function EditarPerfil() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -119,20 +120,19 @@ function EditarPerfil() {
             </p>
           </label>
 
-          <div className="flex flex-col md:flex-row gap-4">
+          <div className="flex flex-row justify-between">
             <button
               type="submit"
-              className="flex-1 bg-prussian-blue text-white rounded-full py-3 px-6 hover:bg-prussian-blue/80 border-2 border-cyan-900 shadow-md shadow-prussian-blue/40 font-semibold transition-colors duration-300"
+              className="inline-flex items-center justify-center bg-prussian-blue text-white rounded-full py-2 px-4 hover:bg-prussian-blue/80 border border-cyan-900 shadow-lg font-semibold active:scale-90 transition-all duration-100"
             >
               Guardar cambios
             </button>
-            <button
-              type="button"
-              onClick={() => (window.location.href = "/mi-perfil")}
-              className="flex-1 bg-gray-300 text-gray-800 rounded-full py-3 px-6 hover:bg-gray-400 border-2 border-gray-400 shadow-md font-semibold transition-colors duration-300"
+            <Link
+              className="inline-flex items-center justify-center bg-gray-300 text-gray-800 rounded-full py-2 px-4 hover:bg-gray-400 border border-gray-400 shadow-lg font-semibold active:scale-90 transition-all duration-100"
+              to="/mi-perfil"
             >
               Cancelar
-            </button>
+            </Link>
           </div>
         </form>
       </section>
