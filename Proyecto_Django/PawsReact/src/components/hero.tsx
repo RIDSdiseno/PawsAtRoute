@@ -17,11 +17,11 @@ function Hero() {
             Conecta con paseadores locales y confía en su experiencia.
           </p>
           <div className="flex gap-4 my-6 font-semibold justify-center md:justify-start">
-            <button className="bg-prussian-blue text-white rounded-full py-3 px-4 cursor-pointer hover:bg-prussian-blue/80 border border-cyan-900 active:scale-90 transition-all duration-100">
+            <button className="bg-prussian-blue/90 text-white rounded-full py-3 px-4 cursor-pointer hover:bg-prussian-blue border border-cyan-900 active:scale-90 transition-all duration-200">
               <Link to="/login">Publica un paseo</Link>
             </button>
-            <button className="bg-white text-prussian-blue rounded-full py-3 px-4 cursor-pointer hover:bg-white/80 border border-gray-300 active:scale-90 transition-all duration-100">
-              <Link to="/register">Se un paseador</Link>
+            <button className="bg-white/90 text-prussian-blue rounded-full py-3 px-4 cursor-pointer hover:bg-white border border-gray-300 active:scale-90 transition-all duration-200">
+              <Link to="/register">Sé un paseador</Link>
             </button>
           </div>
         </section>
@@ -69,9 +69,9 @@ function Hero() {
             </p>
             <img
               className="size-28 md:size-30 object-cover"
-              src="/img/tortuga-paseando.webp"
+              src="/img/gato-jugando.webp"
               decoding="async"
-              alt="Tortuga paseando"
+              alt="Gato jugando"
             />
           </div>
         </section>

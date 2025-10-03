@@ -54,79 +54,89 @@ function Register() {
                 </label>
               </div>
 
-              <label className="flex flex-col gap-1" htmlFor="nombre">
-                <p className="font-semibold">Nombre</p>
-                <input
-                  className="p-2 border-2 border-gray-300 rounded-lg peer focus:outline-none focus:border-blue-500 invalid:border-red-500 invalid:text-red-500"
-                  type="text"
-                  required
-                  id="nombre"
-                  minLength={3}
-                  maxLength={15}
-                  placeholder="Ej: María"
-                  pattern="^[A-Za-zÁÉÍÓÚÑáéíóúñ\s]+$"
-                />
-                <p className="invisible text-xs text-red-500 peer-invalid:visible">
-                  El nombre solo puede contener letras.
-                </p>
-              </label>
+              <fieldset className="flex flex-col gap-3 p-4 border-2 border-gray-300 rounded-lg">
+                <legend className="font-semibold text-center">
+                  Información personal
+                </legend>
+                <label className="flex flex-col gap-1" htmlFor="nombre">
+                  <p className="font-semibold">Nombre</p>
+                  <input
+                    className="p-2 border-2 border-gray-300 rounded-lg peer focus:outline-none focus:border-blue-500 invalid:border-red-500 invalid:text-red-500"
+                    type="text"
+                    required
+                    id="nombre"
+                    minLength={3}
+                    maxLength={15}
+                    placeholder="Ej: María"
+                    pattern="^[A-Za-zÁÉÍÓÚÑáéíóúñ\s]+$"
+                  />
+                  <p className="invisible text-xs text-red-500 peer-invalid:visible">
+                    El nombre solo puede contener letras.
+                  </p>
+                </label>
 
-              <label className="flex flex-col gap-1" htmlFor="apellido">
-                <p className="font-semibold">Apellido</p>
-                <input
-                  className="p-2 border-2 border-gray-300 rounded-lg peer focus:outline-none focus:border-blue-500 invalid:border-red-500 invalid:text-red-500"
-                  type="text"
-                  required
-                  id="apellido"
-                  minLength={3}
-                  maxLength={15}
-                  placeholder="Ej: Pérez"
-                  pattern="^[A-Za-zÁÉÍÓÚÑáéíóúñ\s]+$"
-                />
-                <p className="invisible text-xs text-red-500 peer-invalid:visible">
-                  El apellido solo puede contener letras.
-                </p>
-              </label>
+                <label className="flex flex-col gap-1" htmlFor="apellido">
+                  <p className="font-semibold">Apellido</p>
+                  <input
+                    className="p-2 border-2 border-gray-300 rounded-lg peer focus:outline-none focus:border-blue-500 invalid:border-red-500 invalid:text-red-500"
+                    type="text"
+                    required
+                    id="apellido"
+                    minLength={3}
+                    maxLength={15}
+                    placeholder="Ej: Pérez"
+                    pattern="^[A-Za-zÁÉÍÓÚÑáéíóúñ\s]+$"
+                  />
+                  <p className="invisible text-xs text-red-500 peer-invalid:visible">
+                    El apellido solo puede contener letras.
+                  </p>
+                </label>
+              </fieldset>
 
-              <label className="flex flex-col gap-1" htmlFor="telefono">
-                <p className="font-semibold">Teléfono</p>
-                <input
-                  className="peer p-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 invalid:border-red-500 invalid:text-red-500"
-                  type="tel"
-                  required
-                  id="telefono"
-                  name="telefono"
-                  inputMode="numeric"
-                  minLength={9}
-                  maxLength={12}
-                  pattern="^[0-9]{9,12}$"
-                  placeholder="Ej: 987654321"
-                  onInput={(e) => {
-                    const target = e.currentTarget;
-                    target.value = target.value.replace(/[^0-9]/g, "");
-                  }}
-                />
-                <p className="invisible text-xs text-red-500 peer-invalid:visible">
-                  Por favor, ingresa un teléfono válido (solo números, 9 a 12
-                  dígitos).
-                </p>
-              </label>
+              <fieldset className="flex flex-col gap-3 p-4 border-2 border-gray-300 rounded-lg">
+                <legend className="font-semibold text-center">
+                  Información de contacto
+                </legend>
+                <label className="flex flex-col gap-1" htmlFor="telefono">
+                  <p className="font-semibold">Teléfono</p>
+                  <input
+                    className="peer p-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 invalid:border-red-500 invalid:text-red-500"
+                    type="tel"
+                    required
+                    id="telefono"
+                    name="telefono"
+                    inputMode="numeric"
+                    minLength={9}
+                    maxLength={12}
+                    pattern="^[0-9]{9,12}$"
+                    placeholder="Ej: 987654321"
+                    onInput={(e) => {
+                      const target = e.currentTarget;
+                      target.value = target.value.replace(/[^0-9]/g, "");
+                    }}
+                  />
+                  <p className="invisible text-xs text-red-500 peer-invalid:visible">
+                    Por favor, ingresa un teléfono válido (solo números, 9 a 12
+                    dígitos).
+                  </p>
+                </label>
 
-              <label className="flex flex-col gap-1" htmlFor="correo">
-                <p className="font-semibold">Correo</p>
-                <input
-                  className="p-2 border-2 border-gray-300 rounded-lg peer focus:outline-none focus:border-blue-500 invalid:border-red-500 invalid:text-red-500"
-                  type="email"
-                  required
-                  id="correo"
-                  minLength={10}
-                  maxLength={30}
-                  placeholder="Ej: maria.perez@gmail.com"
-                />
-                <p className="invisible text-xs text-red-500 peer-invalid:visible">
-                  Por favor, ingresa un correo válido.
-                </p>
-              </label>
+                <label className="flex flex-col gap-1" htmlFor="correo">
+                  <p className="font-semibold">Correo</p>
+                  <input
+                    className="p-2 border-2 border-gray-300 rounded-lg peer focus:outline-none focus:border-blue-500 invalid:border-red-500 invalid:text-red-500"
+                    type="email"
+                    required
+                    id="correo"
+                    minLength={10}
+                    maxLength={30}
+                    placeholder="Ej: maria.perez@gmail.com"
+                  />
+                  <p className="invisible text-xs text-red-500 peer-invalid:visible">
+                    Por favor, ingresa un correo válido.
+                  </p>
+                </label>
+              </fieldset>
 
               <label className="flex flex-col gap-1" htmlFor="contraseña">
                 <p className="font-semibold">Contraseña</p>
@@ -216,27 +226,36 @@ function Register() {
 
               {userType === "paseador" && (
                 <>
-                  <label className="flex flex-col gap-1" htmlFor="carnet">
-                    <p className="font-semibold">Carnet de identidad</p>
-                    <input
-                      type="file"
-                      required
-                      id="carnet"
-                      accept="image/*,.pdf"
-                      className="p-2 border-2 border-gray-300 rounded-lg cursor-pointer"
-                    />
-                  </label>
+                  <fieldset className="flex flex-col gap-3 p-4 border-2 border-gray-300 rounded-lg">
+                    <legend className="font-semibold text-center">
+                      Información de Paseador
+                    </legend>
 
-                  <label className="flex flex-col gap-1" htmlFor="antecedentes">
-                    <p className="font-semibold">Antecedentes penales</p>
-                    <input
-                      type="file"
-                      required
-                      id="antecedentes"
-                      accept="image/*,.pdf"
-                      className="p-2 border-2 border-gray-300 rounded-lg cursor-pointer"
-                    />
-                  </label>
+                    <label className="flex flex-col gap-1" htmlFor="carnet">
+                      <p className="font-semibold">Carnet de identidad</p>
+                      <input
+                        type="file"
+                        required
+                        id="carnet"
+                        accept="image/*,.pdf"
+                        className="p-2 border-2 border-gray-300 rounded-lg cursor-pointer"
+                      />
+                    </label>
+
+                    <label
+                      className="flex flex-col gap-1"
+                      htmlFor="antecedentes"
+                    >
+                      <p className="font-semibold">Antecedentes penales</p>
+                      <input
+                        type="file"
+                        required
+                        id="antecedentes"
+                        accept="image/*,.pdf"
+                        className="p-2 border-2 border-gray-300 rounded-lg cursor-pointer"
+                      />
+                    </label>
+                  </fieldset>
                 </>
               )}
 
