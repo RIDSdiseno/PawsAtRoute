@@ -226,35 +226,41 @@ function Register() {
 
               {userType === "paseador" && (
                 <>
-                  <fieldset className="flex flex-col gap-3 p-4 border-2 border-gray-300 rounded-lg">
-                    <legend className="font-semibold text-center">
+                  <fieldset className="flex flex-col gap-4 p-4 border-2 border-gray-300 rounded-lg w-full">
+                    <legend className="font-semibold text-center text-lg">
                       Información de Paseador
                     </legend>
 
-                    <label className="flex flex-col gap-1" htmlFor="carnet">
-                      <p className="font-semibold">Carnet de identidad</p>
-                      <input
-                        type="file"
-                        required
-                        id="carnet"
-                        accept="image/*,.pdf"
-                        className="p-2 border-2 border-gray-300 rounded-lg cursor-pointer"
-                      />
-                    </label>
+                    <div className="grid grid-cols-1 gap-4">
+                      <label className="flex flex-col gap-2" htmlFor="carnet">
+                        <p className="font-semibold text-sm sm:text-base">
+                          Carnet de identidad
+                        </p>
+                        <input
+                          type="file"
+                          required
+                          id="carnet"
+                          accept="image/*,.pdf"
+                          className="w-full p-2 border-2 border-gray-300 rounded-lg cursor-pointer text-sm"
+                        />
+                      </label>
 
-                    <label
-                      className="flex flex-col gap-1"
-                      htmlFor="antecedentes"
-                    >
-                      <p className="font-semibold">Antecedentes penales</p>
-                      <input
-                        type="file"
-                        required
-                        id="antecedentes"
-                        accept="image/*,.pdf"
-                        className="p-2 border-2 border-gray-300 rounded-lg cursor-pointer"
-                      />
-                    </label>
+                      <label
+                        className="flex flex-col gap-2"
+                        htmlFor="antecedentes"
+                      >
+                        <p className="font-semibold text-sm sm:text-base">
+                          Antecedentes penales
+                        </p>
+                        <input
+                          type="file"
+                          required
+                          id="antecedentes"
+                          accept="image/*,.pdf"
+                          className="w-full p-2 border-2 border-gray-300 rounded-lg cursor-pointer text-sm"
+                        />
+                      </label>
+                    </div>
                   </fieldset>
                 </>
               )}
