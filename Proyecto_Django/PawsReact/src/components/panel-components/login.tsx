@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { login } from "../../api/api.ts"; // importa tu función login real
 
 function Login() {
   const [correo, setCorreo] = useState("");
   const [password, setPassword] = useState("");
-  const [errors, setErrors] = useState<{ correo?: string; password?: string }>(
-    {}
-  );
+  const [errors, setErrors] = useState<{ correo?: string; password?: string }>({});
+  const [loginError, setLoginError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const validarFormulario = () => {
@@ -35,10 +36,21 @@ function Login() {
     return Object.keys(nuevosErrores).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (validarFormulario()) {
+    setLoginError(null);
+
+    if (!validarFormulario()) return;
+
+    setLoading(true);
+    try {
+      const data = await login(correo, password);
+      console.log("Usuario logueado:", data.user);
       navigate("/panel-dueño");
+    } catch (error: any) {
+      setLoginError(error?.response?.data?.error || "Error al iniciar sesión");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -49,7 +61,7 @@ function Login() {
       </h1>
       <div className="w-full max-w-4xl bg-white rounded-xl shadow-lg border-2 border-gray-300 flex flex-col md:flex-row overflow-hidden">
         <div className="w-full md:w-1/2 p-8">
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
             <p className="text-3xl text-center">Inicia Sesión</p>
 
             <label className="flex flex-col gap-2" htmlFor="correo">
@@ -95,6 +107,10 @@ function Login() {
               )}
             </label>
 
+            {loginError && (
+              <p className="text-center text-red-600 font-semibold">{loginError}</p>
+            )}
+
             <p className="text-center gap-2 flex justify-center">
               ¿Olvidaste tu contraseña?
               <Link
@@ -107,9 +123,12 @@ function Login() {
 
             <button
               type="submit"
-              className="bg-blue-green text-white rounded-full py-2 px-4 cursor-pointer hover:bg-blue-green/80 font-semibold border border-cyan-600 shadow-lg shadow-blue-green/50 active:scale-90 transition-all duration-100"
+              disabled={loading}
+              className={`bg-blue-green text-white rounded-full py-2 px-4 cursor-pointer font-semibold border border-cyan-600 shadow-lg shadow-blue-green/50 active:scale-90 transition-all duration-100 ${
+                loading ? "opacity-60 cursor-not-allowed" : "hover:bg-blue-green/80"
+              }`}
             >
-              Iniciar Sesión
+              {loading ? "Cargando..." : "Iniciar Sesión"}
             </button>
 
             <p className="text-center gap-2 flex justify-center">
