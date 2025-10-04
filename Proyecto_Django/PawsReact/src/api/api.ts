@@ -62,6 +62,7 @@ interface LoginResponse {
     idUsuario: number;
     nombre: string;
     correo: string;
+    rol : string;
   };
   remember: boolean;
 }
@@ -92,4 +93,53 @@ export const getProfile = async (): Promise<any> => {
   return res.data;
 };
 
+
+export const register = async (data: {
+  rut: string;
+  nombre: string;
+  apellido: string;
+  telefono: string;
+  correo: string;
+  clave: string;
+  comuna: string;
+  rol: string;  // Podrías usar un tipo literal 'dueño' | 'paseador'
+  carnet?: File;
+  antecedentes?: File;
+}) => {
+  let res;
+
+  if (data.rol === "paseador") {
+    const formData = new FormData();
+
+    // Campos básicos
+    formData.append("rut", data.rut);
+    formData.append("nombre", data.nombre);
+    formData.append("apellido", data.apellido);
+    formData.append("telefono", data.telefono);
+    formData.append("correo", data.correo);
+    formData.append("clave", data.clave);
+    formData.append("comuna", data.comuna);  // No olvides agregar comuna también
+    formData.append("rol", data.rol);
+
+    // Archivos opcionales
+    if (data.carnet) formData.append("carnet", data.carnet);
+    if (data.antecedentes) formData.append("antecedentes", data.antecedentes);
+
+    res = await api.post("/auth/register", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+  } else {
+    // Para dueños, envía JSON plano sin archivos
+    res = await api.post("/auth/register", data);
+  }
+
+  return res.data;
+};
+
+
+
+
+
 export default api;
+
+

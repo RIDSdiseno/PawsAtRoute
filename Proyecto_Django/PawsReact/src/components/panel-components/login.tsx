@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { login } from "../../api/api.ts"; // importa tu función login real
+import { login } from "../../api/api.ts";
 
 function Login() {
   const [correo, setCorreo] = useState("");
@@ -46,7 +46,18 @@ function Login() {
     try {
       const data = await login(correo, password);
       console.log("Usuario logueado:", data.user);
-      navigate("/panel-dueño");
+
+      switch (data.user.rol) {
+        case "DUEÑO":
+          navigate("/panel-dueño");
+          break;
+        case "PASEADOR":
+          navigate("/panel-paseador");
+          break;
+        default:
+          navigate("/");
+          break;
+      }
     } catch (error: any) {
       setLoginError(error?.response?.data?.error || "Error al iniciar sesión");
     } finally {

@@ -1,15 +1,19 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { getProfile } from "../../api/api.ts";
 
 function Home() {
-  const [modal, setModal] = useState<null | "iniciar" | "finalizar" | "pagar">(
-    null
-  );
+  const [modal, setModal] = useState<null | "iniciar" | "finalizar" | "pagar">(null);
 
-  const user = {
-    nombre: "María",
-    paseosCompletados: 2,
-  };
+  const [user, setUser] = useState<null | {
+    idUsuario: number;
+    nombre: string;
+    apellido: string;
+    rut: string;
+    telefono: string;
+    correo: string;
+    rol: string;
+  }>(null);
 
   const proximoPaseo = {
     duracion: "1 hora 30 minutos",
@@ -30,6 +34,19 @@ function Home() {
       estado: "Completado",
     },
   ];
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const profile = await getProfile();
+        setUser(profile);
+      } catch (error) {
+        console.error("Error al obtener el perfil:", error);
+      }
+    };
+
+    fetchUser();
+  }, []);
 
   const abrirModal = (accion: "iniciar" | "finalizar" | "pagar") => {
     setModal(accion);
@@ -56,7 +73,7 @@ function Home() {
     <main className="min-h-screen text-prussian-blue px-4 py-10 sm:px-6 lg:px-12 max-w-6xl mx-auto">
       <header className="mb-10 text-pretty md:text-left">
         <h1 className="text-3xl md:text-5xl font-bold mb-3">
-          Hola, {user.nombre}!
+          Hola, {user ? `${user.nombre} ${user.apellido}` : "Cargando..."}!
         </h1>
         <p className="text-lg md:text-xl text-gray-700 max-w-2xl mx-auto md:mx-0">
           Bienvenid@ a tu panel de control. Aquí puedes gestionar tus paseos y
@@ -68,7 +85,7 @@ function Home() {
         <article className="p-6 card-neumorphism">
           <p className="text-gray-600">Paseos Completados</p>
           <p className="text-3xl md:text-4xl font-extrabold">
-            {user.paseosCompletados}
+            2 {/* Hardcoded por ahora */}
           </p>
         </article>
 

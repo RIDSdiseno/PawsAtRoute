@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { getProfile } from "../../api/api";
 
 interface Paseo {
   id: number;
@@ -19,16 +20,35 @@ interface Historial {
 
 interface User {
   nombre: string;
+  apellido: string;
   paseosCompletados: number;
 }
 
 function DashboardPaseador() {
   const [selectedPaseo, setSelectedPaseo] = useState<Paseo | null>(null);
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const user: User = {
-    nombre: "Carlos",
-    paseosCompletados: 2,
-  };
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const profile = await getProfile();
+        console.log("Perfil cargado:", profile);
+
+        setUser({
+          nombre: profile.nombre,
+          apellido: profile.apellido,
+          paseosCompletados: profile.paseos?.length || 0, // ajusta según cómo viene el backend
+        });
+      } catch (error) {
+        console.error("Error al obtener el perfil:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUser();
+  }, []);
 
   const solicitudes: Paseo[] = [
     {
@@ -82,11 +102,19 @@ function DashboardPaseador() {
     }
   };
 
+  if (loading) {
+    return (
+      <main className="min-h-screen flex items-center justify-center text-prussian-blue">
+        <p className="text-lg font-semibold">Cargando perfil...</p>
+      </main>
+    );
+  }
+
   return (
     <main className="min-h-screen text-prussian-blue px-4 py-10 sm:px-6 lg:px-12 max-w-6xl mx-auto">
       <header className="mb-10 text-center md:text-left">
         <h1 className="text-3xl md:text-5xl font-bold mb-3">
-          Hola, Paseador {user.nombre}!
+          Hola, Paseador {user?.nombre} {user?.apellido}!
         </h1>
         <p className="text-lg md:text-xl text-gray-700 max-w-2xl mx-auto md:mx-0">
           Bienvenid@ a tu panel de control. Aquí puedes gestionar tus paseos y
@@ -98,7 +126,7 @@ function DashboardPaseador() {
         <article className="p-6 card-neumorphism">
           <p className="text-gray-600">Paseos Completados</p>
           <p className="text-3xl md:text-4xl font-extrabold mt-1">
-            {user.paseosCompletados}
+            {user?.paseosCompletados}
           </p>
         </article>
 

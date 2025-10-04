@@ -1,8 +1,44 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link,useNavigate  } from "react-router-dom";
+import { register } from "../../api/api";
 
 function Register() {
   const [userType, setUserType] = useState("");
+  const navigate = useNavigate();
+
+
+const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  e.preventDefault();
+
+  const form = e.currentTarget;
+  const formData = new FormData(form);
+
+  const carnetFile = formData.get("carnet") as File | null;
+  const antecedentesFile = formData.get("antecedentes") as File | null;
+
+  try {
+    const dataToSend = {
+      rut: formData.get("rut") as string,          // no olvides agregar input rut en el form
+      nombre: formData.get("nombre") as string,
+      apellido: formData.get("apellido") as string,
+      telefono: formData.get("telefono") as string,
+      correo: formData.get("correo") as string,
+      clave: formData.get("contraseña") as string,
+      comuna: formData.get("comuna") as string,    // <--- agregamos comuna
+      rol: formData.get("userType") as string,
+      carnet: carnetFile || undefined,
+      antecedentes: antecedentesFile || undefined,
+    };
+    console.log(dataToSend);
+    await register(dataToSend);
+    alert("Usuario registrado correctamente!");
+    navigate("/login");
+  } catch (error) {
+    console.error(error);
+    alert("Error al registrar usuario");
+  }
+};
+
 
   return (
     <>
@@ -20,7 +56,7 @@ function Register() {
             />
           </div>
           <div className="w-full md:w-1/2 p-8 flex flex-col justify-center">
-            <form action="/login" className="flex flex-col gap-3">
+            <form onSubmit={handleSubmit} className="flex flex-col gap-3">
               <h2 className="text-3xl text-center mb-2">Registro</h2>
 
               <div className="flex justify-around gap-4">
@@ -29,8 +65,8 @@ function Register() {
                     type="radio"
                     required
                     name="userType"
-                    value="dueño"
-                    checked={userType === "dueño"}
+                    value="DUEÑO"
+                    checked={userType === "DUEÑO"}
                     onChange={(e) => setUserType(e.target.value)}
                     className="sr-only peer"
                   />
@@ -43,8 +79,8 @@ function Register() {
                     type="radio"
                     required
                     name="userType"
-                    value="paseador"
-                    checked={userType === "paseador"}
+                    value="PASEADOR"
+                    checked={userType === "PASEADOR"}
                     onChange={(e) => setUserType(e.target.value)}
                     className="sr-only peer"
                   />
@@ -61,6 +97,7 @@ function Register() {
                   type="text"
                   required
                   id="nombre"
+                  name="nombre"
                   minLength={3}
                   maxLength={15}
                   placeholder="Ej: María"
@@ -78,6 +115,7 @@ function Register() {
                   type="text"
                   required
                   id="apellido"
+                  name="apellido"
                   minLength={3}
                   maxLength={15}
                   placeholder="Ej: Pérez"
@@ -111,6 +149,22 @@ function Register() {
                   dígitos).
                 </p>
               </label>
+              <label className="flex flex-col gap-1" htmlFor="rut">
+  <p className="font-semibold">RUT</p>
+  <input
+    className="p-2 border-2 border-gray-300 rounded-lg peer focus:outline-none focus:border-blue-500 invalid:border-red-500 invalid:text-red-500"
+    type="text"
+    required
+    id="rut"
+    name="rut"
+    placeholder="Ej: 12345678-9"
+    pattern="^\d{7,8}-[\dkK]$"
+    maxLength={10}
+  />
+  <p className="invisible text-xs text-red-500 peer-invalid:visible">
+    Formato válido: 12345678-9
+  </p>
+</label>
 
               <label className="flex flex-col gap-1" htmlFor="correo">
                 <p className="font-semibold">Correo</p>
@@ -119,6 +173,7 @@ function Register() {
                   type="email"
                   required
                   id="correo"
+                  name="correo"
                   minLength={10}
                   maxLength={30}
                   placeholder="Ej: maria.perez@gmail.com"
@@ -137,6 +192,7 @@ function Register() {
                   type="password"
                   required
                   id="contraseña"
+                  name="contraseña"
                   minLength={10}
                   maxLength={20}
                   pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&._-])[A-Za-z\d@$!%*?&._-]{10,20}$"
@@ -222,6 +278,7 @@ function Register() {
                       type="file"
                       required
                       id="carnet"
+                      name="carnet"
                       accept="image/*,.pdf"
                       className="p-2 border-2 border-gray-300 rounded-lg cursor-pointer"
                     />
@@ -233,6 +290,7 @@ function Register() {
                       type="file"
                       required
                       id="antecedentes"
+                      name="antecedentes"
                       accept="image/*,.pdf"
                       className="p-2 border-2 border-gray-300 rounded-lg cursor-pointer"
                     />

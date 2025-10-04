@@ -1,16 +1,52 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { getProfile } from "../../api/api.ts";
 
 function MiPerfil() {
-  // Datos de ejemplo (deberían venir de la base de datos)
-  const user = {
-    nombre: "Jois",
-    apellido: "Rosales",
-    rol: "Dueño de mascota",
-    correo: "jois.rosales@example.com",
-    telefono: "9 1234 5678",
-    comuna: "Santiago, Chile",
-    foto: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBmaWxsPSJjdXJyZW50Q29sb3IiIGQ9Ik0yMyAxMmMwIDMuMzQ1LTEuNDkzIDYuMzQyLTMuODUgOC4zNkExMC45NiAxMC45NiAwIDAgMSAxMiAyM2MtMi43MyAwLTUuMjI3LS45OTQtNy4xNS0yLjY0QTEwLjk4IDEwLjk4IDAgMCAxIDEgMTJDMSA1LjkyNSA1LjkyNSAxIDEyIDFzMTEgNC45MjUgMTEgMTFtLTctMy41YTQgNCAwIDEgMC04IDBhNCA0IDAgMCAwIDggMG0yLjUgOS43MjVWMThhNCA0IDAgMCAwLTQtNGgtNWE0IDQgMCAwIDAtNCA0di4yMjVxLjMxLjMyMy42NS42MTVBOC45NiA4Ljk2IDAgMCAwIDEyIDIxYTguOTYgOC45NiAwIDAgMCA2LjUtMi43NzUiLz48L3N2Zz4=",
-  };
+  const [user, setUser] = useState<null | {
+    nombre: string;
+    apellido: string;
+    rol: string;
+    correo: string;
+    telefono: string;
+    comuna?: string;
+    foto?: string; // Base64 o URL
+  }>(null);
+
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+         const perfil = await getProfile();
+    console.log("Perfil recibido:", perfil);  // <-- debug
+    setUser(perfil);
+      console.log("Perfil cargado:", perfil);
+      } catch (error) {
+        console.error("Error al obtener el perfil:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUser();
+  }, []);
+
+  if (loading) {
+    return (
+      <main className="min-h-screen flex justify-center items-center text-prussian-blue">
+        <p className="text-xl font-semibold">Cargando perfil...</p>
+      </main>
+    );
+  }
+
+  if (!user) {
+    return (
+      <main className="min-h-screen flex justify-center items-center text-red-700">
+        <p className="text-xl font-semibold">No se pudo cargar el perfil.</p>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen text-prussian-blue px-4 py-10 sm:px-6 lg:px-12 max-w-6xl mx-auto">
@@ -28,7 +64,12 @@ function MiPerfil() {
         className="flex flex-col items-center gap-4 md:flex-row md:items-center md:gap-8"
       >
         <img
-          src={user.foto}
+          src={
+            user.foto ||
+            "https://ui-avatars.com/api/?name=" +
+              encodeURIComponent(`${user.nombre} ${user.apellido}`) +
+              "&background=FDBA74&color=000"
+          }
           alt={`Foto de perfil de ${user.nombre} ${user.apellido}`}
           className="size-36 rounded-full border-2 border-amber-500 object-cover"
         />
