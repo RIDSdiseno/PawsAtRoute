@@ -203,6 +203,28 @@ export const login = async (req: Request, res: Response) => {
   }
 };
 
+export const logout = async (req: Request, res: Response) => {
+  try {
+    const rt = (req as any).cookies?.rt as string | undefined;
+    if (rt) {
+      const digest = hashRT(rt);
+      const row = await prisma.refreshToken.findFirst({ where: { rtHash: digest } });
+      if (row && !row.revokedAt) {
+        await prisma.refreshToken.update({
+          where: { id: row.id },
+          data: { revokedAt: new Date() },
+        });
+      }
+    }
+    clearRefreshCookie(res);
+    return res.json({ ok: true });
+  } catch (error) {
+    console.error("logout error:", error);
+    return res.status(500).json({ error: "Error interno" });
+  }
+};
+
+
 // POST /auth/refresh
 // Valida por COOKIE httpOnly `rt`, rota el RT y devuelve nuevo Access Token
 export const refresh = async (req: Request, res: Response) => {
