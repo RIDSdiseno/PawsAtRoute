@@ -270,7 +270,7 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
                 </select>
               </label>
 
-              {userType === "paseador" && (
+              {userType === "PASEADOR" && (
                 <>
                   <label className="flex flex-col gap-1" htmlFor="carnet">
                     <p className="font-semibold">Carnet de identidad</p>

@@ -148,7 +148,26 @@ export const register = async (data: {
   return res.data;
 };
 
+export const sendVerificationCode = async (correo: string): Promise<{ message: string }> => {
+  const res = await api.post("/auth/send-code", { correo });
+  return res.data;
+};
 
+export const verifyCode = async (
+  correo: string,
+  codigo: number
+): Promise<{ message: string }> => {
+  const res = await api.post("/auth/verify-code", { correo, codigo });
+  return res.data;
+};
+
+export const resetPassword = async (
+  correo: string,
+  nuevaClave: string
+): Promise<{ message: string }> => {
+  const res = await api.put("/auth/reset-password", { correo, nuevaClave });
+  return res.data;
+};
 
 
 
