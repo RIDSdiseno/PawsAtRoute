@@ -70,8 +70,8 @@ function Navbar({ links = [] }: NavbarProps) {
                 key={index}
                 className={`rounded-full transition-colors duration-300 ${
                   link.primary
-                    ? "bg-prussian-blue text-white border border-cyan-900  hover:bg-prussian-blue/80 active:scale-90 transition-all duration-100"
-                    : "hover:bg-ut-orange active:scale-90 transition-all duration-100"
+                    ? "bg-prussian-blue/90 text-white border border-cyan-900  hover:bg-prussian-blue active:scale-90 transition-all duration-200"
+                    : "hover:bg-ut-orange active:scale-90 transition-all duration-200"
                 }`}
               >
                 {link.to ? (

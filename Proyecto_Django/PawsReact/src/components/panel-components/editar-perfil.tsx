@@ -51,6 +51,7 @@ function EditarPerfil() {
                 ref={fileInputRef}
                 className="hidden"
                 accept="image/*"
+                required
                 onChange={handleFileChange}
               />
             </div>

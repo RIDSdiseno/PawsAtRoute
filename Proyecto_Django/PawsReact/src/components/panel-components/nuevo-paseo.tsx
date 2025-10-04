@@ -8,8 +8,10 @@ function NuevoPaseo() {
     { nombre: string; foto: string | null }[]
   >([{ nombre: "", foto: null }]);
 
-  const TARIFA_POR_BLOQUE = 5000;
+  const TARIFA_BASE = 10000; // 30 minutos iniciales
+  const TARIFA_EXTRA = 5000; // cada bloque extra de 30 minutos
   const BLOQUE_MINUTOS = 30;
+  const PRECIO_MAXIMO = 20000;
 
   const DURACIONES = [
     { label: "30 minutos", value: 30 },
@@ -38,8 +40,13 @@ function NuevoPaseo() {
     setMascotas(nuevas);
   };
 
-  const bloques = Math.ceil(duracion / BLOQUE_MINUTOS);
-  const precio = Math.min(bloques * TARIFA_POR_BLOQUE, 20000);
+  // Calcular precio según nueva lógica
+  let precio = 0;
+  if (duracion > 0) {
+    const bloques = duracion / BLOQUE_MINUTOS;
+    precio = TARIFA_BASE + Math.max(0, (bloques - 1) * TARIFA_EXTRA);
+    precio = Math.min(precio, PRECIO_MAXIMO);
+  }
 
   return (
     <section className="min-h-screen text-prussian-blue font-nunito p-4 sm:p-6 lg:p-8 my-6">
@@ -162,13 +169,6 @@ function NuevoPaseo() {
             <p className="invisible text-xs text-red-500 peer-invalid:visible">
               Por favor, ingresa calle y número del domicilio.
             </p>
-            <iframe
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3332.2920752049267!2d-70.6781852!3d-33.36344!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x9662c7025c925e0f%3A0x7f2f6a657c08d14a!2sDuoc%20UC%3A%20Sede%20Plaza%20Norte!5e0!3m2!1ses!2scl!4v1758849954330!5m2!1ses!2scl"
-              className="w-full h-48 rounded-lg shadow-lg border-2 border-gray-300"
-              allowFullScreen
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-            ></iframe>
           </label>
 
           <fieldset className="flex flex-col gap-2">
@@ -197,7 +197,8 @@ function NuevoPaseo() {
               {precio > 0 ? `$${precio.toLocaleString("es-CL")}` : "--"}
             </p>
             <p className="text-xs text-gray-500">
-              Se cobra $5.000 por cada 30 minutos (máx. $20.000).
+              Primeros 30 minutos: $10.000. Cada 30 min extra: $5.000 (máx.
+              $20.000).
             </p>
           </div>
 

@@ -15,6 +15,7 @@ import PerfilPaseador from "./components/panel-components/perfil-paseador";
 import MiPerfil from "./components/panel-components/mi-perfil";
 import EditarPerfil from "./components/panel-components/editar-perfil";
 import PanelPaseador from "./components/panel-components/panel-paseador";
+import Pricing from "./components/pricing";
 
 function App() {
   return (
@@ -29,12 +30,14 @@ function App() {
                 links={[
                   { href: "#beneficios", label: "Beneficios" },
                   { href: "#pasos", label: "Pasos" },
+                  { href: "#pricing", label: "Planes" },
                   { to: "/login", label: "Ingresar", primary: true },
                 ]}
               />
               <Hero />
               <Beneficios />
               <Pasos />
+              <Pricing />
               <Footer />
             </>
           }

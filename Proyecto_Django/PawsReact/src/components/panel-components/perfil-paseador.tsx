@@ -11,17 +11,20 @@ const paseador = {
     {
       id: 1,
       autor: "María López",
-      comentario: "Excelente paseador, muy puntual y amable.",
+      aptitudes: {
+        "Estado anímico": 5,
+        Puntualidad: 4,
+        Responsabilidad: 5,
+      },
     },
     {
       id: 2,
       autor: "José Martínez",
-      comentario: "Mi perro estaba feliz después del paseo.",
-    },
-    {
-      id: 3,
-      autor: "Ana Fernández",
-      comentario: "Muy responsable, lo recomiendo totalmente.",
+      aptitudes: {
+        "Estado anímico": 4,
+        Puntualidad: 5,
+        Responsabilidad: 4,
+      },
     },
   ],
   foto: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBmaWxsPSJjdXJyZW50Q29sb3IiIGQ9Ik0yMyAxMmMwIDMuMzQ1LTEuNDkzIDYuMzQyLTMuODUgOC4zNkExMC45NiAxMC45NiAwIDAgMSAxMiAyM2MtMi43MyAwLTUuMjI3LS45OTQtNy4xNS0yLjY0QTEwLjk4IDEwLjk4IDAgMCAxIDEgMTJDMSA1LjkyNSA1LjkyNSAxIDEyIDFzMTEgNC45MjUgMTEgMTFtLTctMy41YTQgNCAwIDEgMC04IDBhNCA0IDAgMCAwIDggMG0yLjUgOS43MjVWMThhNCA0IDAgMCAwLTQtNGgtNWE0IDQgMCAwIDAtNCA0di4yMjVxLjMxLjMyMy42NS42MTVBOC45NiA4Ljk2IDAgMCAwIDEyIDIxYTguOTYgOC45NiAwIDAgMCA2LjUtMi43NzUiLz48L3N2Zz4=",
@@ -41,36 +44,46 @@ function Rating({ value }: { value: number }) {
           ★
         </span>
       ))}
-      <span className="text-sm text-gray-600">({value})</span>
     </div>
   );
 }
 
 function PerfilPaseador() {
   const [reseñas, setReseñas] = useState(paseador.reseñas);
-  const [nuevaReseña, setNuevaReseña] = useState("");
-  const [estrellas, setEstrellas] = useState(0);
+  const [nuevaReseña, setNuevaReseña] = useState({
+    "Estado anímico": 0,
+    Puntualidad: 0,
+    Responsabilidad: 0,
+  });
+
+  const calificar = (criterio: string, valor: number) => {
+    setNuevaReseña({ ...nuevaReseña, [criterio]: valor });
+  };
 
   const publicarReseña = () => {
-    if (nuevaReseña.trim() && estrellas > 0) {
+    const completa = Object.values(nuevaReseña).every((v) => v > 0);
+    if (completa) {
       const nueva = {
         id: reseñas.length + 1,
         autor: "Usuario Anónimo",
-        comentario: nuevaReseña,
+        aptitudes: { ...nuevaReseña },
       };
       setReseñas([nueva, ...reseñas]);
-      setNuevaReseña("");
-      setEstrellas(0);
+      setNuevaReseña({
+        "Estado anímico": 0,
+        Puntualidad: 0,
+        Responsabilidad: 0,
+      });
     }
   };
 
   return (
     <main className="min-h-screen bg-gray-50 text-prussian-blue font-nunito px-4 py-10 sm:px-6 lg:px-12 max-w-6xl mx-auto">
-      <header className="mb-10 text-center">
+      <header className="mb-10">
         <h1 className="text-3xl md:text-5xl font-bold mb-3">
           Perfil del Paseador
         </h1>
-        <p className="text-lg md:text-xl text-gray-700 max-w-2xl mx-auto">
+        <p className="text-lg md:text-xl text-gray-700">
           Aquí podrás ver la información del paseador postulante a tu paseo.
         </p>
       </header>
@@ -109,34 +122,47 @@ function PerfilPaseador() {
                     className="bg-gray-50 border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition"
                   >
                     <p className="font-semibold">{reseña.autor}</p>
-                    <p className="text-gray-600">{reseña.comentario}</p>
+                    <div className="mt-2 space-y-2">
+                      {Object.entries(reseña.aptitudes).map(
+                        ([criterio, valor]) => (
+                          <div
+                            key={criterio}
+                            className="flex items-center justify-between"
+                          >
+                            <span className="text-gray-600">{criterio}:</span>
+                            <Rating value={valor} />
+                          </div>
+                        )
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
             </div>
 
             <div>
-              <h3 className="text-xl font-bold mb-4">Publicar Reseña</h3>
-              <div className="flex gap-1 mb-3">
-                {Array.from({ length: 5 }, (_, i) => i + 1).map((star) => (
-                  <button
-                    key={star}
-                    onClick={() => setEstrellas(star)}
-                    className={`text-2xl ${
-                      star <= estrellas ? "text-yellow-400" : "text-gray-300"
-                    }`}
-                  >
-                    ★
-                  </button>
-                ))}
-              </div>
-              <textarea
-                value={nuevaReseña}
-                onChange={(e) => setNuevaReseña(e.target.value)}
-                placeholder="Escribe tu experiencia..."
-                className="w-full border rounded-xl p-3 mb-3 resize-none focus:ring-2 focus:ring-prussian-blue"
-                rows={4}
-              />
+              <h3 className="text-xl font-bold mb-4">Calificar Paseador</h3>
+              {Object.keys(nuevaReseña).map((criterio) => (
+                <div key={criterio} className="mb-4">
+                  <p className="font-semibold mb-1">{criterio}</p>
+                  <div className="flex gap-1">
+                    {Array.from({ length: 5 }, (_, i) => i + 1).map((star) => (
+                      <button
+                        key={star}
+                        onClick={() => calificar(criterio, star)}
+                        className={`text-2xl ${
+                          star <=
+                          nuevaReseña[criterio as keyof typeof nuevaReseña]
+                            ? "text-yellow-400"
+                            : "text-gray-300"
+                        }`}
+                      >
+                        ★
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ))}
               <button
                 onClick={publicarReseña}
                 className="w-full rounded-full py-2 px-4 bg-prussian-blue hover:bg-prussian-blue/80 text-white font-semibold shadow-lg shadow-prussian-blue/50 border border-cyan-900 active:scale-90 transition-all duration-100"
