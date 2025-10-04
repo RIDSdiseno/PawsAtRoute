@@ -9,7 +9,13 @@ import { errorHandler } from './middlewares/error.middleware.js';
 export const app = express();
 
 app.use(cors({
-    origin: "http://localhost:5173",
+    origin: (origin, callback) => {
+        if (!origin || env.CORS_ORIGIN.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error('No permitido por CORS'));
+        }
+    },
     methods: ['GET','POST','PUT','DELETE'],
     credentials: true,
     allowedHeaders: ['Content-Type','Authorization']
