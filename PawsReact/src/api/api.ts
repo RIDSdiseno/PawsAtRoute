@@ -83,14 +83,26 @@ export const login = async (
 };
 
 export const logout = async (): Promise<void> => {
-  await api.post("/auth/logout");
-  accessToken = null;
-  localStorage.removeItem("access_token");
+  try {
+    await api.post("/auth/logout"); // llama a tu backend y revoca el RT
+
+    // limpia el token de acceso local
+    accessToken = null;
+    localStorage.removeItem("access_token");
+  } catch (error) {
+    console.error("Error al cerrar sesión:", error);
+  }
 };
 
+
 export const getProfile = async (): Promise<any> => {
-  const res = await api.get("/auth/profile");
-  return res.data;
+  try {
+    const res = await api.get("/auth/profile");
+    return res.data;
+  } catch (error) {
+    console.error("Error en getProfile:", error);
+    throw error;  // para que el catch en Navbar se active
+  }
 };
 
 
