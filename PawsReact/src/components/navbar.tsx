@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
-import { getProfile, logout } from "../api/api.ts"; // Asegúrate que esto esté bien importado
+import { Link, useNavigate } from "react-router-dom";
+import { getProfile, logout } from "../api/api.ts"; // Asegúrate de que esto esté bien importado
 
 interface NavLink {
   label: string;
@@ -14,68 +14,65 @@ interface NavbarProps {
 }
 
 function Navbar({ links = [] }: NavbarProps) {
+  const navigate = useNavigate(); // Usamos el hook useNavigate de React Router
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [user, setUser] = useState<{ rol: string; nombre: string } | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   const closeMenu = () => setIsMenuOpen(false);
 
- const [isLoading, setIsLoading] = useState(true);
+  useEffect(() => {
+    const fetchUser = async () => {
+      if (!localStorage.getItem("access_token")) {
+        setUser(null);
+        setIsLoading(false);
+        return;
+      }
+      try {
+        const profile = await getProfile();
+        setUser(profile);
+      } catch {
+        setUser(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchUser();
+  }, []);
 
-useEffect(() => {
-  const fetchUser = async () => {
-    if (!localStorage.getItem("access_token")) {
-      setUser(null);
-      setIsLoading(false);
-      return;
-    }
-    try {
-      const profile = await getProfile();
-      setUser(profile);
-    } catch {
-      setUser(null);
-    } finally {
-      setIsLoading(false);
-    }
+  if (isLoading) {
+    return <nav>Loading...</nav>; // O algo simple mientras se chequea sesión
+  }
+
+  // Función para manejar el logout
+  const handleLogout = async () => {
+    await logout();
+    setUser(null); // Limpia estado local
+    closeMenu();   // Cierra el menú si estaba abierto (opcional)
+    navigate("/login"); // Redirige a la página de login sin recargar la página
   };
 
-  fetchUser();
-}, []);
-
-if (isLoading) {
-  return <nav>Loading...</nav>; // O algo simple mientras se chequea sesión
-}
-
-
-  const handleLogout = async () => {
-  await logout();
-  setUser(null);       // limpia estado local
-  closeMenu();         // cierra menú si estaba abierto (opcional)
-  window.location.href = "/login";  // redirige
-};
-
-
+  // Función para redirigir al panel según el rol del usuario
   const goToPanel = () => {
     if (!user) return;
     if (user.rol === "DUEÑO") {
-      window.location.href = "/panel-dueño";
+      navigate("/panel-dueño"); // Redirige a panel-dueño sin recargar
     } else if (user.rol === "PASEADOR") {
-      window.location.href = "/panel-paseador";
+      navigate("/panel-paseador"); // Redirige a panel-paseador sin recargar
     }
   };
 
-  const filteredLinks = links.filter(link => {
-  if (user) {
-    // Si usuario está logueado, ocultar 'Ingresar' y 'Registrarse'
-    if (link.to === "/login" || link.to === "/register") return false;
-  } else {
-    // Si NO está logueado, ocultar 'Cerrar sesión' (por si viene por props)
-    if (link.to === "/logout") return false;
-    // Opcional: podrías ocultar links que solo vea usuario, pero por ahora no hay más
-  }
-  return true;
-});
-
-
+  // Filtrado de los links según el estado de autenticación
+  const filteredLinks = links.filter((link) => {
+    if (user) {
+      // Si el usuario está logueado, ocultar 'Ingresar' y 'Registrarse'
+      if (link.to === "/login" || link.to === "/register") return false;
+    } else {
+      // Si NO está logueado, ocultar 'Cerrar sesión' (por si viene por props)
+      if (link.to === "/logout") return false;
+    }
+    return true;
+  });
 
   return (
     <nav className="bg-selective-yellow">
@@ -122,51 +119,50 @@ if (isLoading) {
           id="navbar-default"
         >
           <ul className="text-md flex flex-col p-4 md:p-0 mt-4 border-2 border-gray-300/50 rounded-xl bg-gray-300/50 md:flex-row md:space-x-8 rtl:space-x-reverse md:mt-0 md:border-0 md:bg-transparent font-semibold">
-  {/* Links filtrados */}
-  {filteredLinks.map((link, index) => (
-    <li
-      key={index}
-      className={`rounded-full transition-colors duration-300 ${
-        link.primary
-          ? "bg-prussian-blue/90 text-white border border-cyan-900 hover:bg-prussian-blue active:scale-90 transition-all duration-200"
-          : "hover:bg-ut-orange active:scale-90 transition-all duration-200"
-      }`}
-    >
-      {link.to ? (
-        <Link to={link.to} className="block py-2 px-4" onClick={closeMenu}>
-          {link.label}
-        </Link>
-      ) : (
-        <a href={link.href} className="block py-2 px-4" onClick={closeMenu}>
-          {link.label}
-        </a>
-      )}
-    </li>
-  ))}
+            {/* Links filtrados */}
+            {filteredLinks.map((link, index) => (
+              <li
+                key={index}
+                className={`rounded-full transition-colors duration-300 ${
+                  link.primary
+                    ? "bg-prussian-blue/90 text-white border border-cyan-900 hover:bg-prussian-blue active:scale-90 transition-all duration-200"
+                    : "hover:bg-ut-orange active:scale-90 transition-all duration-200"
+                }`}
+              >
+                {link.to ? (
+                  <Link to={link.to} className="block py-2 px-4" onClick={closeMenu}>
+                    {link.label}
+                  </Link>
+                ) : (
+                  <a href={link.href} className="block py-2 px-4" onClick={closeMenu}>
+                    {link.label}
+                  </a>
+                )}
+              </li>
+            ))}
 
-  {/* Botones que solo se muestran si hay usuario */}
-  {user ? (
-    <>
-      <li>
-        <button
-          onClick={goToPanel}
-          className="block py-2 px-4 rounded-full bg-prussian-blue text-white hover:bg-prussian-blue/90 transition-all duration-200"
-        >
-          Mi Panel
-        </button>
-      </li>
-      <li>
-        <button
-          onClick={handleLogout}
-          className="block py-2 px-4 rounded-full bg-red-500 text-white hover:bg-red-600 transition-all duration-200"
-        >
-          Cerrar sesión
-        </button>
-      </li>
-    </>
-  ) : null}
-</ul>
-
+            {/* Botones que solo se muestran si hay usuario */}
+            {user ? (
+              <>
+                <li>
+                  <button
+                    onClick={goToPanel}
+                    className="block py-2 px-4 rounded-full bg-prussian-blue text-white hover:bg-prussian-blue/90 transition-all duration-200"
+                  >
+                    Mi Panel
+                  </button>
+                </li>
+                <li>
+                  <button
+                    onClick={handleLogout}
+                    className="block py-2 px-4 rounded-full bg-red-500 text-white hover:bg-red-600 transition-all duration-200"
+                  >
+                    Cerrar sesión
+                  </button>
+                </li>
+              </>
+            ) : null}
+          </ul>
         </div>
       </div>
     </nav>
