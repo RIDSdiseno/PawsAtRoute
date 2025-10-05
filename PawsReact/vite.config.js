@@ -1,16 +1,14 @@
 import { defineConfig } from 'vite';
-import react from "@vitejs/plugin-react-swc";
-import tailwindcss from "@tailwindcss/vite";
+import react from '@vitejs/plugin-react-swc';
+import tailwindcss from '@tailwindcss/vite';
 
-
-// https://vite.dev/config/
 export default defineConfig({
-  server:{
-    historyApiFallback: true,
+  plugins: [react(), tailwindcss()],
+  server: {
+    host: '0.0.0.0',
+    port: Number(process.env.PORT) || 5173, // Render inyecta PORT
+    strictPort: true,                       // falla si no puede usar ese puerto
   },
-  plugins: [react(),tailwindcss()],
-  build:{
-    outDir: "dist",
-  },
-  publicDir: "public",
+  build: { outDir: 'dist' },
+  publicDir: 'public',
 });
