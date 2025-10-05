@@ -54,9 +54,11 @@ function Login() {
       switch (data.user.rol) {
         case "DUEÑO":
           navigate("/panel-dueño");
+          window.location.reload();
           break;
         case "PASEADOR":
           navigate("/panel-paseador");
+          window.location.reload();
           break;
         default:
           navigate("/");
