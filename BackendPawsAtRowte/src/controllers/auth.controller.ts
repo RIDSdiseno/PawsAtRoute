@@ -354,22 +354,23 @@ const norm = (v: string) => String(v || "").trim().toLowerCase();
 
 
 const RESEND_KEY = (process.env.RESEND_API_KEY || "").trim();
-const FROM_EMAIL = (process.env.FROM_EMAIL || "no-reply@tudominio.com").trim();
+const FROM_EMAIL = (process.env.FROM_EMAIL || "onboarding@resend.dev").trim();
 
 export async function sendRecoveryEmail(correo: string, code: number) {
   if (!RESEND_KEY) {
     console.warn("[DEV] RESEND_API_KEY no seteada. Simulando envío.", { code, correo });
     return;
   }
+
   const resend = new Resend(RESEND_KEY);
 
   await resend.emails.send({
-  from: `Paws At Route <${process.env.FROM_EMAIL}>`, // onboarding@resend.dev
-  to: [correo],
-  subject: "Recuperación de contraseña",
-  text: `Tu código es: ${code} (válido 10 min).`,
-  replyTo: "soporte.pawsatroute@gmail.com",
-});
+    from: `Paws At Route <${FROM_EMAIL}>`,
+    to: [correo],
+    subject: "Recuperación de contraseña - Código de verificación",
+    text: `Tu código de verificación es: ${code}. Es válido por 10 minutos.`,
+    replyTo: "soporte.pawsatroute@gmail.com", // opcional
+  });
 }
 
 // --- 1) Enviar código
