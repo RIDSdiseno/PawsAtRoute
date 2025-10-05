@@ -7,7 +7,7 @@ const BASE_URL = import.meta.env.VITE_API_BASE_URL ||
 
 const api: AxiosInstance = axios.create({
   baseURL: BASE_URL,
-  withCredentials: true, // para enviar cookies httpOnly (refresh tokens)
+  withCredentials: false, // para enviar cookies httpOnly (refresh tokens)
 });
 
 // Guardamos accessToken en memoria (y localStorage para persistencia)
