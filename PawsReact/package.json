@@ -37,5 +37,6 @@
     "tailwindcss": "^4.1.13",
     "typescript": "^5.9.3",
     "vite": "^7.1.2"
-  }
+  },
+  "compilerOptions": { "jsx": "react-jsx" } 
 }
