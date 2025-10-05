@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { login } from "../../api/api.ts";
 
 function Login() {
-
+  const navigate = useNavigate(); // Usamos el hook useNavigate de React Router
   const [correo, setCorreo] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState<{ correo?: string; password?: string }>({});
@@ -48,19 +48,18 @@ function Login() {
       console.log("Usuario logueado:", data.user);
       if (data.token) {
         localStorage.setItem("access_token", data.token);
-      } else if (data.token) {
-        localStorage.setItem("access_token", data.token);
       }
 
+      // Usamos navigate() para redirigir sin recargar la página
       switch (data.user.rol) {
         case "DUEÑO":
-          window.location.href = "/panel-dueño";
+          navigate("/panel-dueño");
           break;
         case "PASEADOR":
-          window.location.href = "/panel-paseador";
+          navigate("/panel-paseador");
           break;
         default:
-          window.location.href = "/";
+          navigate("/");
           break;
       }
     } catch (error: any) {
