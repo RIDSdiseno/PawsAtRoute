@@ -406,11 +406,9 @@ export const sendVerificationCode = async (req: Request, res: Response) => {
     // Envío en background con timeout de seguridad
     (async () => {
       try {
-        const hardTimeout = new Promise((_, rej) =>
-          setTimeout(() => rej(new Error("SMTP hard timeout")), 20000)
-        );
+        console.log("[AUTH] Generando código para:", correo);
         await sendRecoveryEmail(correo, code);
-        console.log("Email de recuperación enviado a:", correo);
+        console.log("[AUTH] Email disparado a:", correo);
       } catch (err) {
         console.error("sendRecoveryEmail error:", err);
       }
