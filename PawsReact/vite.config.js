@@ -6,7 +6,7 @@ import tailwindcss from "@tailwindcss/vite";
 // https://vite.dev/config/
 export default defineConfig({
   server:{
-    historycApiFallback: true,
+    historyApiFallback: true,
   },
   plugins: [react(),tailwindcss()],
   build:{
