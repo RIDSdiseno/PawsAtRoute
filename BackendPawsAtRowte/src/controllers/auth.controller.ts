@@ -361,17 +361,14 @@ async function sendRecoveryEmail(correo: string, code: number) {
   }
 
   const transporter = nodemailer.createTransport({
-    host: "smtp.gmail.com",
-    port: 587,
-    secure: false,        // STARTTLS
-    auth: { user, pass }, // App Password (no la password normal)
-    pool: true,
-    maxConnections: 2,
-    maxMessages: 50,
-    connectionTimeout: 10000,
-    greetingTimeout: 10000,
-    socketTimeout: 15000,
-  });
+  host: "smtp.gmail.com",
+  port: 587,          
+  secure: false,       // SSL
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS, // sin comillas/espacios
+  },
+});
 
   // Opcional: verificar conexión
   try {
