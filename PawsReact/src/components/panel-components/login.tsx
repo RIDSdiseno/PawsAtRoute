@@ -160,7 +160,7 @@ function Login() {
 
         <div className="hidden md:flex w-full md:w-1/2 bg-blue-green items-center justify-center p-4">
           <img
-            src="/img/perros jugando 1.webp"
+            src="/img/perros_jugando_1.webp"
             alt="Perros jugando"
             loading="lazy"
             className="object-cover w-full h-full max-h-[400px] drop-shadow-lg"
