@@ -49,20 +49,14 @@ const handleVerifyCode = async (e: React.FormEvent<HTMLFormElement>) => {
     return;
   }
 
-  const guard = setTimeout(() => {
-    setCargando(false);
-    setMensaje("Tardó demasiado en responder. Intenta de nuevo.");
-  }, 13000);
 
   try {
     await verifyCode(correo, Number(clean));
-    clearTimeout(guard);
     setMensaje("Código verificado. Ahora ingresa tu nueva contraseña.");
     setStep("reset");
     setNuevaClave("");
     setRepetirClave("");
   } catch (error: any) {
-    clearTimeout(guard);
     setMensaje(
       error?.name === "CanceledError"
         ? "Se canceló por demora. Inténtalo otra vez."
