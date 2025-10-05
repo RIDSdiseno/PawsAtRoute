@@ -364,13 +364,12 @@ export async function sendRecoveryEmail(correo: string, code: number) {
   const resend = new Resend(RESEND_KEY);
 
   await resend.emails.send({
-    from: `Paws At Route <${FROM_EMAIL}>`,
-    to: [correo],
-    subject: "Recuperación de contraseña - Código de verificación",
-    text: `Tu código de verificación es: ${code}. Es válido por 10 minutos.`,
-    // html opcional
-    // html: `<p>Tu código es <b>${code}</b> (válido por 10 minutos)</p>`
-  });
+  from: `Paws At Route <${process.env.FROM_EMAIL}>`, // onboarding@resend.dev
+  to: [correo],
+  subject: "Recuperación de contraseña",
+  text: `Tu código es: ${code} (válido 10 min).`,
+  replyTo: "soporte.pawsatroute@gmail.com",
+});
 }
 
 // --- 1) Enviar código
