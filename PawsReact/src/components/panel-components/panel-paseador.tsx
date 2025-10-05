@@ -28,6 +28,9 @@ function DashboardPaseador() {
   const [selectedPaseo, setSelectedPaseo] = useState<Paseo | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [modal, setModal] = useState<null | "iniciar" | "finalizar" | "pagar">(
+    null
+  );
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -49,6 +52,27 @@ function DashboardPaseador() {
 
     fetchUser();
   }, []);
+
+  const abrirModal = (accion: "iniciar" | "finalizar" | "pagar") => {
+    setModal(accion);
+  };
+
+  const cerrarModal = () => {
+    setModal(null);
+  };
+
+  const confirmarAccion = () => {
+    if (modal === "iniciar") {
+      console.log("Paseo iniciado");
+    }
+    if (modal === "finalizar") {
+      console.log("Paseo finalizado");
+    }
+    if (modal === "pagar") {
+      console.log("Pago realizado");
+    }
+    cerrarModal();
+  };
 
   const solicitudes: Paseo[] = [
     {
@@ -150,6 +174,26 @@ function DashboardPaseador() {
             <p className="text-gray-600">
               <strong>Precio:</strong> ${solicitudes[0].precio}
             </p>
+          </div>
+          <div className="mt-6 flex flex-wrap gap-3">
+            <button
+              onClick={() => abrirModal("iniciar")}
+              className="cursor-pointer rounded-full py-2 px-4 bg-green-600 hover:bg-green-700 text-white font-semibold shadow-lg active:scale-90 transition-all duration-100"
+            >
+              Iniciar
+            </button>
+            <button
+              onClick={() => abrirModal("finalizar")}
+              className="cursor-pointer rounded-full py-2 px-4 bg-yellow-500 hover:bg-yellow-600 text-white font-semibold shadow-lg active:scale-90 transition-all duration-100"
+            >
+              Finalizar
+            </button>
+            <button
+              onClick={() => abrirModal("pagar")}
+              className="cursor-pointer rounded-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-lg active:scale-90 transition-all duration-100"
+            >
+              Pagar
+            </button>
           </div>
         </article>
 
@@ -259,6 +303,32 @@ function DashboardPaseador() {
               <button
                 onClick={handleConfirm}
                 className="px-4 py-2 rounded-lg bg-prussian-blue text-white font-semibold shadow hover:bg-prussian-blue/80"
+              >
+                Confirmar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {modal && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
+          <div className="bg-white rounded-2xl shadow-xl p-6 w-80 text-center">
+            <h2 className="text-lg font-bold text-gray-800 mb-4">
+              {modal === "iniciar" && "¿Estás seguro de iniciar el paseo?"}
+              {modal === "finalizar" && "¿Estás seguro de finalizar el paseo?"}
+              {modal === "pagar" && "¿Deseas confirmar el pago?"}
+            </h2>
+            <div className="flex justify-center gap-4 mt-4">
+              <button
+                onClick={cerrarModal}
+                className="px-4 py-2 rounded-full bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold transition-all"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={confirmarAccion}
+                className="px-4 py-2 rounded-full bg-green-600 hover:bg-green-700 text-white font-semibold transition-all"
               >
                 Confirmar
               </button>

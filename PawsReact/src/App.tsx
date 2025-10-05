@@ -16,6 +16,7 @@ import MiPerfil from "./components/panel-components/mi-perfil";
 import EditarPerfil from "./components/panel-components/editar-perfil";
 import PanelPaseador from "./components/panel-components/panel-paseador";
 import Pricing from "./components/pricing";
+import RegistroMascota from "./components/panel-components/registro-mascota";
 
 function App() {
   return (
@@ -81,6 +82,7 @@ function App() {
             <>
               <Navbar
                 links={[
+                  { to: "/registro-mascota", label: "Registrar Mascota" },
                   { to: "/nuevo-paseo", label: "Nuevo Paseo" },
                   { to: "/mi-perfil", label: "Mi perfil", primary: true },
                 ]}
@@ -191,6 +193,21 @@ function App() {
                 ]}
               />
               <PanelPaseador />
+              <Footer />
+            </>
+          }
+        />
+        <Route
+          path="/registro-mascota"
+          element={
+            <>
+              <Navbar
+                links={[
+                  { to: "/panel-dueño", label: "Menú" },
+                  { to: "/mi-perfil", label: "Mi perfil", primary: true },
+                ]}
+              />
+              <RegistroMascota />
               <Footer />
             </>
           }

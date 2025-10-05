@@ -300,7 +300,7 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 
               <button
                 type="submit"
-                className="cursor-pointer bg-prussian-blue text-white rounded-full py-2 px-4 hover:bg-prussian-blue/80 border-2 border-cyan-900 shadow-lg shadow-prussian-blue/50 font-semibold mt-2 active:scale-90 transition-all duration-100"
+                className="cursor-pointer bg-prussian-blue/80 text-white rounded-full py-2 px-4 hover:bg-prussian-blue border border-cyan-900 shadow-lg shadow-prussian-blue/50 font-semibold mt-2 active:scale-90 transition-all duration-100"
               >
                 Registrarse
               </button>
