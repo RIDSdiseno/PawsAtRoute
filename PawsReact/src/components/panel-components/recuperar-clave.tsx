@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { sendVerificationCode, verifyCode, resetPassword } from "../../api/api"; // importa tus funciones reales
+import { useMemo, useState } from "react";
+import { sendVerificationCode, verifyCode, resetPassword } from "../../api/api";
 
 function RecuperarClave() {
   const [step, setStep] = useState<"email" | "codigo" | "reset">("email");
@@ -10,63 +10,103 @@ function RecuperarClave() {
   const [mensaje, setMensaje] = useState<string | null>(null);
   const [cargando, setCargando] = useState(false);
 
-  // en RecuperarClave.tsx
-const handleSendCode = async (e: React.FormEvent<HTMLFormElement>) => {
-  e.preventDefault();
-  setMensaje(null);
-  setCargando(true);
-  try {
-    await sendVerificationCode(correo);
-    setMensaje("Código enviado. Revisa tu correo.");
-    setStep("codigo");
-    setCodigo("");
-  } catch (err: any) {
-    // ⬇️ muestra mensaje real si viene del server
-    const msg =
-      err?.response?.data?.message ||
-      err?.response?.data?.error ||
-      err?.message ||
-      "Error enviando código. Verifica tu correo e intenta de nuevo.";
-    setMensaje(msg);
-  } finally {
-    setCargando(false);
-  }
-};
+  // Cooldown para reenvío
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const [timerId, setTimerId] = useState<number | null>(null);
 
+  // Detección de proveedor de correo para link directo
+  const providerLink = useMemo(() => {
+    const domain = correo.split("@")[1]?.toLowerCase() || "";
+    if (domain.includes("gmail")) return "https://mail.google.com";
+    if (domain.includes("outlook") || domain.includes("hotmail") || domain.includes("live")) return "https://outlook.live.com";
+    if (domain.includes("yahoo")) return "https://mail.yahoo.com";
+    return null;
+  }, [correo]);
 
+  const startCooldown = (seconds = 30) => {
+    setResendCooldown(seconds);
+    const id = window.setInterval(() => {
+      setResendCooldown((s) => {
+        if (s <= 1) {
+          if (timerId) window.clearInterval(timerId);
+          return 0;
+        }
+        return s - 1;
+      });
+    }, 1000);
+    setTimerId(id);
+  };
 
+  const handleSendCode = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setMensaje(null);
+    setCargando(true);
+    try {
+      await sendVerificationCode(correo);
+      setMensaje("Código enviado. Revisa tu correo.");
+      setStep("codigo");
+      setCodigo("");
+      startCooldown(30);
+    } catch (err: any) {
+      const msg =
+        err?.response?.data?.message ||
+        err?.response?.data?.error ||
+        err?.message ||
+        "Error enviando código. Verifica tu correo e intenta de nuevo.";
+      setMensaje(msg);
+    } finally {
+      setCargando(false);
+    }
+  };
 
-const handleVerifyCode = async (e: React.FormEvent<HTMLFormElement>) => {
-  e.preventDefault();
-  setMensaje(null);
-  setCargando(true);
+  const handleResend = async () => {
+    if (resendCooldown > 0 || !correo) return;
+    setMensaje(null);
+    setCargando(true);
+    try {
+      await sendVerificationCode(correo);
+      setMensaje("Te reenviamos un nuevo código.");
+      startCooldown(30);
+    } catch (err: any) {
+      const msg =
+        err?.response?.data?.message ||
+        err?.response?.data?.error ||
+        err?.message ||
+        "No pudimos reenviar el código. Intenta más tarde.";
+      setMensaje(msg);
+    } finally {
+      setCargando(false);
+    }
+  };
 
-  // Limpia caracteres no numéricos para evitar NaN
-  const clean = codigo.replace(/\D/g, "");
-  if (clean.length !== 6) {
-    setCargando(false);
-    setMensaje("El código debe tener 6 dígitos.");
-    return;
-  }
+  const handleVerifyCode = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setMensaje(null);
+    setCargando(true);
 
+    const clean = codigo.replace(/\D/g, "");
+    if (clean.length !== 6) {
+      setCargando(false);
+      setMensaje("El código debe tener 6 dígitos.");
+      return;
+    }
 
-  try {
-    await verifyCode(correo, Number(clean));
-    setMensaje("Código verificado. Ahora ingresa tu nueva contraseña.");
-    setStep("reset");
-    setNuevaClave("");
-    setRepetirClave("");
-  } catch (error: any) {
-    setMensaje(
-      error?.name === "CanceledError"
-        ? "Se canceló por demora. Inténtalo otra vez."
-        : "Código incorrecto o expirado."
-    );
-  } finally {
-    setCargando(false);
-  }
-};
-
+    try {
+      await verifyCode(correo, Number(clean));
+      setMensaje("Código verificado. Ahora ingresa tu nueva contraseña.");
+      setStep("reset");
+      setNuevaClave("");
+      setRepetirClave("");
+    } catch (error: any) {
+      setMensaje(
+        error?.name === "CanceledError"
+          ? "Se canceló por demora. Inténtalo otra vez."
+          : "Código incorrecto o expirado."
+      );
+    } finally {
+      setCargando(false);
+    }
+  };
 
   const handleResetPassword = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -134,10 +174,11 @@ const handleVerifyCode = async (e: React.FormEvent<HTMLFormElement>) => {
         )}
 
         {step === "codigo" && (
-          <form onSubmit={handleVerifyCode} className="flex flex-col gap-6">
-            <p className="text-center text-gray-600 mb-8">
-              Ingresa el código de 6 dígitos que enviamos a tu correo.
+          <form onSubmit={handleVerifyCode} className="flex flex-col gap-4">
+            <p className="text-center text-gray-600">
+              Enviamos un código a <span className="font-semibold">{correo}</span>
             </p>
+
             <input
               type="text"
               placeholder="_ _ _ _ _ _"
@@ -148,6 +189,7 @@ const handleVerifyCode = async (e: React.FormEvent<HTMLFormElement>) => {
               className="w-full p-3 text-center tracking-[1.5em] border-2 border-gray-300 rounded-lg peer focus:outline-none focus:border-blue-green invalid:border-red-500 invalid:text-red-500"
               disabled={cargando}
             />
+
             <button
               type="submit"
               disabled={cargando}
@@ -155,6 +197,39 @@ const handleVerifyCode = async (e: React.FormEvent<HTMLFormElement>) => {
             >
               {cargando ? "Verificando..." : "Verificar código"}
             </button>
+
+            <div className="text-sm text-center text-gray-600 space-y-2 mt-2">
+              <p>¿No te llegó?</p>
+              <div className="flex items-center justify-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleResend}
+                  disabled={cargando || resendCooldown > 0}
+                  className="underline disabled:opacity-50"
+                >
+                  Reenviar código {resendCooldown > 0 ? `(${resendCooldown}s)` : ""}
+                </button>
+                <span>·</span>
+                <button
+                  type="button"
+                  onClick={() => setStep("email")}
+                  className="underline"
+                >
+                  Cambiar correo
+                </button>
+                {providerLink && (
+                  <>
+                    <span>·</span>
+                    <a href={providerLink} target="_blank" className="underline">
+                      Abrir mi correo
+                    </a>
+                  </>
+                )}
+              </div>
+              <p className="text-xs text-gray-500">
+                Revisa también tu carpeta de spam/promociones.
+              </p>
+            </div>
           </form>
         )}
 
