@@ -57,6 +57,7 @@ function Login() {
           window.location.reload();
           break;
         default:
+          navigate("/")
           window.location.href = "/";
           break;
       }
