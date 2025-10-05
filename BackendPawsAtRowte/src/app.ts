@@ -9,7 +9,7 @@ import { errorHandler } from './middlewares/error.middleware.js';
 export const app = express();
 
 app.use(cors({
-    origin: *,
+    origin: '*',
     methods: ['GET','POST','PUT','DELETE'],
     credentials: true,
     allowedHeaders: ['Content-Type','Authorization']
