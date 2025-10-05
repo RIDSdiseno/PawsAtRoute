@@ -1,5 +1,6 @@
 import "./App.css";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "./context/AuthContext";
 import Navbar from "./components/navbar";
 import Hero from "./components/hero";
 import Beneficios from "./components/beneficios";
@@ -20,6 +21,7 @@ import RegistroMascota from "./components/panel-components/registro-mascota";
 
 function App() {
   return (
+    <AuthProvider>
     <Router>
       <Routes>
         {/* Rutas de las páginas */}
@@ -214,6 +216,7 @@ function App() {
         />
       </Routes>
     </Router>
+    </AuthProvider>
   );
 }
 

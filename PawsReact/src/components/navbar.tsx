@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { getProfile, logout } from "../api/api.ts"; // Asegúrate de que esto esté bien importado
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";  // Importamos el hook del contexto
 
 interface NavLink {
   label: string;
@@ -14,61 +14,23 @@ interface NavbarProps {
 }
 
 function Navbar({ links = [] }: NavbarProps) {
-  const navigate = useNavigate(); // Usamos el hook useNavigate de React Router
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [user, setUser] = useState<{ rol: string; nombre: string } | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const { user, logout } = useAuth();  // Obtenemos el usuario y la función logout del contexto
 
   const closeMenu = () => setIsMenuOpen(false);
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      if (!localStorage.getItem("access_token")) {
-        setUser(null);
-        setIsLoading(false);
-        return;
-      }
-      try {
-        const profile = await getProfile();
-        setUser(profile);
-      } catch {
-        setUser(null);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchUser();
-  }, []);
-
-  if (isLoading) {
-    return <nav>Loading...</nav>; // O algo simple mientras se chequea sesión
-  }
-
-  // Función para manejar el logout
   const handleLogout = async () => {
-    await logout();
-    setUser(null); // Limpia estado local
-    closeMenu();   // Cierra el menú si estaba abierto (opcional)
-    navigate("/login"); // Redirige a la página de login sin recargar la página
+    logout(); // Llama al método logout del contexto
+    closeMenu(); // Cierra el menú móvil (si está abierto)
   };
 
-  // Función para redirigir al panel según el rol del usuario
-  const goToPanel = () => {
-    if (!user) return;
-    if (user.rol === "DUEÑO") {
-      navigate("/panel-dueño"); // Redirige a panel-dueño sin recargar
-    } else if (user.rol === "PASEADOR") {
-      navigate("/panel-paseador"); // Redirige a panel-paseador sin recargar
-    }
-  };
-
-  // Filtrado de los links según el estado de autenticación
-  const filteredLinks = links.filter((link) => {
+  // Filtramos los enlaces según si el usuario está autenticado o no
+  const filteredLinks = links.filter(link => {
     if (user) {
-      // Si el usuario está logueado, ocultar 'Ingresar' y 'Registrarse'
+      // Si el usuario está logueado, ocultamos 'Ingresar' y 'Registrarse'
       if (link.to === "/login" || link.to === "/register") return false;
     } else {
-      // Si NO está logueado, ocultar 'Cerrar sesión' (por si viene por props)
+      // Si no está logueado, ocultamos 'Cerrar sesión'
       if (link.to === "/logout") return false;
     }
     return true;
@@ -146,7 +108,7 @@ function Navbar({ links = [] }: NavbarProps) {
               <>
                 <li>
                   <button
-                    onClick={goToPanel}
+                    onClick={() => window.location.href = "/panel"}
                     className="block py-2 px-4 rounded-full bg-prussian-blue text-white hover:bg-prussian-blue/90 transition-all duration-200"
                   >
                     Mi Panel
