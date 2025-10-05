@@ -11,37 +11,73 @@ function RecuperarClave() {
   const [cargando, setCargando] = useState(false);
 
   const handleSendCode = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setMensaje(null);
-    setCargando(true);
-    try {
-      await sendVerificationCode(correo);
-      setMensaje("Código enviado. Revisa tu correo.");
-      setStep("codigo");
-      setCodigo("");
-    } catch (error) {
-      setMensaje("Error enviando código. Verifica tu correo e intenta de nuevo.");
-    } finally {
-      setCargando(false);
-    }
-  };
+  e.preventDefault();
+  setMensaje(null);
+  setCargando(true);
 
-  const handleVerifyCode = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setMensaje(null);
-    setCargando(true);
-    try {
-      await verifyCode(correo, Number(codigo));
-      setMensaje("Código verificado. Ahora ingresa tu nueva contraseña.");
-      setStep("reset");
-      setNuevaClave("");
-      setRepetirClave("");
-    } catch (error) {
-      setMensaje("Código incorrecto o expirado.");
-    } finally {
-      setCargando(false);
-    }
-  };
+  // ⬇️ paracaídas visual por si el backend tarda demasiado
+  const guard = setTimeout(() => {
+    setCargando(false);
+    setMensaje("Tardó demasiado en responder. Intenta de nuevo.");
+  }, 13000);
+
+  try {
+    await sendVerificationCode(correo);
+    clearTimeout(guard);
+    setMensaje("Código enviado. Revisa tu correo.");
+    setStep("codigo");
+    setCodigo("");
+  } catch (error: any) {
+    clearTimeout(guard);
+    setMensaje(
+      error?.name === "CanceledError"
+        ? "Se canceló por demora. Inténtalo otra vez."
+        : "Error enviando código. Verifica tu correo e intenta de nuevo."
+    );
+  } finally {
+    setCargando(false);
+  }
+};
+
+
+
+const handleVerifyCode = async (e: React.FormEvent<HTMLFormElement>) => {
+  e.preventDefault();
+  setMensaje(null);
+  setCargando(true);
+
+  // Limpia caracteres no numéricos para evitar NaN
+  const clean = codigo.replace(/\D/g, "");
+  if (clean.length !== 6) {
+    setCargando(false);
+    setMensaje("El código debe tener 6 dígitos.");
+    return;
+  }
+
+  const guard = setTimeout(() => {
+    setCargando(false);
+    setMensaje("Tardó demasiado en responder. Intenta de nuevo.");
+  }, 13000);
+
+  try {
+    await verifyCode(correo, Number(clean));
+    clearTimeout(guard);
+    setMensaje("Código verificado. Ahora ingresa tu nueva contraseña.");
+    setStep("reset");
+    setNuevaClave("");
+    setRepetirClave("");
+  } catch (error: any) {
+    clearTimeout(guard);
+    setMensaje(
+      error?.name === "CanceledError"
+        ? "Se canceló por demora. Inténtalo otra vez."
+        : "Código incorrecto o expirado."
+    );
+  } finally {
+    setCargando(false);
+  }
+};
+
 
   const handleResetPassword = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
