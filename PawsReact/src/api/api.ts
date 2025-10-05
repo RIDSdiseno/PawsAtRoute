@@ -163,22 +163,22 @@ function withAbort<T>(fn: (signal: AbortSignal) => Promise<T>, ms = 12000) {
 }
 
 export const sendVerificationCode = async (correo: string) => {
-  return withAbort(async (signal) => {
-    const res = await api.post("/auth/send-code", { correo }, { signal });
+  return withAbort(async () => {
+    const res = await api.post("/auth/send-code", { correo });
     return res.data as { message: string };
   });
 };
 
 export const verifyCode = async (correo: string, codigo: number) => {
-  return withAbort(async (signal) => {
-    const res = await api.post("/auth/verify-code", { correo, codigo }, { signal });
+  return withAbort(async () => {
+    const res = await api.post("/auth/verify-code", { correo, codigo });
     return res.data as { message: string };
   });
 };
 
 export const resetPassword = async (correo: string, nuevaClave: string) => {
-  return withAbort(async (signal) => {
-    const res = await api.put("/auth/reset-password", { correo, nuevaClave }, { signal });
+  return withAbort(async () => {
+    const res = await api.put("/auth/reset-password", { correo, nuevaClave });
     return res.data as { message: string };
   });
 };

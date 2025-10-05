@@ -10,34 +10,29 @@ function RecuperarClave() {
   const [mensaje, setMensaje] = useState<string | null>(null);
   const [cargando, setCargando] = useState(false);
 
-  const handleSendCode = async (e: React.FormEvent<HTMLFormElement>) => {
+  // en RecuperarClave.tsx
+const handleSendCode = async (e: React.FormEvent<HTMLFormElement>) => {
   e.preventDefault();
   setMensaje(null);
   setCargando(true);
-
-  // ⬇️ paracaídas visual por si el backend tarda demasiado
-  const guard = setTimeout(() => {
-    setCargando(false);
-    setMensaje("Tardó demasiado en responder. Intenta de nuevo.");
-  }, 13000);
-
   try {
     await sendVerificationCode(correo);
-    clearTimeout(guard);
     setMensaje("Código enviado. Revisa tu correo.");
     setStep("codigo");
     setCodigo("");
-  } catch (error: any) {
-    clearTimeout(guard);
-    setMensaje(
-      error?.name === "CanceledError"
-        ? "Se canceló por demora. Inténtalo otra vez."
-        : "Error enviando código. Verifica tu correo e intenta de nuevo."
-    );
+  } catch (err: any) {
+    // ⬇️ muestra mensaje real si viene del server
+    const msg =
+      err?.response?.data?.message ||
+      err?.response?.data?.error ||
+      err?.message ||
+      "Error enviando código. Verifica tu correo e intenta de nuevo.";
+    setMensaje(msg);
   } finally {
     setCargando(false);
   }
 };
+
 
 
 
