@@ -120,7 +120,7 @@ export const register = async (data: {
 }) => {
   let res;
 
-  if (data.rol === "paseador") {
+  if (data.rol === "PASEADOR") {
     const formData = new FormData();
 
     // Campos básicos
