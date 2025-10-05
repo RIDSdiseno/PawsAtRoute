@@ -350,39 +350,65 @@ const verificationCodes = new Map<string, { code: number; expires: number }>();
 // helper: normalizar correo
 const norm = (v: string) => String(v || "").trim().toLowerCase();
 
+function cleanEnv(v?: string) {
+  return (v ?? "").replace(/^[\'"]|[\'"]$/g, "").trim();
+}
+
 // --- SMTP TRANSPORT (Gmail STARTTLS + timeouts)
-async function sendRecoveryEmail(correo: string, code: number) {
-  const user = process.env.EMAIL_USER;
-  const pass = process.env.EMAIL_PASS;
+export async function sendRecoveryEmail(correo: string, code: number) {
+  const user = cleanEnv(process.env.EMAIL_USER);
+  const pass = cleanEnv(process.env.EMAIL_PASS);
 
   if (!user || !pass) {
-    console.warn("[DEV] EMAIL_USER/PASS no seteados. Simulando envío. Código:", code, "->", correo);
+    console.warn("[DEV] EMAIL_USER/PASS no seteados. Simulando envío.", { code, correo });
     return;
   }
 
-  const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 587,          
-  secure: false,       // SSL
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS, // sin comillas/espacios
-  },
-});
-
-  // Opcional: verificar conexión
-  try {
-    await transporter.verify();
-  } catch (e) {
-    console.warn("SMTP verify falló (continuo e intento mandar igual):", e);
-  }
-
-  await transporter.sendMail({
+  const mail = {
     from: `"Paws At Route" <${user}>`,
     to: correo,
     subject: "Recuperación de contraseña - Código de verificación",
     text: `Tu código de verificación es: ${code}. Es válido por 10 minutos.`,
+  };
+
+  // opciones base
+  const base = {
+    auth: { user, pass },
+    family: 4 as 4,              // fuerza IPv4
+    connectionTimeout: 20000,
+    greetingTimeout: 15000,
+    socketTimeout: 25000,
+    logger: true,                // ver logs en Render
+  };
+
+  // 1) probar 465 (TLS directo)
+  try {
+    const t465 = nodemailer.createTransport({
+      host: "smtp.gmail.com",
+      port: 465,
+      secure: true,
+      ...base,
+      tls: { minVersion: "TLSv1.2", rejectUnauthorized: true },
+    });
+
+    await t465.verify();         // puede tardar; si falla, catcheamos y probamos 587
+    await t465.sendMail(mail);
+    return;
+  } catch (e) {
+    console.warn("[SMTP 465] verify/send falló. Probando 587…", e);
+  }
+
+  // 2) fallback: 587 (STARTTLS)
+  const t587 = nodemailer.createTransport({
+    host: "smtp.gmail.com",
+    port: 587,
+    secure: false,
+    requireTLS: true,            // obliga STARTTLS
+    ...base,
   });
+
+  await t587.verify();
+  await t587.sendMail(mail);
 }
 
 // --- 1) Enviar código
