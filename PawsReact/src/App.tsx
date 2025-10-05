@@ -86,7 +86,7 @@ function App() {
                 links={[
                   { to: "/registro-mascota", label: "Registrar Mascota" },
                   { to: "/nuevo-paseo", label: "Nuevo Paseo" },
-                  { to: "/mi-perfil", label: "Mi perfil", primary: true },
+                  { to: "/mi-perfil", label: "Mi perfil" },
                 ]}
               />
               <PanelDueño />
@@ -100,8 +100,7 @@ function App() {
             <>
               <Navbar
                 links={[
-                  { to: "/panel-dueño", label: "Menú" },
-                  { to: "/mi-perfil", label: "Mi perfil", primary: true },
+                  { to: "/mi-perfil", label: "Mi perfil" },
                 ]}
               />
               <NuevoPaseo />
@@ -130,8 +129,7 @@ function App() {
             <>
               <Navbar
                 links={[
-                  { to: "/panel-dueño", label: "Menú" },
-                  { to: "/mi-perfil", label: "Mi perfil", primary: true },
+                  { to: "/mi-perfil", label: "Mi perfil" },
                 ]}
               />
               <Postulantes />
@@ -145,8 +143,7 @@ function App() {
             <>
               <Navbar
                 links={[
-                  { to: "/panel-paseador", label: "Menú" },
-                  { to: "/mi-perfil", label: "Mi perfil", primary: true },
+                  { to: "/mi-perfil", label: "Mi perfil" },
                 ]}
               />
               <PerfilPaseador />
@@ -161,7 +158,6 @@ function App() {
               <Navbar
                 links={[
                   { to: "/editar-perfil", label: "Editar Perfil" },
-                  { to: "/panel-dueño", label: "Menú", primary: true },
                 ]}
               />
               <MiPerfil />
@@ -175,8 +171,7 @@ function App() {
             <>
               <Navbar
                 links={[
-                  { to: "/panel-dueño", label: "Menú" },
-                  { to: "/mi-perfil", label: "Mi perfil", primary: true },
+                  { to: "/mi-perfil", label: "Mi perfil" },
                 ]}
               />
               <EditarPerfil />
@@ -190,8 +185,7 @@ function App() {
             <>
               <Navbar
                 links={[
-                  { to: "/panel-paseador", label: "Menú" },
-                  { to: "/mi-perfil", label: "Mi perfil", primary: true },
+                  { to: "/mi-perfil", label: "Mi perfil" },
                 ]}
               />
               <PanelPaseador />
@@ -205,8 +199,7 @@ function App() {
             <>
               <Navbar
                 links={[
-                  { to: "/panel-dueño", label: "Menú" },
-                  { to: "/mi-perfil", label: "Mi perfil", primary: true },
+                  { to: "/mi-perfil", label: "Mi perfil" },
                 ]}
               />
               <RegistroMascota />

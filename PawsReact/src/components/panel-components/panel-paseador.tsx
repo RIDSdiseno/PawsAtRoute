@@ -1,14 +1,20 @@
 import { useEffect, useState } from "react";
 import { getProfile } from "../../api/api";
 
+interface Mascota {
+  nombre: string;
+  especie: string;
+  raza: string;
+  edad: string;
+}
+
 interface Paseo {
   id: number;
   dueno: string;
-  mascota: string;
+  mascota: Mascota;
   ubicacion: string;
   duracion: string;
   precio: string;
-  imagen: string;
 }
 
 interface Historial {
@@ -36,41 +42,27 @@ function DashboardPaseador() {
     const fetchUser = async () => {
       try {
         const profile = await getProfile();
-        console.log("Perfil cargado:", profile);
-
         setUser({
           nombre: profile.nombre,
           apellido: profile.apellido,
-          paseosCompletados: profile.paseos?.length || 0, // ajusta según cómo viene el backend
+          paseosCompletados: profile.paseos?.length || 0,
         });
-      } catch (error) {
-        console.error("Error al obtener el perfil:", error);
+      } catch {
+        setUser(null);
       } finally {
         setLoading(false);
       }
     };
-
     fetchUser();
   }, []);
 
-  const abrirModal = (accion: "iniciar" | "finalizar" | "pagar") => {
+  const abrirModal = (accion: "iniciar" | "finalizar" | "pagar") =>
     setModal(accion);
-  };
-
-  const cerrarModal = () => {
-    setModal(null);
-  };
-
+  const cerrarModal = () => setModal(null);
   const confirmarAccion = () => {
-    if (modal === "iniciar") {
-      console.log("Paseo iniciado");
-    }
-    if (modal === "finalizar") {
-      console.log("Paseo finalizado");
-    }
-    if (modal === "pagar") {
-      console.log("Pago realizado");
-    }
+    if (modal === "iniciar") console.log("Paseo iniciado");
+    if (modal === "finalizar") console.log("Paseo finalizado");
+    if (modal === "pagar") console.log("Pago realizado");
     cerrarModal();
   };
 
@@ -78,29 +70,41 @@ function DashboardPaseador() {
     {
       id: 1,
       dueno: "Andrea",
-      mascota: "Firulais",
-      ubicacion: "Psj. Water seven 2500, Huechuraba",
+      mascota: {
+        nombre: "Firulais",
+        especie: "Canino",
+        raza: "Labrador Retriever",
+        edad: "1 a 2 años",
+      },
+      ubicacion: "Psj. Water Seven 2500, Huechuraba",
       duracion: "30 minutos",
       precio: "5000",
-      imagen: "/img/perro-3.webp",
     },
     {
       id: 2,
       dueno: "Martín",
-      mascota: "Tito",
+      mascota: {
+        nombre: "Tito",
+        especie: "Felino",
+        raza: "British Shorthair",
+        edad: "3 a 4 años",
+      },
       ubicacion: "Psj. Wano 2323, Colina",
       duracion: "60 minutos",
       precio: "10000",
-      imagen: "/img/perro-2.webp",
     },
     {
       id: 3,
       dueno: "Fernanda",
-      mascota: "Chispa",
+      mascota: {
+        nombre: "Chispa",
+        especie: "Canino",
+        raza: "Border Collie",
+        edad: "Menor de 1 año",
+      },
       ubicacion: "Psj. Dressrosa 1244, Conchalí",
       duracion: "120 minutos",
       precio: "20000",
-      imagen: "/img/perro-3.webp",
     },
   ];
 
@@ -121,7 +125,7 @@ function DashboardPaseador() {
 
   const handleConfirm = () => {
     if (selectedPaseo) {
-      alert(`Te has postulado al paseo con ${selectedPaseo.mascota}`);
+      alert(`Te has postulado al paseo con ${selectedPaseo.mascota.nombre}`);
       setSelectedPaseo(null);
     }
   };
@@ -163,7 +167,16 @@ function DashboardPaseador() {
               <strong>Dueño:</strong> {solicitudes[0].dueno}
             </p>
             <p className="text-gray-600">
-              <strong>Mascota:</strong> {solicitudes[0].mascota}
+              <strong>Mascota:</strong> {solicitudes[0].mascota.nombre}
+            </p>
+            <p className="text-gray-600">
+              <strong>Especie:</strong> {solicitudes[0].mascota.especie}
+            </p>
+            <p className="text-gray-600">
+              <strong>Raza:</strong> {solicitudes[0].mascota.raza}
+            </p>
+            <p className="text-gray-600">
+              <strong>Edad:</strong> {solicitudes[0].mascota.edad}
             </p>
             <p className="text-gray-600">
               <strong>Duración:</strong> {solicitudes[0].duracion}
@@ -238,24 +251,28 @@ function DashboardPaseador() {
               key={s.id}
               className="flex flex-col rounded-2xl bg-white border border-gray-200 shadow-md hover:shadow-xl transition-shadow overflow-hidden"
             >
-              <img
-                src={s.imagen}
-                alt={`Foto de ${s.mascota}`}
-                className="w-full h-48 object-cover"
-              />
               <div className="flex flex-col flex-1 p-5">
-                <h3 className="text-xl font-bold mb-2">{s.mascota}</h3>
-                <p className="text-gray-600 mb-1">
+                <h3 className="text-xl font-bold mb-2">{s.mascota.nombre}</h3>
+                <p className="text-gray-600">
+                  <strong>Especie:</strong> {s.mascota.especie}
+                </p>
+                <p className="text-gray-600">
+                  <strong>Raza:</strong> {s.mascota.raza}
+                </p>
+                <p className="text-gray-600 mb-2">
+                  <strong>Edad:</strong> {s.mascota.edad}
+                </p>
+                <p className="text-gray-600">
                   <strong>Dueño:</strong> {s.dueno}
                 </p>
-                <p className="text-gray-600 mb-1">
+                <p className="text-gray-600">
                   <strong>Ubicación:</strong> {s.ubicacion}
                 </p>
-                <p className="text-gray-600 mb-1">
+                <p className="text-gray-600 mb-4">
                   <strong>Duración:</strong> {s.duracion}
                 </p>
-                <p className="text-gray-600 mb-4">
-                  <strong>Precio: $</strong> {s.precio}
+                <p className="text-gray-700 font-semibold mb-4">
+                  <strong>Precio:</strong> ${s.precio}
                 </p>
                 <button
                   onClick={() => setSelectedPaseo(s)}
@@ -277,7 +294,7 @@ function DashboardPaseador() {
             </h3>
             <p className="text-gray-700 mb-2">
               Vas a postularte al paseo de{" "}
-              <strong>{selectedPaseo.mascota}</strong>
+              <strong>{selectedPaseo.mascota.nombre}</strong>
             </p>
             <ul className="text-gray-600 mb-6">
               <li>
