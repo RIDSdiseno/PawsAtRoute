@@ -364,15 +364,30 @@ export async function sendRecoveryEmail(correo: string, code: number) {
 
   const resend = new Resend(RESEND_KEY);
 
-  await resend.emails.send({
-    from: `Paws At Route <${FROM_EMAIL}>`,
-    to: [correo],
-    subject: "Recuperación de contraseña - Código de verificación",
-    text: `Tu código de verificación es: ${code}. Es válido por 10 minutos.`,
-    replyTo: "soporte.pawsatroute@gmail.com", // opcional
-  });
-}
+  try {
+    const result = await resend.emails.send({
+      from: `Paws At Route <${FROM_EMAIL}>`,
+      to: [correo],
+      subject: "Recuperación de contraseña - Código de verificación",
+      text: `Tu código de verificación es: ${code}. Es válido por 10 minutos.`,
+      // replyTo es camelCase (opcional):
+      // replyTo: "soporte.pawsatroute@gmail.com",
+    });
 
+    console.log("[RESEND] send OK:", JSON.stringify(result, null, 2));
+    // Tip: si llega aquí, Resend aceptó el envío.
+    // Guarda result.id para rastrear en el dashboard de Resend.
+  } catch (err: any) {
+    // MUY útil: Resend da detalles en err.name/err.message/err.statusCode/err.body
+    console.error("[RESEND] send ERROR:", {
+      name: err?.name,
+      message: err?.message,
+      status: err?.statusCode,
+      body: err?.response?.body,
+    });
+    throw err;
+  }
+}
 // --- 1) Enviar código
 export const sendVerificationCode = async (req: Request, res: Response) => {
   try {
@@ -394,7 +409,7 @@ export const sendVerificationCode = async (req: Request, res: Response) => {
         const hardTimeout = new Promise((_, rej) =>
           setTimeout(() => rej(new Error("SMTP hard timeout")), 20000)
         );
-        await Promise.race([sendRecoveryEmail(correo, code), hardTimeout]);
+        await sendRecoveryEmail(correo, code);
         console.log("Email de recuperación enviado a:", correo);
       } catch (err) {
         console.error("sendRecoveryEmail error:", err);
