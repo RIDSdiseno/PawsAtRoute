@@ -1,9 +1,8 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { login } from "../../api/api.ts";
 
 function Login() {
-  const navigate = useNavigate();
 
   const [correo, setCorreo] = useState("");
   const [password, setPassword] = useState("");
@@ -47,17 +46,20 @@ function Login() {
     try {
       const data = await login(correo, password);
       console.log("Usuario logueado:", data.user);
+      if (data.token) {
+        localStorage.setItem("access_token", data.token);
+      } else if (data.token) {
+        localStorage.setItem("access_token", data.token);
+      }
 
       switch (data.user.rol) {
         case "DUEÑO":
-          navigate("/panel-dueño")
+          window.location.href = "/panel-dueño";
           break;
         case "PASEADOR":
-          navigate("/panel-paseador")
-          window.location.reload();
+          window.location.href = "/panel-paseador";
           break;
         default:
-          navigate("/")
           window.location.href = "/";
           break;
       }

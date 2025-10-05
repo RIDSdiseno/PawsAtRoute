@@ -64,6 +64,7 @@ interface LoginResponse {
     nombre: string;
     correo: string;
     rol : string;
+    token : string
   };
   remember: boolean;
 }
