@@ -4,6 +4,11 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import type { Secret } from "jsonwebtoken";
 import crypto from "crypto";
+import nodemailer from "nodemailer";
+import dotenv from "dotenv";
+
+dotenv.config();
+const codes = new Map();
 
 const prisma = new PrismaClient
 /* =========================
@@ -336,5 +341,101 @@ export const getProfile = async (req: Request, res: Response) => {
   } catch (error) {
     console.error("Error en /auth/profile", error);
     res.status(500).json({ error: "Error interno" });
+  }
+};
+
+const verificationCodes = new Map<string, { code: number; expires: number }>();
+
+export const sendVerificationCode = async (req: Request, res: Response) => {
+  const { correo } = req.body;
+
+  if (!correo) return res.status(400).json({ message: "Correo requerido" });
+
+  // Generar código de 6 dígitos
+  const code = Math.floor(100000 + Math.random() * 900000);
+  verificationCodes.set(correo, { code, expires: Date.now() + 10 * 60 * 1000 });
+
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+  });
+
+  const mailOptions = {
+    from: `"Paws At Route" <${process.env.EMAIL_USER}>`,
+    to: correo,
+    subject: "Recuperación de contraseña - Código de verificación",
+    text: `Tu código de verificación es: ${code}. Es válido por 10 minutos.`,
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    res.status(200).json({ message: "Código enviado al correo" });
+  } catch (error) {
+    console.error("Error enviando el correo:", error);
+    res.status(500).json({ message: "Error al enviar el correo" });
+  }
+};
+
+export const verifyCode = (req: Request, res: Response) => {
+  const { correo, codigo } = req.body;
+  if (!correo || !codigo) return res.status(400).json({ message: "Datos requeridos" });
+
+  const record = verificationCodes.get(correo);
+  if (!record) return res.status(400).json({ message: "Código no encontrado" });
+  if (Date.now() > record.expires) {
+    verificationCodes.delete(correo);
+    return res.status(400).json({ message: "Código expirado" });
+  }
+  if (record.code != Number(codigo)) return res.status(400).json({ message: "Código incorrecto" });
+
+  return res.json({ message: "Código verificado" });
+};
+
+
+export const resetPassword = async (req: Request, res: Response) => {
+  const { correo, nuevaClave } = req.body;
+
+  if (!correo || !nuevaClave) {
+    return res.status(400).json({ error: "Correo y nueva clave son obligatorios" });
+  }
+
+  const emailNorm = correo.trim().toLowerCase();
+
+  try {
+    const user = await prisma.usuario.findUnique({ where: { correo: emailNorm } });
+    if (!user) {
+      return res.status(404).json({ error: "Usuario no encontrado" });
+    }
+
+    const newPasswordHash = await bcrypt.hash(nuevaClave, 10);
+
+    await prisma.usuario.update({
+      where: { correo: emailNorm },
+      data: {
+        passwordHash: newPasswordHash,
+      },
+    });
+
+    // Limpia cualquier código temporal de recuperación (opcional)
+    verificationCodes.delete(emailNorm);
+
+    // (Opcional) invalidar tokens refresh activos
+    await prisma.refreshToken.updateMany({
+      where: {
+        userId: user.idUsuario,
+        revokedAt: null,
+      },
+      data: {
+        revokedAt: new Date(),
+      },
+    });
+
+    return res.json({ message: "Contraseña actualizada correctamente" });
+  } catch (error) {
+    console.error("Error al restablecer la contraseña:", error);
+    return res.status(500).json({ error: "Error interno" });
   }
 };

@@ -62,7 +62,6 @@ if (isLoading) {
       window.location.href = "/panel-paseador";
     }
   };
-console.log("User:", user);
 
   const filteredLinks = links.filter(link => {
   if (user) {
