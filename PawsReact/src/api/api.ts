@@ -8,6 +8,7 @@ const BASE_URL = import.meta.env.VITE_API_BASE_URL ||
 const api: AxiosInstance = axios.create({
   baseURL: BASE_URL,
   withCredentials: false, // para enviar cookies httpOnly (refresh tokens)
+  timeout: 12000
 });
 
 // Guardamos accessToken en memoria (y localStorage para persistencia)
@@ -150,25 +151,36 @@ export const register = async (data: {
   return res.data;
 };
 
-export const sendVerificationCode = async (correo: string): Promise<{ message: string }> => {
-  const res = await api.post("/auth/send-code", { correo });
-  return res.data;
+function withAbort<T>(fn: (signal: AbortSignal) => Promise<T>, ms = 12000) {
+  return new Promise<T>((resolve, reject) => {
+    const controller = new AbortController();
+    const t = setTimeout(() => controller.abort(), ms);
+    fn(controller.signal).then(
+      (v) => { clearTimeout(t); resolve(v); },
+      (e) => { clearTimeout(t); reject(e); }
+    );
+  });
+}
+
+export const sendVerificationCode = async (correo: string) => {
+  return withAbort(async (signal) => {
+    const res = await api.post("/auth/send-code", { correo }, { signal });
+    return res.data as { message: string };
+  });
 };
 
-export const verifyCode = async (
-  correo: string,
-  codigo: number
-): Promise<{ message: string }> => {
-  const res = await api.post("/auth/verify-code", { correo, codigo });
-  return res.data;
+export const verifyCode = async (correo: string, codigo: number) => {
+  return withAbort(async (signal) => {
+    const res = await api.post("/auth/verify-code", { correo, codigo }, { signal });
+    return res.data as { message: string };
+  });
 };
 
-export const resetPassword = async (
-  correo: string,
-  nuevaClave: string
-): Promise<{ message: string }> => {
-  const res = await api.put("/auth/reset-password", { correo, nuevaClave });
-  return res.data;
+export const resetPassword = async (correo: string, nuevaClave: string) => {
+  return withAbort(async (signal) => {
+    const res = await api.put("/auth/reset-password", { correo, nuevaClave }, { signal });
+    return res.data as { message: string };
+  });
 };
 
 
