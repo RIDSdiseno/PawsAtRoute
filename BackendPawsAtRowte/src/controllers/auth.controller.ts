@@ -344,43 +344,88 @@ export const getProfile = async (req: Request, res: Response) => {
   }
 };
 
+// Map en memoria: clave SIEMPRE normalizada
 const verificationCodes = new Map<string, { code: number; expires: number }>();
 
-export const sendVerificationCode = async (req: Request, res: Response) => {
-  const { correo } = req.body;
+// helper: normalizar correo
+const norm = (v: string) => String(v || "").trim().toLowerCase();
 
-  if (!correo) return res.status(400).json({ message: "Correo requerido" });
+// --- SMTP TRANSPORT (Gmail STARTTLS + timeouts)
+async function sendRecoveryEmail(correo: string, code: number) {
+  const user = process.env.EMAIL_USER;
+  const pass = process.env.EMAIL_PASS;
 
-  // Generar código de 6 dígitos
-  const code = Math.floor(100000 + Math.random() * 900000);
-  verificationCodes.set(correo, { code, expires: Date.now() + 10 * 60 * 1000 });
+  if (!user || !pass) {
+    console.warn("[DEV] EMAIL_USER/PASS no seteados. Simulando envío. Código:", code, "->", correo);
+    return;
+  }
 
   const transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
-    },
+    host: "smtp.gmail.com",
+    port: 587,
+    secure: false,        // STARTTLS
+    auth: { user, pass }, // App Password (no la password normal)
+    pool: true,
+    maxConnections: 2,
+    maxMessages: 50,
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
+    socketTimeout: 15000,
   });
 
-  const mailOptions = {
-    from: `"Paws At Route" <${process.env.EMAIL_USER}>`,
+  // Opcional: verificar conexión
+  try {
+    await transporter.verify();
+  } catch (e) {
+    console.warn("SMTP verify falló (continuo e intento mandar igual):", e);
+  }
+
+  await transporter.sendMail({
+    from: `"Paws At Route" <${user}>`,
     to: correo,
     subject: "Recuperación de contraseña - Código de verificación",
     text: `Tu código de verificación es: ${code}. Es válido por 10 minutos.`,
-  };
+  });
+}
 
+// --- 1) Enviar código
+export const sendVerificationCode = async (req: Request, res: Response) => {
   try {
-    await transporter.sendMail(mailOptions);
-    res.status(200).json({ message: "Código enviado al correo" });
+    const raw = req.body?.correo;
+    if (!raw) return res.status(400).json({ message: "Correo requerido" });
+
+    const correo = norm(raw);
+
+    // Generar y guardar (10 min)
+    const code = Math.floor(100000 + Math.random() * 900000);
+    verificationCodes.set(correo, { code, expires: Date.now() + 10 * 60 * 1000 });
+
+    // RESPONDE YA (no bloquees por SMTP)
+    res.status(200).json({ message: "Código generado. Revisa tu correo." });
+
+    // Envío en background con timeout de seguridad
+    (async () => {
+      try {
+        const hardTimeout = new Promise((_, rej) =>
+          setTimeout(() => rej(new Error("SMTP hard timeout")), 20000)
+        );
+        await Promise.race([sendRecoveryEmail(correo, code), hardTimeout]);
+        console.log("Email de recuperación enviado a:", correo);
+      } catch (err) {
+        console.error("sendRecoveryEmail error:", err);
+      }
+    })();
   } catch (error) {
-    console.error("Error enviando el correo:", error);
-    res.status(500).json({ message: "Error al enviar el correo" });
+    console.error("sendVerificationCode error:", error);
+    if (!res.headersSent) res.status(500).json({ message: "Error al generar código" });
   }
 };
 
+// --- 2) Verificar código
 export const verifyCode = (req: Request, res: Response) => {
-  const { correo, codigo } = req.body;
+  const correo = norm(req.body?.correo);
+  const codigo = Number(req.body?.codigo);
+
   if (!correo || !codigo) return res.status(400).json({ message: "Datos requeridos" });
 
   const record = verificationCodes.get(correo);
@@ -389,23 +434,22 @@ export const verifyCode = (req: Request, res: Response) => {
     verificationCodes.delete(correo);
     return res.status(400).json({ message: "Código expirado" });
   }
-  if (record.code != Number(codigo)) return res.status(400).json({ message: "Código incorrecto" });
+  if (record.code !== codigo) return res.status(400).json({ message: "Código incorrecto" });
 
   return res.json({ message: "Código verificado" });
 };
 
-
+// --- 3) Reset password
 export const resetPassword = async (req: Request, res: Response) => {
-  const { correo, nuevaClave } = req.body;
+  const correo = norm(req.body?.correo);
+  const nuevaClave = String(req.body?.nuevaClave || "");
 
   if (!correo || !nuevaClave) {
     return res.status(400).json({ error: "Correo y nueva clave son obligatorios" });
   }
 
-  const emailNorm = correo.trim().toLowerCase();
-
   try {
-    const user = await prisma.usuario.findUnique({ where: { correo: emailNorm } });
+    const user = await prisma.usuario.findUnique({ where: { correo } });
     if (!user) {
       return res.status(404).json({ error: "Usuario no encontrado" });
     }
@@ -413,24 +457,17 @@ export const resetPassword = async (req: Request, res: Response) => {
     const newPasswordHash = await bcrypt.hash(nuevaClave, 10);
 
     await prisma.usuario.update({
-      where: { correo: emailNorm },
-      data: {
-        passwordHash: newPasswordHash,
-      },
+      where: { correo },
+      data: { passwordHash: newPasswordHash },
     });
 
-    // Limpia cualquier código temporal de recuperación (opcional)
-    verificationCodes.delete(emailNorm);
+    // Limpia el código temporal usando la MISMA clave normalizada
+    verificationCodes.delete(correo);
 
-    // (Opcional) invalidar tokens refresh activos
+    // Invalidar RT activos (opcional)
     await prisma.refreshToken.updateMany({
-      where: {
-        userId: user.idUsuario,
-        revokedAt: null,
-      },
-      data: {
-        revokedAt: new Date(),
-      },
+      where: { userId: user.idUsuario, revokedAt: null },
+      data: { revokedAt: new Date() },
     });
 
     return res.json({ message: "Contraseña actualizada correctamente" });
