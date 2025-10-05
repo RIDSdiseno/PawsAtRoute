@@ -6,7 +6,7 @@
   "scripts": {
     "start": "serve -s dist -l $PORT",
     "build": "vite build",
-    "dev": "vite",
+    "dev": "serve -s dist -l $PORT",
     "dev:render": "serve -s dist -l $PORT",
     "preview": "vite preview"
   },
