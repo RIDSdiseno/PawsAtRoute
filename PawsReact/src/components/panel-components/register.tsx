@@ -8,7 +8,7 @@ function Register() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
+    
     const form = e.currentTarget;
     const formData = new FormData(form);
 
