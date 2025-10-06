@@ -24,7 +24,7 @@ app.use("/uploads", express.static(UPLOAD_DIR));
 
 
 app.use(cookieParser());                             // DEBE ir antes de las rutas
-app.use(express.json());
+
 app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

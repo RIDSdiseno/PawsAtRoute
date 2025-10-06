@@ -121,7 +121,7 @@ export const registerUser = async (req: Request, res: Response) => {
     } = req.body ;
 
     const files = (req as any).files as {
-      carnetIdentidad?: Express.Multer.File[];
+      carnet?: Express.Multer.File[];
       antecedentes?: Express.Multer.File[];
     } | undefined;
 
@@ -131,9 +131,10 @@ export const registerUser = async (req: Request, res: Response) => {
 
     const emailNorm = String(correo).trim().toLowerCase();
 
-    if (rol === "PASEADOR") {
-      const carnetFile = files?.carnetIdentidad?.[0];
+    
+      const carnetFile = files?.carnet?.[0];
       const antecedentesFile = files?.antecedentes?.[0];
+    if (rol === "PASEADOR") {
       if (!carnetFile || !antecedentesFile) {
         return res.status(400).json({
           error: "Para rol PASEADOR es obligatorio adjuntar 'carnet' y 'antecedentes'.",
@@ -155,11 +156,11 @@ export const registerUser = async (req: Request, res: Response) => {
     // Crear usuario con URLs
     const newUser = await prisma.usuario.create({
       data: {
-        rut: String(rut).trim(),
-        nombre: String(nombre).trim(),
-        apellido: String(apellido).trim(),
-        telefono: String(telefono).trim(),
-        comuna: String(comuna).trim(),
+        rut: rut,
+        nombre: nombre,
+        apellido: apellido,
+        telefono: telefono,
+        comuna: comuna,
         correo: emailNorm,
         passwordHash,
         rol: rol,
