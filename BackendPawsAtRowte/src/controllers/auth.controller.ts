@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Rol } from "@prisma/client";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import type { Secret } from "jsonwebtoken";
@@ -118,10 +118,10 @@ export const registerUser = async (req: Request, res: Response) => {
       correo,
       clave,
       rol,
-    } = req.body as Record<string, string>;
+    } = req.body ;
 
     const files = (req as any).files as {
-      carnet?: Express.Multer.File[];
+      carnetIdentidad?: Express.Multer.File[];
       antecedentes?: Express.Multer.File[];
     } | undefined;
 
@@ -132,7 +132,7 @@ export const registerUser = async (req: Request, res: Response) => {
     const emailNorm = String(correo).trim().toLowerCase();
 
     if (rol === "PASEADOR") {
-      const carnetFile = files?.carnet?.[0];
+      const carnetFile = files?.carnetIdentidad?.[0];
       const antecedentesFile = files?.antecedentes?.[0];
       if (!carnetFile || !antecedentesFile) {
         return res.status(400).json({
@@ -146,8 +146,8 @@ export const registerUser = async (req: Request, res: Response) => {
     if (existing) return res.status(409).json({ error: "Usuario ya existe" });
 
     // Subir a Cloudinary si corresponde
-    let carnetUrl: string | null = null;
-    let antecedentesUrl: string | null = null;
+    let carnetIdentidad: string | null = null;
+    let antecedentes: string | null = null;
 
     // Hash
     const passwordHash = await bcrypt.hash(String(clave), 10);
@@ -162,17 +162,17 @@ export const registerUser = async (req: Request, res: Response) => {
         comuna: String(comuna).trim(),
         correo: emailNorm,
         passwordHash,
-        rol: String(rol).trim().toUpperCase(), // "PASEADOR"/"DUEÑO"
-        carnetUrl,
-        antecedentesUrl,
+        rol: rol,
+        carnetIdentidad,
+        antecedentes,
       },
       select: {
         idUsuario: true,
         nombre: true,
         correo: true,
         rol: true,
-        carnetUrl: true,
-        antecedentesUrl: true,
+        carnetIdentidad: true,
+        antecedentes: true,
       },
     });
 
