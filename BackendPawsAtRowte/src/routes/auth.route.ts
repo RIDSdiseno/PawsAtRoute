@@ -17,19 +17,25 @@ const upload = multer({
   limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
 });
 
-r.get("/health", (_req, res) => res.json({ ok: true, service: "API Paws", ts: Date.now() }));
+const maybeUpload = (
+  req: import("express").Request,
+  res: import("express").Response,
+  next: import("express").NextFunction
+) => {
+  if (req.is("multipart/form-data")) {
+    return upload.fields([
+      { name: "carnet", maxCount: 1 },
+      { name: "antecedentes", maxCount: 1 },
+    ])(req, res, next);
+  }
+  return next();
+};
 
-r.post("/register",registerUser);
+
+r.get("/health", (_req, res) => res.json({ ok: true, service: "API Paws", ts: Date.now() }));
 r.post("/login",login);
 
-r.post(
-  "/register",
-  upload.fields([
-    { name: "carnet", maxCount: 1 },
-    { name: "antecedentes", maxCount: 1 },
-  ]),
-  registerUser
-);
+r.post("/register", maybeUpload, registerUser);
 
 r.post("/logout",authGuard,logout);
 r.get("/profile", authGuard, getProfile);
