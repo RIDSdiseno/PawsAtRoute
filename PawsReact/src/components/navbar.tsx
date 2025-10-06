@@ -1,7 +1,7 @@
 // src/components/Navbar.tsx
-import { useState,useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { getProfile,logout } from "../api/api";
+import { getProfile, logout } from "../api/api";
 
 interface NavLink {
   label: string;
@@ -16,86 +16,81 @@ interface NavbarProps {
 
 function Navbar({ links = [] }: NavbarProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [user, setUser] = useState<{ rol: string; nombre: string } | null>(null);
-const [isLoading, setIsLoading] = useState(true);
+  const [user, setUser] = useState<{ rol: string; nombre: string } | null>(
+    null
+  );
+  const [isLoading, setIsLoading] = useState(true);
 
   const closeMenu = () => setIsMenuOpen(false);
 
   useEffect(() => {
-  const fetchUser = async () => {
-    if (!localStorage.getItem("access_token")) {
-      setUser(null);
-      setIsLoading(false);
-      return;
-    }
-    try {
-      const profile = await getProfile();
-      setUser(profile);
-    } catch {
-      setUser(null);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    const fetchUser = async () => {
+      if (!localStorage.getItem("access_token")) {
+        setUser(null);
+        setIsLoading(false);
+        return;
+      }
+      try {
+        const profile = await getProfile();
+        setUser(profile);
+      } catch {
+        setUser(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchUser();
+  }, []);
 
-  fetchUser();
-}, []);
-
-if (isLoading) {
-  return <nav>Loading...</nav>; // O algo simple mientras se chequea sesión
-}
+  if (isLoading) {
+    return <nav>Loading...</nav>;
+  }
 
   const handleLogout = async () => {
-  await logout();
-  setUser(null);       // limpia estado local
-  closeMenu();         // cierra menú si estaba abierto (opcional)
-  window.location.href = "/login";  // redirige
-};
+    await logout();
+    setUser(null);
+    closeMenu();
+    window.location.href = "/login";
+  };
 
   const goToPanel = () => {
     if (!user) return;
-    if (user.rol === "DUEÑO") {
-      window.location.href = "/panel-dueño";
-    } 
-    else if (user.rol === "PASEADOR") {
-      window.location.href = "/panel-paseador";
-    }
+    if (user.rol === "DUEÑO") window.location.href = "/panel-dueño";
+    else if (user.rol === "PASEADOR") window.location.href = "/panel-paseador";
   };
 
-  // Ocultar/mostrar links según sesión
-  const filteredLinks = links.filter(link => {
-  if (user) {
-    // Si usuario está logueado, ocultar 'Ingresar' y 'Registrarse'
-    if (link.to === "/login" || link.to === "/register") return false;
-  } else {
-    // Si NO está logueado, ocultar 'Cerrar sesión' (por si viene por props)
-    if (link.to === "/logout") return false;
-    // Opcional: podrías ocultar links que solo vea usuario, pero por ahora no hay más
-  }
-  return true;
-});
+  const filteredLinks = links.filter((link) => {
+    if (user) {
+      if (link.to === "/login" || link.to === "/register") return false;
+    } else {
+      if (link.to === "/logout") return false;
+    }
+    return true;
+  });
+
   return (
     <nav className="bg-selective-yellow">
       <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
+        {/* Logo */}
         <Link
           to="/"
           className="flex items-center space-x-3 rtl:space-x-reverse"
           onClick={closeMenu}
         >
-          <span className="text-3xl font-coffeecake text-prussian-blue text-shadow-lg shadow-prussian-blue/50">
+          <span className="text-3xl font-coffeecake text-prussian-blue">
             Paws At Route
           </span>
         </Link>
 
-        {/* Menú móvil */}
+        {/* Botón hamburguesa visible en md y menores */}
         <button
           type="button"
-          className="inline-flex items-center p-2 w-10 h-10 justify-center text-sm rounded-lg md:hidden text-white bg-prussian-blue hover:bg-prussian-blue/80 focus:ring-2 focus:ring-cyan-900"
+          className="inline-flex items-center p-2 w-10 h-10 justify-center text-sm rounded-lg text-white bg-prussian-blue hover:bg-prussian-blue/80 focus:ring-2 focus:ring-cyan-900 md:inline-flex lg:hidden"
           aria-controls="navbar-default"
           aria-expanded={isMenuOpen}
           onClick={() => setIsMenuOpen(!isMenuOpen)}
         >
-          <span className="sr-only">Open main menu</span>
+          <span className="sr-only">Abrir menú principal</span>
           <svg
             className="w-5 h-5"
             aria-hidden="true"
@@ -113,55 +108,63 @@ if (isLoading) {
           </svg>
         </button>
 
-        {/* Links */}
+        {/* Menú colapsable */}
         <div
-          className={`${isMenuOpen ? "block" : "hidden"} w-full md:block md:w-auto`}
+          className={`${
+            isMenuOpen ? "block" : "hidden"
+          } w-full lg:flex lg:w-auto transition-all duration-200`}
           id="navbar-default"
         >
-          <ul className="text-md flex flex-col p-4 md:p-0 mt-4 border-2 border-gray-300/50 rounded-xl bg-gray-300/50 md:flex-row md:space-x-8 rtl:space-x-reverse md:mt-0 md:border-0 md:bg-transparent font-semibold">
-            {/* Links filtrados */}
+          <ul className="flex flex-col lg:flex-row items-center justify-center gap-2 p-4 lg:p-0 mt-4 lg:mt-0 md:border-2 border-gray-200/50 lg:border-0 rounded-xl bg-gray-100/60 lg:bg-transparent font-semibold text-md">
             {filteredLinks.map((link, index) => (
               <li
                 key={index}
-                className={`rounded-full transition-colors duration-300 ${
+                className={`w-full lg:w-auto text-center rounded-full transition-all duration-200 ${
                   link.primary
-                    ? "bg-prussian-blue/90 text-white border border-cyan-900 hover:bg-prussian-blue active:scale-90 transition-all duration-200"
-                    : "hover:bg-ut-orange active:scale-90 transition-all duration-200"
+                    ? "bg-prussian-blue/80 text-white hover:bg-prussian-blue border border-cyan-900 cursor-pointer"
+                    : "hover:bg-ut-orange/90 hover:text-white cursor-pointer"
                 }`}
               >
                 {link.to ? (
-                  <Link to={link.to} className="block py-2 px-4" onClick={closeMenu}>
+                  <Link
+                    to={link.to}
+                    onClick={closeMenu}
+                    className="block px-5 py-2 rounded-full w-full transition-transform active:scale-95"
+                  >
                     {link.label}
                   </Link>
                 ) : (
-                  <a href={link.href} className="block py-2 px-4" onClick={closeMenu}>
+                  <a
+                    href={link.href}
+                    onClick={closeMenu}
+                    className="block px-5 py-2 rounded-full w-full transition-transform active:scale-95"
+                  >
                     {link.label}
                   </a>
                 )}
               </li>
             ))}
 
-            {/* Botones visibles solo si hay usuario */}
-            {user ? (
+            {user && (
               <>
-                <li>
+                <li className="w-full lg:w-auto">
                   <button
                     onClick={goToPanel}
-                    className="block py-2 px-4 rounded-full bg-prussian-blue text-white hover:bg-prussian-blue/90 transition-all duration-200"
+                    className="w-full cursor-pointer lg:w-auto px-5 py-2 rounded-full bg-prussian-blue/80 text-white border border-cyan-900 hover:bg-prussian-blue transition-all duration-200 active:scale-95"
                   >
                     Mi Panel
                   </button>
                 </li>
-                <li>
+                <li className="w-full lg:w-auto">
                   <button
                     onClick={handleLogout}
-                    className="block py-2 px-4 rounded-full bg-red-500 text-white hover:bg-red-600 transition-all duration-200"
+                    className="w-full cursor-pointer lg:w-auto px-5 py-2 rounded-full bg-red-500 text-white border border-red-600 hover:bg-red-600 transition-all duration-200 active:scale-95"
                   >
                     Cerrar sesión
                   </button>
                 </li>
               </>
-            ) : null}
+            )}
           </ul>
         </div>
       </div>

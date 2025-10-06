@@ -1,44 +1,42 @@
 import { useState } from "react";
-import { Link,useNavigate  } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { register } from "../../api/api";
 
 function Register() {
   const [userType, setUserType] = useState("");
   const navigate = useNavigate();
 
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
 
-const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-  e.preventDefault();
+    const form = e.currentTarget;
+    const formData = new FormData(form);
 
-  const form = e.currentTarget;
-  const formData = new FormData(form);
+    const carnetFile = formData.get("carnet") as File | null;
+    const antecedentesFile = formData.get("antecedentes") as File | null;
 
-  const carnetFile = formData.get("carnet") as File | null;
-  const antecedentesFile = formData.get("antecedentes") as File | null;
-
-  try {
-    const dataToSend = {
-      rut: formData.get("rut") as string,          // no olvides agregar input rut en el form
-      nombre: formData.get("nombre") as string,
-      apellido: formData.get("apellido") as string,
-      telefono: formData.get("telefono") as string,
-      correo: formData.get("correo") as string,
-      clave: formData.get("contraseña") as string,
-      comuna: formData.get("comuna") as string,    // <--- agregamos comuna
-      rol: formData.get("userType") as string,
-      carnet: carnetFile || undefined,
-      antecedentes: antecedentesFile || undefined,
-    };
-    console.log(dataToSend);
-    await register(dataToSend);
-    alert("Usuario registrado correctamente!");
-    navigate("/login");
-  } catch (error) {
-    console.error(error);
-    alert("Error al registrar usuario");
-  }
-};
-
+    try {
+      const dataToSend = {
+        rut: formData.get("rut") as string, // no olvides agregar input rut en el form
+        nombre: formData.get("nombre") as string,
+        apellido: formData.get("apellido") as string,
+        telefono: formData.get("telefono") as string,
+        correo: formData.get("correo") as string,
+        clave: formData.get("contraseña") as string,
+        comuna: formData.get("comuna") as string, // <--- agregamos comuna
+        rol: formData.get("userType") as string,
+        carnet: carnetFile || undefined,
+        antecedentes: antecedentesFile || undefined,
+      };
+      console.log(dataToSend);
+      await register(dataToSend);
+      alert("Usuario registrado correctamente!");
+      navigate("/login");
+    } catch (error) {
+      console.error(error);
+      alert("Error al registrar usuario");
+    }
+  };
 
   return (
     <>
@@ -49,7 +47,7 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         <div className="w-full max-w-4xl bg-white rounded-xl shadow-lg border-2 border-gray-300 flex flex-col md:flex-row overflow-hidden">
           <div className="hidden md:flex w-1/2 bg-prussian-blue items-center justify-center p-4">
             <img
-              src="/img/perros jugando 2.webp"
+              src="/img/perros_jugando_2.webp"
               alt="Perros jugando"
               loading="lazy"
               className="object-cover w-full h-full max-h-[350px] drop-shadow-lg"
@@ -150,21 +148,21 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
                 </p>
               </label>
               <label className="flex flex-col gap-1" htmlFor="rut">
-  <p className="font-semibold">RUT</p>
-  <input
-    className="p-2 border-2 border-gray-300 rounded-lg peer focus:outline-none focus:border-blue-500 invalid:border-red-500 invalid:text-red-500"
-    type="text"
-    required
-    id="rut"
-    name="rut"
-    placeholder="Ej: 12345678-9"
-    pattern="^\d{7,8}-[\dkK]$"
-    maxLength={10}
-  />
-  <p className="invisible text-xs text-red-500 peer-invalid:visible">
-    Formato válido: 12345678-9
-  </p>
-</label>
+                <p className="font-semibold">RUT</p>
+                <input
+                  className="p-2 border-2 border-gray-300 rounded-lg peer focus:outline-none focus:border-blue-500 invalid:border-red-500 invalid:text-red-500"
+                  type="text"
+                  required
+                  id="rut"
+                  name="rut"
+                  placeholder="Ej: 12345678-9"
+                  pattern="^\d{7,8}-[\dkK]$"
+                  maxLength={10}
+                />
+                <p className="invisible text-xs text-red-500 peer-invalid:visible">
+                  Formato válido: 12345678-9
+                </p>
+              </label>
 
               <label className="flex flex-col gap-1" htmlFor="correo">
                 <p className="font-semibold">Correo</p>
