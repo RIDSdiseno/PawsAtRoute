@@ -346,63 +346,94 @@ export const getProfile = async (req: Request, res: Response) => {
   }
 };
 
+
 // Map en memoria: clave SIEMPRE normalizada
 const verificationCodes = new Map<string, { code: number; expires: number }>();
 
 // helper: normalizar correo
 const norm = (v: string) => String(v || "").trim().toLowerCase();
-
 const clean = (v?: string) => (v ?? "").replace(/^[\'"]|[\'"]$/g, "").trim();
 
+// === ENV ===
 const GMAIL_CLIENT_ID     = clean(process.env.GMAIL_CLIENT_ID);
 const GMAIL_CLIENT_SECRET = clean(process.env.GMAIL_CLIENT_SECRET);
 const GMAIL_REDIRECT_URI  = clean(process.env.GMAIL_REDIRECT_URI || "https://developers.google.com/oauthplayground");
 const GMAIL_REFRESH_TOKEN = clean(process.env.GMAIL_REFRESH_TOKEN);
 const FROM_EMAIL          = clean(process.env.FROM_EMAIL || "soporte.pawsatroute@gmail.com");
 
-// CLIENTE OAuth2 (Google)
-const oAuth2Client = new google.auth.OAuth2(
-  GMAIL_CLIENT_ID,
-  GMAIL_CLIENT_SECRET,
-  GMAIL_REDIRECT_URI
-);
-if (GMAIL_REFRESH_TOKEN) {
-  oAuth2Client.setCredentials({ refresh_token: GMAIL_REFRESH_TOKEN });
+// Cliente OAuth2
+function makeOAuth2Client() {
+  const oAuth2Client = new google.auth.OAuth2(
+    GMAIL_CLIENT_ID,
+    GMAIL_CLIENT_SECRET,
+    GMAIL_REDIRECT_URI
+  );
+  if (GMAIL_REFRESH_TOKEN) {
+    oAuth2Client.setCredentials({ refresh_token: GMAIL_REFRESH_TOKEN });
+  }
+  return oAuth2Client;
 }
 
+// Construye el MIME base64url para Gmail API
+function buildRawMessage({
+  from,
+  to,
+  subject,
+  text,
+  replyTo,
+}: {
+  from: string;
+  to: string;
+  subject: string;
+  text: string;
+  replyTo?: string;
+}) {
+  const headers = [
+    `From: ${from}`,
+    `To: ${to}`,
+    `Subject: ${subject}`,
+    `MIME-Version: 1.0`,
+    `Content-Type: text/plain; charset="UTF-8"`,
+    replyTo ? `Reply-To: ${replyTo}` : undefined,
+  ]
+    .filter(Boolean)
+    .join("\r\n");
+
+  const body = `${headers}\r\n\r\n${text}`;
+  const base64Url = Buffer.from(body)
+    .toString("base64")
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/g, "");
+  return base64Url;
+}
+
+// === ENVÍO POR GMAIL API (HTTPS), sin Nodemailer ni SMTP ===
 export async function sendRecoveryEmail(correo: string, code: number) {
   if (!GMAIL_CLIENT_ID || !GMAIL_CLIENT_SECRET || !GMAIL_REFRESH_TOKEN || !FROM_EMAIL) {
-    console.warn("[AUTH] Faltan env vars OAuth2. Simulando envío.", { correo, code });
+    console.warn("[GMAIL] Faltan env vars OAuth2. Simulando envío.", { correo, code });
     return;
   }
 
-  // obtener access token con el refresh
-  const { token } = await oAuth2Client.getAccessToken();
+  const auth = makeOAuth2Client();
+  const gmail = google.gmail({ version: "v1", auth });
 
-  // transport de Gmail via OAuth2 (HTTPS)
-  const transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      type: "OAuth2",
-      user: FROM_EMAIL,                  // debe ser la misma cuenta que autorizó
-      clientId: GMAIL_CLIENT_ID,
-      clientSecret: GMAIL_CLIENT_SECRET,
-      refreshToken: GMAIL_REFRESH_TOKEN,
-      accessToken: token || undefined,   // opcional; se renueva solo con el refresh
-    },
-  });
-
-  // email
-  await transporter.sendMail({
-    from: `Paws At Route <${FROM_EMAIL}>`,
+  const raw = buildRawMessage({
+    from: `Paws At Route <${FROM_EMAIL}>`, // puede ser "Nombre <cuenta@gmail.com>"
     to: correo,
     subject: "Recuperación de contraseña - Código de verificación",
     text: `Tu código de verificación es: ${code}. Es válido por 10 minutos.`,
     // replyTo: FROM_EMAIL, // opcional
   });
 
-  // listo: si no arroja error, quedó enviado
+  const res = await gmail.users.messages.send({
+    userId: "me",
+    requestBody: { raw },
+  });
+
+  console.log("[GMAIL] enviado OK, messageId:", res.data.id);
 }
+
 // --- 1) Enviar código
 export const sendVerificationCode = async (req: Request, res: Response) => {
   try {
@@ -415,10 +446,10 @@ export const sendVerificationCode = async (req: Request, res: Response) => {
     const code = Math.floor(100000 + Math.random() * 900000);
     verificationCodes.set(correo, { code, expires: Date.now() + 10 * 60 * 1000 });
 
-    // RESPONDE YA (no bloquees por SMTP)
+    // Responder de inmediato
     res.status(200).json({ message: "Código generado. Revisa tu correo." });
 
-    // Envío en background con timeout de seguridad
+    // Enviar en background
     (async () => {
       try {
         console.log("[AUTH] Generando código para:", correo);
@@ -433,6 +464,7 @@ export const sendVerificationCode = async (req: Request, res: Response) => {
     if (!res.headersSent) res.status(500).json({ message: "Error al generar código" });
   }
 };
+
 
 // --- 2) Verificar código
 export const verifyCode = (req: Request, res: Response) => {
