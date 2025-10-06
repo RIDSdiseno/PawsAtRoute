@@ -4,6 +4,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import type { Secret } from "jsonwebtoken";
 import crypto from "crypto";
+import { google } from "googleapis";
 import nodemailer from "nodemailer";
 import dotenv from "dotenv";
 import { Resend } from "resend";
@@ -353,71 +354,57 @@ const norm = (v: string) => String(v || "").trim().toLowerCase();
 
 
 
-const RESEND_KEY = (process.env.RESEND_API_KEY || "").trim();
-const FROM_EMAIL = (process.env.FROM_EMAIL || "onboarding@resend.dev").trim();
+// limpia comillas accidentales
+const clean = (v?: string) => (v ?? "").replace(/^[\'"]|[\'"]$/g, "").trim();
+
+const GMAIL_CLIENT_ID     = clean(process.env.GMAIL_CLIENT_ID);
+const GMAIL_CLIENT_SECRET = clean(process.env.GMAIL_CLIENT_SECRET);
+const GMAIL_REDIRECT_URI  = clean(process.env.GMAIL_REDIRECT_URI || "https://developers.google.com/oauthplayground");
+const GMAIL_REFRESH_TOKEN = clean(process.env.GMAIL_REFRESH_TOKEN);
+const FROM_EMAIL          = clean(process.env.FROM_EMAIL || "soporte.pawsatroute@gmail.com");
+
+// CLIENTE OAuth2 (Google)
+const oAuth2Client = new google.auth.OAuth2(
+  GMAIL_CLIENT_ID,
+  GMAIL_CLIENT_SECRET,
+  GMAIL_REDIRECT_URI
+);
+if (GMAIL_REFRESH_TOKEN) {
+  oAuth2Client.setCredentials({ refresh_token: GMAIL_REFRESH_TOKEN });
+}
 
 export async function sendRecoveryEmail(correo: string, code: number) {
-  if (!RESEND_KEY) {
-    console.warn("[DEV] RESEND_API_KEY no seteada. Simulando envío.", { code, correo });
+  if (!GMAIL_CLIENT_ID || !GMAIL_CLIENT_SECRET || !GMAIL_REFRESH_TOKEN || !FROM_EMAIL) {
+    console.warn("[AUTH] Faltan env vars OAuth2. Simulando envío.", { correo, code });
     return;
   }
 
-  const resend = new Resend(RESEND_KEY);
+  // obtener access token con el refresh
+  const { token } = await oAuth2Client.getAccessToken();
 
-  try {
-    const result = await resend.emails.send({
-      from: `Paws At Route <${FROM_EMAIL}>`,
-      to: [correo],
-      subject: "Recuperación de contraseña - Código de verificación",
-      text: `Tu código de verificación es: ${code}. Es válido por 10 minutos.`,
-      // replyTo es camelCase (opcional):
-      // replyTo: "soporte.pawsatroute@gmail.com",
-    });
+  // transport de Gmail via OAuth2 (HTTPS)
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      type: "OAuth2",
+      user: FROM_EMAIL,                  // debe ser la misma cuenta que autorizó
+      clientId: GMAIL_CLIENT_ID,
+      clientSecret: GMAIL_CLIENT_SECRET,
+      refreshToken: GMAIL_REFRESH_TOKEN,
+      accessToken: token || undefined,   // opcional; se renueva solo con el refresh
+    },
+  });
 
-    console.log("[RESEND] send OK:", JSON.stringify(result, null, 2));
-    // Tip: si llega aquí, Resend aceptó el envío.
-    // Guarda result.id para rastrear en el dashboard de Resend.
-  } catch (err: any) {
-    // MUY útil: Resend da detalles en err.name/err.message/err.statusCode/err.body
-    console.error("[RESEND] send ERROR:", {
-      name: err?.name,
-      message: err?.message,
-      status: err?.statusCode,
-      body: err?.response?.body,
-    });
-    throw err;
-  }
+  // email
+  await transporter.sendMail({
+    from: `Paws At Route <${FROM_EMAIL}>`,
+    to: correo,
+    subject: "Recuperación de contraseña - Código de verificación",
+    text: `Tu código de verificación es: ${code}. Es válido por 10 minutos.`,
+    // replyTo: FROM_EMAIL, // opcional
+  });
+
 }
-// --- 1) Enviar código
-export const sendVerificationCode = async (req: Request, res: Response) => {
-  try {
-    const raw = req.body?.correo;
-    if (!raw) return res.status(400).json({ message: "Correo requerido" });
-
-    const correo = norm(raw);
-
-    // Generar y guardar (10 min)
-    const code = Math.floor(100000 + Math.random() * 900000);
-    verificationCodes.set(correo, { code, expires: Date.now() + 10 * 60 * 1000 });
-
-    // RESPONDE YA (no bloquees por SMTP)
-    res.status(200).json({ message: "Código generado. Revisa tu correo." });
-
-    // Envío en background con timeout de seguridad
-    (async () => {
-      try {
-        console.log("[AUTH] Generando código para:", correo);
-        await sendRecoveryEmail(correo, code);
-        console.log("[AUTH] Email disparado a:", correo);
-      } catch (err) {
-        console.error("sendRecoveryEmail error:", err);
-      }
-    })();
-  } catch (error) {
-    console.error("sendVerificationCode error:", error);
-    if (!res.headersSent) res.status(500).json({ message: "Error al generar código" });
-  }
-};
 
 // --- 2) Verificar código
 export const verifyCode = (req: Request, res: Response) => {
