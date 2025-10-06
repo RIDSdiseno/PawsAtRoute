@@ -108,7 +108,6 @@ export const registerUser = async (req: Request, res: Response) => {
     console.log("[register] body keys:", Object.keys(req.body || {}));
     console.log("[register] files:", (req as any).files);
 
-
     const {
       rut,
       nombre,
@@ -118,12 +117,14 @@ export const registerUser = async (req: Request, res: Response) => {
       correo,
       clave,
       rol,
-    } = req.body ;
+    } = req.body;
 
-    const files = (req as any).files as {
-      carnet?: Express.Multer.File[];
-      antecedentes?: Express.Multer.File[];
-    } | undefined;
+    const files = (req as any).files as
+      | {
+          carnet?: Express.Multer.File[];
+          antecedentes?: Express.Multer.File[];
+        }
+      | undefined;
 
     if (!rut || !nombre || !apellido || !telefono || !comuna || !correo || !clave || !rol) {
       return res.status(400).json({ error: "Todos los campos son obligatorios" });
@@ -131,53 +132,56 @@ export const registerUser = async (req: Request, res: Response) => {
 
     const emailNorm = String(correo).trim().toLowerCase();
 
-
     let carnetIdentidad: string | null = null;
     let antecedentes: string | null = null;
-    
+
+    // Validación archivos SOLO para PASEADOR
+    if (rol === "PASEADOR") {
       const carnetFile = files?.carnet?.[0];
       const antecedentesFile = files?.antecedentes?.[0];
-    if (rol === "PASEADOR") {
+
       if (!carnetFile || !antecedentesFile) {
         return res.status(400).json({
           error: "Para rol PASEADOR es obligatorio adjuntar 'carnet' y 'antecedentes'.",
         });
       }
+
+      // Subir a Cloudinary SOLO si hay archivos
+      const carnetRes = await uploadBufferToCloudinary(
+        carnetFile.buffer,
+        "paws/uploads/carnet",
+        carnetFile.originalname,
+        carnetFile.mimetype
+      );
+      const antecedentesRes = await uploadBufferToCloudinary(
+        antecedentesFile.buffer,
+        "paws/uploads/antecedentes",
+        antecedentesFile.originalname,
+        antecedentesFile.mimetype
+      );
+
+      carnetIdentidad = carnetRes.secure_url;
+      antecedentes = antecedentesRes.secure_url;
     }
 
     // ¿ya existe?
-    const existing = await prisma.usuario.findUnique({ where: { correo: emailNorm } });
+    const existing = await prisma.usuario.findUnique({
+      where: { correo: emailNorm },
+    });
     if (existing) return res.status(409).json({ error: "Usuario ya existe" });
 
-    // subir a Cloudinary usando file.buffer:
-  const carnetRes = await uploadBufferToCloudinary(
-    carnetFile!.buffer,
-    "paws/uploads/carnet",
-    carnetFile!.originalname,
-    carnetFile!.mimetype
-  );
-  const antecedentesRes = await uploadBufferToCloudinary(
-    antecedentesFile!.buffer,
-    "paws/uploads/antecedentes",
-    antecedentesFile!.originalname,
-    antecedentesFile!.mimetype
-  );
-    carnetIdentidad = carnetRes.secure_url;
-   antecedentes = antecedentesRes.secure_url;
-    // Hash
     const passwordHash = await bcrypt.hash(String(clave), 10);
 
-    // Crear usuario con URLs
     const newUser = await prisma.usuario.create({
       data: {
-        rut: rut,
-        nombre: nombre,
-        apellido: apellido,
-        telefono: telefono,
-        comuna: comuna,
+        rut,
+        nombre,
+        apellido,
+        telefono,
+        comuna,
         correo: emailNorm,
         passwordHash,
-        rol: rol,
+        rol, // ojo con acentos si usas enum en DB
         carnetIdentidad,
         antecedentes,
       },
@@ -193,10 +197,11 @@ export const registerUser = async (req: Request, res: Response) => {
 
     return res.status(201).json({ user: newUser });
   } catch (error) {
-    console.error("Register error", JSON.stringify(error));
+    console.error("Register error", error);
     return res.status(500).json({ error: "Error interno" });
   }
 };
+
 
 // POST Auth/login
 export const login = async (req: Request, res: Response) => {
