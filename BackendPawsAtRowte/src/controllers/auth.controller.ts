@@ -104,6 +104,11 @@ function clearRefreshCookie(res: Response) {
 //POST Auth/register
 export const registerUser = async (req: Request, res: Response) => {
   try {
+    console.log("[register] isMultipart?", req.is("multipart/form-data"));
+    console.log("[register] body keys:", Object.keys(req.body || {}));
+    console.log("[register] files:", (req as any).files);
+
+
     const {
       rut,
       nombre,
@@ -115,7 +120,7 @@ export const registerUser = async (req: Request, res: Response) => {
       rol,
     } = req.body as Record<string, string>;
 
-    const files = req.files as {
+    const files = (req as any).files as {
       carnet?: Express.Multer.File[];
       antecedentes?: Express.Multer.File[];
     } | undefined;
@@ -126,12 +131,9 @@ export const registerUser = async (req: Request, res: Response) => {
 
     const emailNorm = String(correo).trim().toLowerCase();
 
-    // Si es PASEADOR, exigir archivos
-    const isPaseador = String(rol).trim().toUpperCase() === "PASEADOR";
-    const carnetFile = files?.carnet?.[0];
-    const antecedentesFile = files?.antecedentes?.[0];
-
-    if (isPaseador) {
+    if (rol === "PASEADOR") {
+      const carnetFile = files?.carnet?.[0];
+      const antecedentesFile = files?.antecedentes?.[0];
       if (!carnetFile || !antecedentesFile) {
         return res.status(400).json({
           error: "Para rol PASEADOR es obligatorio adjuntar 'carnet' y 'antecedentes'.",
@@ -146,26 +148,6 @@ export const registerUser = async (req: Request, res: Response) => {
     // Subir a Cloudinary si corresponde
     let carnetUrl: string | null = null;
     let antecedentesUrl: string | null = null;
-
-    if (carnetFile) {
-      const up = await uploadBufferToCloudinary(
-        carnetFile.buffer,
-        "paws/carnets",
-        carnetFile.originalname,
-        carnetFile.mimetype
-      );
-      carnetUrl = up.secure_url;
-    }
-
-    if (antecedentesFile) {
-      const up = await uploadBufferToCloudinary(
-        antecedentesFile.buffer,
-        "paws/antecedentes",
-        antecedentesFile.originalname,
-        antecedentesFile.mimetype
-      );
-      antecedentesUrl = up.secure_url;
-    }
 
     // Hash
     const passwordHash = await bcrypt.hash(String(clave), 10);
@@ -196,7 +178,7 @@ export const registerUser = async (req: Request, res: Response) => {
 
     return res.status(201).json({ user: newUser });
   } catch (error) {
-    console.error("Register error", error);
+    console.error("Register error", JSON.stringify(error));
     return res.status(500).json({ error: "Error interno" });
   }
 };
