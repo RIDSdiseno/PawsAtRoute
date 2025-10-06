@@ -140,9 +140,7 @@ export const register = async (data: {
     if (data.carnet) formData.append("carnet", data.carnet);
     if (data.antecedentes) formData.append("antecedentes", data.antecedentes);
 
-    res = await api.post("/auth/register", formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
+    res = await api.post("/auth/register", formData);
   } else {
     // Para dueños, envía JSON plano sin archivos
     res = await api.post("/auth/register", data);
