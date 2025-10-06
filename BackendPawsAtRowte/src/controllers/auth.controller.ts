@@ -373,8 +373,20 @@ function makeOAuth2Client() {
   }
   return oAuth2Client;
 }
+function b64url(input: string | Buffer) {
+  return Buffer.from(input)
+    .toString("base64")
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/g, "");
+}
 
-// Construye el MIME base64url para Gmail API
+
+// RFC 2047 para headers con UTF-8 (Subject, etc.)
+function encodeHeaderUTF8(s: string) {
+  return `=?UTF-8?B?${Buffer.from(s, "utf8").toString("base64")}?=`;
+}
+
 function buildRawMessage({
   from,
   to,
@@ -388,25 +400,23 @@ function buildRawMessage({
   text: string;
   replyTo?: string;
 }) {
-  const headers = [
-    `From: ${from}`,
-    `To: ${to}`,
-    `Subject: ${subject}`,
-    `MIME-Version: 1.0`,
-    `Content-Type: text/plain; charset="UTF-8"`,
-    replyTo ? `Reply-To: ${replyTo}` : undefined,
-  ]
-    .filter(Boolean)
-    .join("\r\n");
+  const CRLF = "\r\n";
 
-  const body = `${headers}\r\n\r\n${text}`;
-  const base64Url = Buffer.from(body)
-    .toString("base64")
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_")
-    .replace(/=+$/g, "");
-  return base64Url;
+  const headers =
+    `From: ${from}${CRLF}` +
+    `To: ${to}${CRLF}` +
+    `Subject: ${encodeHeaderUTF8(subject)}${CRLF}` +  // <— asunto UTF-8 correcto
+    `MIME-Version: 1.0${CRLF}` +
+    `Content-Type: text/plain; charset="UTF-8"${CRLF}` +
+    `Content-Transfer-Encoding: base64${CRLF}` +
+    (replyTo ? `Reply-To: ${replyTo}${CRLF}` : "") +
+    CRLF;
+
+  const bodyB64 = Buffer.from(text, "utf8").toString("base64"); // <— cuerpo UTF-8
+
+  return b64url(headers + bodyB64); // <— lo mismo que hacías, pero correctamente codificado
 }
+
 
 // === ENVÍO POR GMAIL API (HTTPS), sin Nodemailer ni SMTP ===
 export async function sendRecoveryEmail(correo: string, code: number) {
