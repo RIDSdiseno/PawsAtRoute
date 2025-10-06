@@ -131,6 +131,9 @@ export const registerUser = async (req: Request, res: Response) => {
 
     const emailNorm = String(correo).trim().toLowerCase();
 
+
+    let carnetIdentidad: string | null = null;
+    let antecedentes: string | null = null;
     
       const carnetFile = files?.carnet?.[0];
       const antecedentesFile = files?.antecedentes?.[0];
@@ -146,10 +149,21 @@ export const registerUser = async (req: Request, res: Response) => {
     const existing = await prisma.usuario.findUnique({ where: { correo: emailNorm } });
     if (existing) return res.status(409).json({ error: "Usuario ya existe" });
 
-    // Subir a Cloudinary si corresponde
-    let carnetIdentidad: string | null = null;
-    let antecedentes: string | null = null;
-
+    // subir a Cloudinary usando file.buffer:
+  const carnetRes = await uploadBufferToCloudinary(
+    carnetFile!.buffer,
+    "paws/uploads/carnet",
+    carnetFile!.originalname,
+    carnetFile!.mimetype
+  );
+  const antecedentesRes = await uploadBufferToCloudinary(
+    antecedentesFile!.buffer,
+    "paws/uploads/antecedentes",
+    antecedentesFile!.originalname,
+    antecedentesFile!.mimetype
+  );
+    carnetIdentidad = carnetRes.secure_url;
+   antecedentes = antecedentesRes.secure_url;
     // Hash
     const passwordHash = await bcrypt.hash(String(clave), 10);
 
