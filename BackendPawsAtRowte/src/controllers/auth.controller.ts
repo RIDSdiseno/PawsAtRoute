@@ -352,9 +352,6 @@ const verificationCodes = new Map<string, { code: number; expires: number }>();
 // helper: normalizar correo
 const norm = (v: string) => String(v || "").trim().toLowerCase();
 
-
-
-// limpia comillas accidentales
 const clean = (v?: string) => (v ?? "").replace(/^[\'"]|[\'"]$/g, "").trim();
 
 const GMAIL_CLIENT_ID     = clean(process.env.GMAIL_CLIENT_ID);
@@ -404,7 +401,38 @@ export async function sendRecoveryEmail(correo: string, code: number) {
     // replyTo: FROM_EMAIL, // opcional
   });
 
+  // listo: si no arroja error, quedó enviado
 }
+// --- 1) Enviar código
+export const sendVerificationCode = async (req: Request, res: Response) => {
+  try {
+    const raw = req.body?.correo;
+    if (!raw) return res.status(400).json({ message: "Correo requerido" });
+
+    const correo = norm(raw);
+
+    // Generar y guardar (10 min)
+    const code = Math.floor(100000 + Math.random() * 900000);
+    verificationCodes.set(correo, { code, expires: Date.now() + 10 * 60 * 1000 });
+
+    // RESPONDE YA (no bloquees por SMTP)
+    res.status(200).json({ message: "Código generado. Revisa tu correo." });
+
+    // Envío en background con timeout de seguridad
+    (async () => {
+      try {
+        console.log("[AUTH] Generando código para:", correo);
+        await sendRecoveryEmail(correo, code);
+        console.log("[AUTH] Email disparado a:", correo);
+      } catch (err) {
+        console.error("sendRecoveryEmail error:", err);
+      }
+    })();
+  } catch (error) {
+    console.error("sendVerificationCode error:", error);
+    if (!res.headersSent) res.status(500).json({ message: "Error al generar código" });
+  }
+};
 
 // --- 2) Verificar código
 export const verifyCode = (req: Request, res: Response) => {
