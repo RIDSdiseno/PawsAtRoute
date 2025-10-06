@@ -8,6 +8,8 @@ import { google } from "googleapis";
 import nodemailer from "nodemailer";
 import dotenv from "dotenv";
 import { Resend } from "resend";
+import { uploadBufferToCloudinary } from "../lib/cloudinary";
+
 
 dotenv.config();
 const codes = new Map();
@@ -100,40 +102,103 @@ function clearRefreshCookie(res: Response) {
 ========================= */
 
 //POST Auth/register
-export const registerUser = async(req:Request,res:Response)=>{
-  try{
-    const { rut, nombre, apellido, telefono,comuna,correo, clave, rol } = req.body;
+export const registerUser = async (req: Request, res: Response) => {
+  try {
+    const {
+      rut,
+      nombre,
+      apellido,
+      telefono,
+      comuna,
+      correo,
+      clave,
+      rol,
+    } = req.body as Record<string, string>;
 
-    //validaciones basicas
-    if(!rut||!nombre || !apellido || !telefono || !comuna|| !correo || !clave || !rol){
-      return res.status(400).json({ error: "Todos los campos son obligatorios"})
+    const files = req.files as {
+      carnet?: Express.Multer.File[];
+      antecedentes?: Express.Multer.File[];
+    } | undefined;
+
+    if (!rut || !nombre || !apellido || !telefono || !comuna || !correo || !clave || !rol) {
+      return res.status(400).json({ error: "Todos los campos son obligatorios" });
     }
 
-    //Se normaliza el correo
     const emailNorm = String(correo).trim().toLowerCase();
-    const existing = await prisma.usuario.findUnique({ where: {correo: emailNorm}});
-    if(existing) return res.status(409).json({ error: "Usuario ya existe" });
 
-    const passwordHash = await bcrypt.hash(clave,10);
+    // Si es PASEADOR, exigir archivos
+    const isPaseador = String(rol).trim().toUpperCase() === "PASEADOR";
+    const carnetFile = files?.carnet?.[0];
+    const antecedentesFile = files?.antecedentes?.[0];
+
+    if (isPaseador) {
+      if (!carnetFile || !antecedentesFile) {
+        return res.status(400).json({
+          error: "Para rol PASEADOR es obligatorio adjuntar 'carnet' y 'antecedentes'.",
+        });
+      }
+    }
+
+    // ¿ya existe?
+    const existing = await prisma.usuario.findUnique({ where: { correo: emailNorm } });
+    if (existing) return res.status(409).json({ error: "Usuario ya existe" });
+
+    // Subir a Cloudinary si corresponde
+    let carnetUrl: string | null = null;
+    let antecedentesUrl: string | null = null;
+
+    if (carnetFile) {
+      const up = await uploadBufferToCloudinary(
+        carnetFile.buffer,
+        "paws/carnets",
+        carnetFile.originalname,
+        carnetFile.mimetype
+      );
+      carnetUrl = up.secure_url;
+    }
+
+    if (antecedentesFile) {
+      const up = await uploadBufferToCloudinary(
+        antecedentesFile.buffer,
+        "paws/antecedentes",
+        antecedentesFile.originalname,
+        antecedentesFile.mimetype
+      );
+      antecedentesUrl = up.secure_url;
+    }
+
+    // Hash
+    const passwordHash = await bcrypt.hash(String(clave), 10);
+
+    // Crear usuario con URLs
     const newUser = await prisma.usuario.create({
-      data:{
-        rut,
-        nombre,
-        apellido,
-        telefono,
-        comuna,
+      data: {
+        rut: String(rut).trim(),
+        nombre: String(nombre).trim(),
+        apellido: String(apellido).trim(),
+        telefono: String(telefono).trim(),
+        comuna: String(comuna).trim(),
         correo: emailNorm,
         passwordHash,
-        rol,
+        rol: String(rol).trim().toUpperCase(), // "PASEADOR"/"DUEÑO"
+        carnetUrl,
+        antecedentesUrl,
       },
-      select: {idUsuario:true,nombre:true,correo:true},
+      select: {
+        idUsuario: true,
+        nombre: true,
+        correo: true,
+        rol: true,
+        carnetUrl: true,
+        antecedentesUrl: true,
+      },
     });
-    return res.status(201).json({ user:newUser });
-  } catch(error){
-    console.error("Register error", error);
-    return res.status(500).json({error: "Error interno" });
-  }
 
+    return res.status(201).json({ user: newUser });
+  } catch (error) {
+    console.error("Register error", error);
+    return res.status(500).json({ error: "Error interno" });
+  }
 };
 
 // POST Auth/login
@@ -284,7 +349,7 @@ export const refresh = async (req: Request, res: Response) => {
     const ua: string | null = req.get("user-agent") ?? null;
     const ipAddr: string | null = (req.ip ?? req.socket?.remoteAddress ?? null) as string | null;
 
-    await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx: any) => {
       await tx.refreshToken.update({
         where: { id: row.id },
         data: { revokedAt: new Date() },

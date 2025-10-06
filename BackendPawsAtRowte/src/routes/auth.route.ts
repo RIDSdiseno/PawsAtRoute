@@ -1,14 +1,36 @@
 import { Router } from "express";
 import { login, registerUser, refresh, getProfile, logout, sendVerificationCode, verifyCode, resetPassword } from "../controllers/auth.controller";
 import { authGuard } from "../middlewares/auth.middleware";
+import multer from "multer";
+
 
 const r = Router();
+
+const upload = multer({
+  storage: multer.diskStorage({
+    destination: (_req, _file, cb) => cb(null, "uploads/"),
+    filename: (_req, file, cb) => {
+      const unique = Date.now() + "-" + Math.round(Math.random() * 1e9);
+      cb(null, unique + "-" + file.originalname);
+    },
+  }),
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+});
 
 r.get("/health", (_req, res) => res.json({ ok: true, service: "API Paws", ts: Date.now() }));
 
 r.post("/register",registerUser);
 r.post("/login",login);
-r.post("/refresh",authGuard,refresh);
+
+r.post(
+  "/register",
+  upload.fields([
+    { name: "carnet", maxCount: 1 },
+    { name: "antecedentes", maxCount: 1 },
+  ]),
+  registerUser
+);
+
 r.post("/logout",authGuard,logout);
 r.get("/profile", authGuard, getProfile);
 
