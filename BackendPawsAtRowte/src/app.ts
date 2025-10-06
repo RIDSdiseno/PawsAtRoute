@@ -4,14 +4,14 @@ import path from "path";
 import express from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
-import cookieParser from 'cookie-parser';           // 👈
+import cookieParser from 'cookie-parser';           
 import routes from './routes.js';
 import { env } from './config/env.js';
 import { errorHandler } from './middlewares/error.middleware.js';
 export const app = express();
 
-const up = path.resolve(process.cwd(), "uploads");
-if (!fs.existsSync(up)) fs.mkdirSync(up, { recursive: true });
+const UPLOAD_DIR = path.resolve(process.cwd(), "uploads");
+if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 
 
 app.use(cors({
@@ -20,10 +20,10 @@ app.use(cors({
     allowedHeaders: ['Content-Type','Authorization']
 }));
 
-app.use("/uploads", express.static(up));
+app.use("/uploads", express.static(UPLOAD_DIR));
 
 
-app.use(cookieParser());                             // 👈 DEBE ir antes de las rutas
+app.use(cookieParser());                             // DEBE ir antes de las rutas
 app.use(express.json());
 app.use(morgan('dev'));
 app.use(express.json());
