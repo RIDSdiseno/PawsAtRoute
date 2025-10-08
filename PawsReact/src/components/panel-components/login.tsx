@@ -76,7 +76,7 @@ function Login() {
       <h1 className="text-4xl md:text-5xl font-bold mb-8 text-center">
         ¡Bienvenido de nuevo!
       </h1>
-      <div className="w-full max-w-4xl bg-white rounded-xl shadow-lg border-2 border-gray-300 flex flex-col md:flex-row overflow-hidden">
+      <div className="animate-blurred-fade-in animate-delay-200 w-full max-w-4xl bg-white rounded-xl shadow-lg border-2 border-gray-300 flex flex-col md:flex-row overflow-hidden">
         <div className="w-full md:w-1/2 p-8">
           <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
             <p className="text-3xl text-center">Inicia Sesión</p>

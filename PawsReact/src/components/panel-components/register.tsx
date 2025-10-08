@@ -44,7 +44,7 @@ function Register() {
         <h1 className="text-4xl md:text-5xl font-bold mb-8 text-center">
           ¡Únete a <strong className="font-coffeecake">Paws At Route</strong>!
         </h1>
-        <div className="w-full max-w-4xl bg-white rounded-xl shadow-lg border-2 border-gray-300 flex flex-col md:flex-row overflow-hidden">
+        <div className="animate-blurred-fade-in animate-delay-200 w-full max-w-4xl bg-white rounded-xl shadow-lg border-2 border-gray-300 flex flex-col md:flex-row overflow-hidden">
           <div className="hidden md:flex w-1/2 bg-prussian-blue items-center justify-center p-4">
             <img
               src="/img/perros_jugando_2.webp"

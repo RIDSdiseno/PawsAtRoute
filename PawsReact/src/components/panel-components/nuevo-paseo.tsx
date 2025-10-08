@@ -50,7 +50,7 @@ function NuevoPaseo() {
         <p className="mt-2">Aquí puedes personalizar tu solicitud.</p>
       </header>
 
-      <section className="max-w-md mx-auto gap-6 flex flex-col justify-center">
+      <section className="animate-blurred-fade-in animate-duration-200 max-w-md mx-auto gap-6 flex flex-col justify-center">
         <form
           action="/panel-dueño"
           className="flex flex-col gap-6 rounded-xl bg-white border border-gray-200 p-6 shadow-lg"

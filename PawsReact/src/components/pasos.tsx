@@ -22,7 +22,7 @@ function Pasos() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Card 1 */}
-            <div className="flex flex-col rounded-2xl bg-white shadow-xl overflow-hidden">
+            <div className="animate-fade-in-right animate-delay-200 flex flex-col rounded-2xl bg-white shadow-xl overflow-hidden">
               <figure>
                 <img
                   src="/img/publicar.webp"
@@ -40,7 +40,7 @@ function Pasos() {
               </div>
             </div>
             {/* Card 2 */}
-            <div className="flex flex-col rounded-2xl bg-white shadow-xl overflow-hidden">
+            <div className="animate-fade-in-right animate-delay-400 flex flex-col rounded-2xl bg-white shadow-xl overflow-hidden">
               <figure>
                 <img
                   src="/img/postular.webp"
@@ -59,7 +59,7 @@ function Pasos() {
               </div>
             </div>
             {/* Card 3 */}
-            <div className="flex flex-col rounded-2xl bg-white shadow-xl overflow-hidden">
+            <div className="animate-fade-in-right animate-delay-700 flex flex-col rounded-2xl bg-white shadow-xl overflow-hidden">
               <figure>
                 <img
                   src="/img/paseo.webp"

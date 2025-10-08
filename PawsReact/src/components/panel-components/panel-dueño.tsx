@@ -59,14 +59,14 @@ function Home() {
       </header>
 
       <section className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mb-10">
-        <article className="p-6 card-neumorphism">
+        <article className="animate-fade-in-up animate-delay-200 p-6 card-neumorphism">
           <p className="text-gray-600">Paseos Completados</p>
           <p className="text-3xl md:text-4xl font-extrabold">
             2 {/* Hardcoded por ahora */}
           </p>
         </article>
 
-        <article className="p-6 card-neumorphism">
+        <article className="animate-fade-in-up animate-delay-400 p-6 card-neumorphism">
           <p className="text-gray-600">Nuevo Paseo</p>
           <p className="text-2xl md:text-3xl font-extrabold">
             {proximoPaseo.duracion}
@@ -86,7 +86,7 @@ function Home() {
         </article>
       </section>
 
-      <section className="max-w-6xl mx-auto p-6 card-neumorphism overflow-hidden">
+      <section className="max-w-6xl mx-auto p-6 card-neumorphism overflow-hidden animate-fade-in-up animate-delay-700">
         <h2 className="px-6 pt-6 text-xl md:text-2xl font-bold">
           Historial de Paseos Recientes
         </h2>

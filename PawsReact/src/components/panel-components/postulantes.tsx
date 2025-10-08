@@ -36,7 +36,7 @@ function Postulantes() {
         </p>
       </header>
 
-      <section className="max-w-6xl mx-auto bg-white border border-gray-200 rounded-xl overflow-hidden shadow-lg">
+      <section className="animate-blurred-fade-in animate-duration-200 max-w-6xl mx-auto bg-white border border-gray-200 rounded-xl overflow-hidden shadow-lg">
         <h2 className="px-6 pt-6 text-xl md:text-2xl font-bold">Información</h2>
 
         <div className="mt-4 overflow-x-auto hidden md:block">

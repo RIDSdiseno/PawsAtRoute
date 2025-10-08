@@ -28,7 +28,7 @@ function EditarPerfil() {
         </p>
       </header>
 
-      <section>
+      <section className="animate-blurred-fade-in animate-duration-300">
         <form
           action="/mi-perfil"
           className="bg-white shadow-lg rounded-xl p-6 md:p-8 max-w-lg mx-auto flex flex-col gap-6"

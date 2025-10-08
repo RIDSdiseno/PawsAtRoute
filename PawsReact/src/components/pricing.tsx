@@ -14,7 +14,7 @@ function Pricing() {
         </svg>
       </div>
       <section className="max-w-4xl mx-auto py-24 grid grid-cols-1 md:grid-cols-2 p-4 gap-8 justify-center items-center">
-        <article className="flex flex-col w-full h-full gap-4 p-8 card-neumorphism">
+        <article className="animate-tada animate-delay-200 flex flex-col w-full h-full gap-4 p-8 card-neumorphism">
           <header className="flex flex-wrap gap-2 items-center">
             <h1 className="text-3xl font-bold">Plan básico</h1>
             <img
@@ -49,7 +49,7 @@ function Pricing() {
             />
           </button>
         </article>
-        <article className="flex flex-col gap-4 p-6 card-neumorphism">
+        <article className="animate-tada animate-delay-400 flex flex-col gap-4 p-6 card-neumorphism">
           <header className="flex flex-wrap gap-2 items-center">
             <h1 className="text-3xl font-bold">Plan premium</h1>
             <img

@@ -1,4 +1,8 @@
 @import "tailwindcss";
+@plugin "@midudev/tailwind-animations";
+@view-transition {
+  navigation: auto;
+}
 
 @theme {
   --color-blue-green: #219ebcff;

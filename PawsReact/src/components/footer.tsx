@@ -1,5 +1,3 @@
-import { Link } from "react-router-dom";
-
 function Footer() {
   return (
     <>
@@ -42,11 +40,6 @@ function Footer() {
                   <a href="#" className="hover:underline">
                     Política de Privacidad
                   </a>
-                </li>
-                <li className="mb-2">
-                  <Link to="/panel-paseador" className="hover:underline">
-                    Panel Paseador
-                  </Link>
                 </li>
               </ul>
             </div>

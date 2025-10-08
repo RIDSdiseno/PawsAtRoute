@@ -138,7 +138,7 @@ function RecuperarClave() {
       <h1 className="text-3xl md:text-4xl font-bold mb-6 text-center">
         Recupera tu contraseña
       </h1>
-      <div className="w-full max-w-md bg-white rounded-xl shadow-lg border-2 border-gray-300 p-8">
+      <div className="animate-blurred-fade-in animate-delay-200 w-full max-w-md bg-white rounded-xl shadow-lg border-2 border-gray-300 p-8">
         {mensaje && (
           <p className="mb-4 text-center text-red-600 font-semibold">{mensaje}</p>
         )}
@@ -200,12 +200,12 @@ function RecuperarClave() {
 
             <div className="text-sm text-center text-gray-600 space-y-2 mt-2">
               <p>¿No te llegó?</p>
-              <div className="flex items-center justify-center gap-2">
+              <div className="text-xs flex items-center justify-center gap-2">
                 <button
                   type="button"
                   onClick={handleResend}
                   disabled={cargando || resendCooldown > 0}
-                  className="underline disabled:opacity-50"
+                  className="disabled:opacity-50"
                 >
                   Reenviar código {resendCooldown > 0 ? `(${resendCooldown}s)` : ""}
                 </button>
@@ -213,14 +213,14 @@ function RecuperarClave() {
                 <button
                   type="button"
                   onClick={() => setStep("email")}
-                  className="underline"
+                  className="hover:underline "
                 >
                   Cambiar correo
                 </button>
                 {providerLink && (
                   <>
                     <span>·</span>
-                    <a href={providerLink} target="_blank" className="underline">
+                    <a href={providerLink} target="_blank" className="hover:underline">
                       Abrir mi correo
                     </a>
                   </>

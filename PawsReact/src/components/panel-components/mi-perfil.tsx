@@ -61,7 +61,7 @@ function MiPerfil() {
       {/* Info básica */}
       <section
         id="info-básica"
-        className="flex flex-col items-center gap-4 md:flex-row md:items-center md:gap-8"
+        className="flex flex-col items-center gap-4 md:flex-row md:items-center md:gap-8 animate-blurred-fade-in animate-duration-300"
       >
         <img
           src={
@@ -92,7 +92,7 @@ function MiPerfil() {
       </section>
 
       {/* Info contacto */}
-      <section id="info-contacto" className="mt-10">
+      <section id="info-contacto" className="mt-10 animate-blurred-fade-in animate-duration-300">
         <h2 className="text-2xl font-bold mb-4">Información de Contacto</h2>
         <dl className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>

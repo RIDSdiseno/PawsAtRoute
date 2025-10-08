@@ -11,7 +11,7 @@ function RegistroMascota() {
           </p>
         </header>
         <section className="max-w-6xl mx-auto gap-4 md:gap-6 mb-10 grid grid-cols-1 md:grid-cols-2">
-          <article>
+          <article className="animate-slide-in-left animate-duration-300">
             <form
               className="flex flex-col gap-4 rounded-xl bg-white border border-gray-200 p-6 shadow-lg"
               action="/registro-mascota"
@@ -183,7 +183,7 @@ function RegistroMascota() {
               </button>
             </form>
           </article>
-          <article className="flex flex-col gap-6 rounded-2xl bg-white border border-gray-200 p-6 shadow-xl">
+          <article className="animate-slide-in-right animate-duration-300 flex flex-col gap-6 rounded-2xl bg-white border border-gray-200 p-6 shadow-xl">
             <h1 className="text-3xl font-bold text-center text-prussian-blue">
               Mascotas Registradas
             </h1>

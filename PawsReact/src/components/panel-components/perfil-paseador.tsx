@@ -88,7 +88,7 @@ function PerfilPaseador() {
         </p>
       </header>
 
-      <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6 sm:p-10">
+      <div className="animate-blurred-fade-in animate-duration-200 bg-white rounded-2xl shadow-lg border border-gray-200 p-6 sm:p-10">
         <div className="grid grid-cols-1 gap-10">
           <div className="flex flex-col items-center gap-4">
             <img

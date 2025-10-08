@@ -151,14 +151,14 @@ function DashboardPaseador() {
       </header>
 
       <section className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
-        <article className="p-6 card-neumorphism">
+        <article className="animate-fade-in-up animate-delay-200 p-6 card-neumorphism">
           <p className="text-gray-600">Paseos Completados</p>
           <p className="text-3xl md:text-4xl font-extrabold mt-1">
             {user?.paseosCompletados}
           </p>
         </article>
 
-        <article className="p-6 card-neumorphism">
+        <article className="animate-fade-in-up animate-delay-400 p-6 card-neumorphism">
           <p className="text-gray-600 text-xl md:text-2xl font-bold">
             Paseo Activo
           </p>
@@ -210,7 +210,7 @@ function DashboardPaseador() {
           </div>
         </article>
 
-        <article className="p-6 card-neumorphism md:col-span-2">
+        <article className="animate-fade-in-up animate-delay-700 p-6 card-neumorphism md:col-span-2">
           <h2 className="text-xl md:text-2xl font-bold">Historial de Paseos</h2>
           <div className="mt-4 overflow-x-auto">
             <table className="w-full text-sm">
@@ -245,7 +245,7 @@ function DashboardPaseador() {
         <h2 className="text-2xl md:text-3xl font-bold mb-6">
           Paseos Publicados
         </h2>
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 animate-fade-in-up animate-delay-800">
           {solicitudes.map((s) => (
             <div
               key={s.id}
