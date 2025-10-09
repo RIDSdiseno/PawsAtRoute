@@ -6,7 +6,9 @@ function Login() {
   const navigate = useNavigate(); // Usamos el hook useNavigate de React Router
   const [correo, setCorreo] = useState("");
   const [password, setPassword] = useState("");
-  const [errors, setErrors] = useState<{ correo?: string; password?: string }>({});
+  const [errors, setErrors] = useState<{ correo?: string; password?: string }>(
+    {}
+  );
   const [loginError, setLoginError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -78,7 +80,11 @@ function Login() {
       </h1>
       <div className="animate-blurred-fade-in animate-delay-200 w-full max-w-4xl bg-white rounded-xl shadow-lg border-2 border-gray-300 flex flex-col md:flex-row overflow-hidden">
         <div className="w-full md:w-1/2 p-8">
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
+          <form
+            onSubmit={handleSubmit}
+            className="flex flex-col gap-4"
+            noValidate
+          >
             <p className="text-3xl text-center">Inicia Sesión</p>
 
             <label className="flex flex-col gap-2" htmlFor="correo">
@@ -123,9 +129,20 @@ function Login() {
                 </ul>
               )}
             </label>
+            <label className="flex gap-2 items-center" htmlFor="recordarme">
+              <input
+                id="recordarme"
+                type="checkbox"
+                name="recordarme"
+                value="recordarme"
+              ></input>
+              Recordarme
+            </label>
 
             {loginError && (
-              <p className="text-center text-red-600 font-semibold">{loginError}</p>
+              <p className="text-center text-red-600 font-semibold">
+                {loginError}
+              </p>
             )}
 
             <p className="text-center gap-2 flex justify-center">
@@ -141,8 +158,10 @@ function Login() {
             <button
               type="submit"
               disabled={loading}
-              className={`bg-blue-green text-white rounded-full py-2 px-4 cursor-pointer font-semibold border border-cyan-600 shadow-lg shadow-blue-green/50 active:scale-90 transition-all duration-100 ${
-                loading ? "opacity-60 cursor-not-allowed" : "hover:bg-blue-green/80"
+              className={`bg-blue-green/80 text-white rounded-full py-2 px-4 cursor-pointer font-semibold border border-cyan-600 shadow-md shadow-blue-green/50 hover:scale-105 active:scale-95 transition-all duration-200 ${
+                loading
+                  ? "opacity-60 cursor-not-allowed"
+                  : "hover:bg-blue-green"
               }`}
             >
               {loading ? "Cargando..." : "Iniciar Sesión"}

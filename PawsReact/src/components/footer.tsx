@@ -5,7 +5,7 @@ function Footer() {
         <div className="max-w-6xl mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
             <div>
-              <h3 className="text-xl font-bold mb-4">PawsAtRoute</h3>
+              <h3 className="text-xl font-bold mb-4">Paws At Route</h3>
               <p>Conectando dueños de mascotas con paseadores de confianza.</p>
             </div>
             <div>

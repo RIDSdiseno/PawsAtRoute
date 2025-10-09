@@ -7,7 +7,7 @@ function Pasos() {
             preserveAspectRatio="none"
             viewBox="0 0 1200 120"
             xmlns="http://www.w3.org/2000/svg"
-            className="fill-gray-50 w-[125%] h-[75px]"
+            className="fill-white w-[125%] h-[75px]"
           >
             <path d="M321.39 56.44c58-10.79 114.16-30.13 172-41.86 82.39-16.72 168.19-17.73 250.45-.39C823.78 31 906.67 72 985.66 92.83c70.05 18.48 146.53 26.09 214.34 3V0H0v27.35a600.21 600.21 0 00321.39 29.09z" />
           </svg>
@@ -22,7 +22,7 @@ function Pasos() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Card 1 */}
-            <div className="animate-fade-in-right animate-delay-200 flex flex-col rounded-2xl bg-white shadow-xl overflow-hidden">
+            <div className="flex flex-col rounded-2xl bg-white shadow-md overflow-hidden">
               <figure>
                 <img
                   src="/img/publicar.webp"
@@ -40,7 +40,7 @@ function Pasos() {
               </div>
             </div>
             {/* Card 2 */}
-            <div className="animate-fade-in-right animate-delay-400 flex flex-col rounded-2xl bg-white shadow-xl overflow-hidden">
+            <div className="flex flex-col rounded-2xl bg-white shadow-md overflow-hidden">
               <figure>
                 <img
                   src="/img/postular.webp"
@@ -59,7 +59,7 @@ function Pasos() {
               </div>
             </div>
             {/* Card 3 */}
-            <div className="animate-fade-in-right animate-delay-700 flex flex-col rounded-2xl bg-white shadow-xl overflow-hidden">
+            <div className="flex flex-col rounded-2xl bg-white shadow-md overflow-hidden">
               <figure>
                 <img
                   src="/img/paseo.webp"

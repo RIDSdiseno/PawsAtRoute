@@ -8,7 +8,7 @@ function Register() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    
+
     const form = e.currentTarget;
     const formData = new FormData(form);
 
@@ -134,8 +134,8 @@ function Register() {
                   name="telefono"
                   inputMode="numeric"
                   minLength={9}
-                  maxLength={12}
-                  pattern="^[0-9]{9,12}$"
+                  maxLength={9}
+                  pattern="^[0-9]{9}$"
                   placeholder="Ej: 987654321"
                   onInput={(e) => {
                     const target = e.currentTarget;
@@ -143,7 +143,7 @@ function Register() {
                   }}
                 />
                 <p className="invisible text-xs text-red-500 peer-invalid:visible">
-                  Por favor, ingresa un teléfono válido (solo números, 9 a 12
+                  Por favor, ingresa un teléfono válido (solo números, de 9
                   dígitos).
                 </p>
               </label>
@@ -298,7 +298,7 @@ function Register() {
 
               <button
                 type="submit"
-                className="cursor-pointer bg-prussian-blue/80 text-white rounded-full py-2 px-4 hover:bg-prussian-blue border border-cyan-900 shadow-lg shadow-prussian-blue/50 font-semibold mt-2 active:scale-90 transition-all duration-100"
+                className="cursor-pointer bg-prussian-blue/80 text-white rounded-full py-2 px-4 hover:bg-prussian-blue border border-cyan-900 shadow-lg shadow-prussian-blue/50 font-semibold mt-2 hover:scale-105 active:scale-95 transition-all duration-200"
               >
                 Registrarse
               </button>

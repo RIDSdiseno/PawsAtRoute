@@ -14,7 +14,7 @@ function Pricing() {
         </svg>
       </div>
       <section className="max-w-4xl mx-auto py-24 grid grid-cols-1 md:grid-cols-2 p-4 gap-8 justify-center items-center">
-        <article className="animate-tada animate-delay-200 flex flex-col w-full h-full gap-4 p-8 card-neumorphism">
+        <article className="flex flex-col w-full h-full gap-4 p-8 card-neumorphism">
           <header className="flex flex-wrap gap-2 items-center">
             <h1 className="text-3xl font-bold">Plan básico</h1>
             <img
@@ -40,7 +40,7 @@ function Pricing() {
               </details>
             </li>
           </ul>
-          <button className="cursor-pointer bg-prussian-blue/80 text-white font-bold py-2 px-4 rounded-full flex justify-center items-center gap-2 hover:bg-prussian-blue active:scale-90 transition-all duration-200">
+          <button className="cursor-pointer bg-prussian-blue/80 text-white font-bold py-2 px-4 rounded-full flex justify-center items-center gap-2 hover:bg-prussian-blue hover:scale-105 active:scale-95 transition-all duration-200">
             <Link to="/login">Empezar a usar</Link>
             <img
               src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+Cgk8ZyBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgc3Ryb2tlLXdpZHRoPSIyIj4KCQk8cGF0aCBzdHJva2UtZGFzaGFycmF5PSIyMCIgc3Ryb2tlLWRhc2hvZmZzZXQ9IjIwIiBkPSJNMyAxMmgxNy41Ij4KCQkJPGFuaW1hdGUgZmlsbD0iZnJlZXplIiBhdHRyaWJ1dGVOYW1lPSJzdHJva2UtZGFzaG9mZnNldCIgZHVyPSIwLjJzIiB2YWx1ZXM9IjIwOzAiIC8+CgkJPC9wYXRoPgoJCTxwYXRoIHN0cm9rZS1kYXNoYXJyYXk9IjEyIiBzdHJva2UtZGFzaG9mZnNldD0iMTIiIGQ9Ik0yMSAxMmwtNyA3TTIxIDEybC03IC03Ij4KCQkJPGFuaW1hdGUgZmlsbD0iZnJlZXplIiBhdHRyaWJ1dGVOYW1lPSJzdHJva2UtZGFzaG9mZnNldCIgYmVnaW49IjAuMnMiIGR1cj0iMC4ycyIgdmFsdWVzPSIxMjswIiAvPgoJCTwvcGF0aD4KCTwvZz4KPC9zdmc+"
@@ -49,7 +49,7 @@ function Pricing() {
             />
           </button>
         </article>
-        <article className="animate-tada animate-delay-400 flex flex-col gap-4 p-6 card-neumorphism">
+        <article className="flex flex-col gap-4 p-6 card-neumorphism">
           <header className="flex flex-wrap gap-2 items-center">
             <h1 className="text-3xl font-bold">Plan premium</h1>
             <img
@@ -77,7 +77,7 @@ function Pricing() {
               </details>
             </li>
           </ul>
-          <button className="cursor-pointer bg-selective-yellow/80 text-prussian-blue font-bold py-2 px-4 rounded-full flex justify-center items-center gap-2 hover:bg-selective-yellow active:scale-90 transition-all duration-200">
+          <button className="cursor-pointer bg-selective-yellow/80 text-prussian-blue font-bold py-2 px-4 rounded-full flex justify-center items-center gap-2 hover:bg-selective-yellow hover:scale-105 active:scale-90 transition-all duration-200">
             {/* Aquí debería de pasar por un proceso de seguridad hasta la pasarela de pago */}
             <Link to="/">Obtener ahora</Link>
             <img

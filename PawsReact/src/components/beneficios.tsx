@@ -29,7 +29,7 @@ function Beneficios() {
           <p className="text-xl">¿Por qué elegirnos?</p>
         </div>
         <div className="grid grid-cols-2 grid-rows-2 gap-4">
-          <div className="animate-slide-rotate-in animate-delay-400 bg-sky-400 p-4 rounded-2xl flex flex-col items-center gap-2 text-center row-span-2 shadow-lg shadow-sky-400/50 border-2 border-sky-500">
+          <div className="animate-slide-rotate-in animate-delay-400 bg-sky-400 p-4 rounded-2xl flex flex-col items-center gap-2 text-center row-span-2 shadow-lg shadow-sky-400/50 border border-sky-500">
             <img
               className="size-20"
               src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij4KCTxwYXRoIGZpbGw9ImN1cnJlbnRDb2xvciIgZmlsbC1vcGFjaXR5PSIwIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLWRhc2hhcnJheT0iNjQiIHN0cm9rZS1kYXNob2Zmc2V0PSI2NCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2Utd2lkdGg9IjIiIGQ9Ik0xMiAybC05IDMuNXY2LjVjMCAzLjUgMy41IDkgOCAxMGM0LjUgLTEgOCAtNi41IDggLTEwdi02LjVsLTggLTMuNVoiPgoJCTxhbmltYXRlIGZpbGw9ImZyZWV6ZSIgYXR0cmlidXRlTmFtZT0iZmlsbC1vcGFjaXR5IiBiZWdpbj0iMC43cyIgZHVyPSIwLjE1cyIgdmFsdWVzPSIwOzAuMyIgLz4KCQk8YW5pbWF0ZSBmaWxsPSJmcmVlemUiIGF0dHJpYnV0ZU5hbWU9InN0cm9rZS1kYXNob2Zmc2V0IiBkdXI9IjAuNnMiIHZhbHVlcz0iNjQ7MCIgLz4KCTwvcGF0aD4KPC9zdmc+"
@@ -40,7 +40,7 @@ function Beneficios() {
               Paseadores cuidadosamente seleccionados y verificados.
             </p>
           </div>
-          <div className="animate-slide-rotate-in animate-delay-500 bg-emerald-400 p-4 rounded-2xl flex flex-col items-center gap-2 text-center col-start-1 row-start-3 shadow-lg shadow-emerald-400/50 border-2 border-emerald-500">
+          <div className="animate-slide-rotate-in animate-delay-500 bg-emerald-400 p-4 rounded-2xl flex flex-col items-center gap-2 text-center col-start-1 row-start-3 shadow-lg shadow-emerald-400/50 border border-emerald-500">
             <img
               className="size-20"
               src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij4KCTxnPgoJCTxwYXRoIGZpbGw9ImN1cnJlbnRDb2xvciIgZD0iTTcgM0gxN1Y3LjJMMTIgMTJMNyA3LjJWM1oiPgoJCQk8YW5pbWF0ZSBpZD0iU1ZHRmpuT25keHQiIGZpbGw9ImZyZWV6ZSIgYXR0cmlidXRlTmFtZT0ib3BhY2l0eSIgYmVnaW49IjA7U1ZHbjZtTGFkZ2UuZW5kIiBkdXI9IjJzIiBmcm9tPSIxIiB0bz0iMCIgLz4KCQk8L3BhdGg+CgkJPHBhdGggZmlsbD0iY3VycmVudENvbG9yIiBkPSJNMTcgMjFIN1YxNi44TDEyIDEyTDE3IDE2LjhWMjFaIj4KCQkJPGFuaW1hdGUgZmlsbD0iZnJlZXplIiBhdHRyaWJ1dGVOYW1lPSJvcGFjaXR5IiBiZWdpbj0iMDtTVkduNm1MYWRnZS5lbmQiIGR1cj0iMnMiIGZyb209IjAiIHRvPSIxIiAvPgoJCTwvcGF0aD4KCQk8cGF0aCBmaWxsPSJjdXJyZW50Q29sb3IiIGQ9Ik02IDJWOEg2LjAxTDYgOC4wMUwxMCAxMkw2IDE2TDYuMDEgMTYuMDFINlYyMkgxOFYxNi4wMUgxNy45OUwxOCAxNkwxNCAxMkwxOCA4LjAxTDE3Ljk5IDhIMThWMkg2Wk0xNiAxNi41VjIwSDhWMTYuNUwxMiAxMi41TDE2IDE2LjVaTTEyIDExLjVMOCA3LjVWNEgxNlY3LjVMMTIgMTEuNVoiIC8+CgkJPGFuaW1hdGVUcmFuc2Zvcm0gaWQ9IlNWR242bUxhZGdlIiBhdHRyaWJ1dGVOYW1lPSJ0cmFuc2Zvcm0iIGF0dHJpYnV0ZVR5cGU9IlhNTCIgYmVnaW49IlNWR0Zqbk9uZHh0LmVuZCIgZHVyPSIwLjVzIiBmcm9tPSIwIDEyIDEyIiB0bz0iMTgwIDEyIDEyIiB0eXBlPSJyb3RhdGUiIC8+Cgk8L2c+Cjwvc3ZnPg=="
@@ -49,7 +49,7 @@ function Beneficios() {
             <p className="text-2xl font-semibold">Flexibilidad total</p>
             <p className="text-xl">Elije duración según tu rutina.</p>
           </div>
-          <div className="animate-slide-rotate-in animate-delay-700 bg-indigo-400 p-4 rounded-2xl flex flex-col items-center gap-2 text-center col-start-2 row-start-1 shadow-lg shadow-indigo-400/50 border-2 border-indigo-500">
+          <div className="animate-slide-rotate-in animate-delay-700 bg-indigo-400 p-4 rounded-2xl flex flex-col items-center gap-2 text-center col-start-2 row-start-1 shadow-lg shadow-indigo-400/50 border border-indigo-500">
             <img
               className="size-20"
               src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij4KCTxwYXRoIGZpbGw9ImN1cnJlbnRDb2xvciIgZmlsbC1vcGFjaXR5PSIwIiBkPSJNMTIgM2wyLjM1IDUuNzZsNi4yMSAwLjQ2bC00Ljc2IDQuMDJsMS40OSA2LjA0bC01LjI5IC0zLjI4bC01LjI5IDMuMjhsMS40OSAtNi4wNGwtNC43NiAtNC4wMmw2LjIxIC0wLjQ2WiI+CgkJPGFuaW1hdGUgZmlsbD0iZnJlZXplIiBhdHRyaWJ1dGVOYW1lPSJmaWxsLW9wYWNpdHkiIGJlZ2luPSIwLjVzIiBkdXI9IjAuMTVzIiB2YWx1ZXM9IjA7MC4zIiAvPgoJPC9wYXRoPgoJPHBhdGggZmlsbD0ibm9uZSIgc3Ryb2tlPSJjdXJyZW50Q29sb3IiIHN0cm9rZS1kYXNoYXJyYXk9IjM2IiBzdHJva2UtZGFzaG9mZnNldD0iMzYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgc3Ryb2tlLXdpZHRoPSIyIiBkPSJNMTIgM2wtMi4zNSA1Ljc2bC02LjIxIDAuNDZsNC43NiA0LjAybC0xLjQ5IDYuMDRsNS4yOSAtMy4yOE0xMiAzbDIuMzUgNS43Nmw2LjIxIDAuNDZsLTQuNzYgNC4wMmwxLjQ5IDYuMDRsLTUuMjkgLTMuMjgiPgoJCTxhbmltYXRlIGZpbGw9ImZyZWV6ZSIgYXR0cmlidXRlTmFtZT0ic3Ryb2tlLWRhc2hvZmZzZXQiIGR1cj0iMC41cyIgdmFsdWVzPSIzNjswIiAvPgoJPC9wYXRoPgo8L3N2Zz4="
@@ -61,7 +61,7 @@ function Beneficios() {
               mejor.
             </p>
           </div>
-          <div className="animate-slide-rotate-in animate-delay-800 bg-red-400 p-4 rounded-2xl flex flex-col items-center gap-2 text-center row-span-2 col-start-2 row-start-2 shadow-lg shadow-red-400/50 border-2 border-red-500">
+          <div className="animate-slide-rotate-in animate-delay-800 bg-red-400 p-4 rounded-2xl flex flex-col items-center gap-2 text-center row-span-2 col-start-2 row-start-2 shadow-lg shadow-red-400/50 border border-red-500">
             <img
               className="size-20"
               src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij4KCTxwYXRoIGZpbGw9ImN1cnJlbnRDb2xvciIgZmlsbC1vcGFjaXR5PSIwIiBkPSJNNSA4LjVsNyAtNS41bDcgNS41djEyLjVoLTR2LThsLTEgLTFoLTRsLTEgMXY4aC00di0xMi41WiI+CgkJPGFuaW1hdGUgZmlsbD0iZnJlZXplIiBhdHRyaWJ1dGVOYW1lPSJmaWxsLW9wYWNpdHkiIGJlZ2luPSIxLjFzIiBkdXI9IjAuMTVzIiB2YWx1ZXM9IjA7MC4zIiAvPgoJPC9wYXRoPgoJPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSJjdXJyZW50Q29sb3IiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgc3Ryb2tlLXdpZHRoPSIyIj4KCQk8cGF0aCBzdHJva2UtZGFzaGFycmF5PSIxNiIgc3Ryb2tlLWRhc2hvZmZzZXQ9IjE2IiBkPSJNNC41IDIxLjVoMTUiPgoJCQk8YW5pbWF0ZSBmaWxsPSJmcmVlemUiIGF0dHJpYnV0ZU5hbWU9InN0cm9rZS1kYXNob2Zmc2V0IiBkdXI9IjAuMnMiIHZhbHVlcz0iMTY7MCIgLz4KCQk8L3BhdGg+CgkJPHBhdGggc3Ryb2tlLWRhc2hhcnJheT0iMTYiIHN0cm9rZS1kYXNob2Zmc2V0PSIxNiIgZD0iTTQuNSAyMS41di0xMy41TTE5LjUgMjEuNXYtMTMuNSI+CgkJCTxhbmltYXRlIGZpbGw9ImZyZWV6ZSIgYXR0cmlidXRlTmFtZT0ic3Ryb2tlLWRhc2hvZmZzZXQiIGJlZ2luPSIwLjJzIiBkdXI9IjAuMnMiIHZhbHVlcz0iMTY7MCIgLz4KCQk8L3BhdGg+CgkJPHBhdGggc3Ryb2tlLWRhc2hhcnJheT0iMjgiIHN0cm9rZS1kYXNob2Zmc2V0PSIyOCIgZD0iTTIgMTBsMTAgLThsMTAgOCI+CgkJCTxhbmltYXRlIGZpbGw9ImZyZWV6ZSIgYXR0cmlidXRlTmFtZT0ic3Ryb2tlLWRhc2hvZmZzZXQiIGJlZ2luPSIwLjRzIiBkdXI9IjAuNHMiIHZhbHVlcz0iMjg7MCIgLz4KCQk8L3BhdGg+CgkJPHBhdGggc3Ryb2tlLWRhc2hhcnJheT0iMjQiIHN0cm9rZS1kYXNob2Zmc2V0PSIyNCIgZD0iTTkuNSAyMS41di05aDV2OSI+CgkJCTxhbmltYXRlIGZpbGw9ImZyZWV6ZSIgYXR0cmlidXRlTmFtZT0ic3Ryb2tlLWRhc2hvZmZzZXQiIGJlZ2luPSIwLjdzIiBkdXI9IjAuNHMiIHZhbHVlcz0iMjQ7MCIgLz4KCQk8L3BhdGg+Cgk8L2c+Cjwvc3ZnPg=="
