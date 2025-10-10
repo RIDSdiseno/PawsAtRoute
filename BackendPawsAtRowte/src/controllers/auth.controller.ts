@@ -617,6 +617,8 @@ function addMinutes(base: Date, minutes: number) {
 
 /** POST /paseos (solo DUEÑO) */
 // controllers/auth.controller.ts
+import type { Prisma } from "@prisma/client";
+
 export const createPaseo = async (req: Request, res: Response) => {
   try {
     if (!req.user) return res.status(401).json({ error: "No autorizado" });
@@ -635,40 +637,41 @@ export const createPaseo = async (req: Request, res: Response) => {
       return res.status(400).json({ error: "Faltan campos requeridos" });
     }
     if (!Number.isInteger(duracion) || ![30, 60, 90, 120].includes(duracion)) {
-      return res.status(400).json({ error: "Duración inválida (30, 60, 90 o 120)" });
+      return res.status(400).json({ error: "Duración inválida" });
     }
 
     const dFecha = new Date(fechaStr);
     const dHora  = new Date(horaISO);
-    if (Number.isNaN(dFecha.getTime()) || Number.isNaN(dHora.getTime())) {
-      return res.status(400).json({ error: "Fecha u hora inválidas" });
-    }
 
-    // validar dueño de la mascota
-    const mascota = await prisma.mascota.findUnique({
+    const m = await prisma.mascota.findUnique({
       where: { idMascota: mascotaId },
       select: { usuarioId: true },
     });
-    if (!mascota) return res.status(404).json({ error: "Mascota no encontrada" });
-    if (mascota.usuarioId !== req.user.id) {
+    if (!m) return res.status(404).json({ error: "Mascota no encontrada" });
+    if (m.usuarioId !== req.user.id) {
       return res.status(403).json({ error: "No puedes crear paseos para una mascota que no es tuya" });
     }
 
-    // CREATE usando relaciones (nada de paseadorId ni mascotaId directo)
+    const data: Prisma.PaseoCreateInput = {
+      mascota: { connect: { idMascota: mascotaId } },
+      duenio:  { connect: { idUsuario: req.user.id } },
+      fecha: dFecha,
+      hora: dHora,
+      duracion,
+      lugarEncuentro: lugar,
+      estado: "PENDIENTE",
+      ...(notas ? { notas } : {}),
+    };
+
+    // IMPORTANTE: no permitir que se cuele `paseadorId: undefined` por error
+    // (por si en algún refactor alguien lo añade)
+
+    delete (data as any).paseadorId;
+
+    delete (data as any).paseador;
+
     const nuevo = await prisma.paseo.create({
-      data: {
-        mascota: { connect: { idMascota: mascotaId } },
-        duenio:  { connect: { idUsuario: req.user.id } },
-        // NO pases paseador ni paseadorId si no hay paseador asignado
-        paseadorId: undefined, // placeholder para "sin asignar"
-        fecha: dFecha,
-        hora: dHora,
-        duracion,
-        lugarEncuentro: lugar,
-        estado: EstadoPaseo.PENDIENTE,
-        notas,
-        paseador: undefined
-      },
+      data,
       select: {
         idPaseo: true,
         mascotaId: true,
@@ -680,16 +683,16 @@ export const createPaseo = async (req: Request, res: Response) => {
         lugarEncuentro: true,
         estado: true,
         notas: true,
-        paseador:true
       },
     });
 
     return res.status(201).json({ paseo: nuevo });
   } catch (e) {
     console.error("createPaseo error:", e);
-    return res.status(500).json({ error: JSON.stringify(e) });
+    return res.status(500).json({ error: "Error interno" });
   }
 };
+
 
 
 /** GET /api/paseos */
