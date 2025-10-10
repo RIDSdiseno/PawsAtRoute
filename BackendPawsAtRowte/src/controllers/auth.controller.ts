@@ -654,13 +654,12 @@ export const crearPaseo = async (req: Request, res: Response) => {
     if (Number.isNaN(fechaDate.getTime()) || Number.isNaN(horaDate.getTime())) {
       return res.status(400).json({ error: "Formato de fecha/hora inválido. Usa fecha='YYYY-MM-DD' y hora='HH:mm'." });
     }
-
+    const paseador = undefined;
     // Crear paseo: paseadorId queda null, estado PENDIENTE
     const paseo = await prisma.paseo.create({
       data: {
         mascota: { connect: { idMascota: mascota.idMascota } },
-        duenio:  { connect: { idUsuario: mascota.usuarioId } }, // inferido desde la mascota    // inferido de la mascota
-        // paseadorId: null 
+        duenio:  { connect: { idUsuario: mascota.usuarioId } }, 
         fecha: fechaDate,
         hora: horaDate,
         duracion: duracionInt,

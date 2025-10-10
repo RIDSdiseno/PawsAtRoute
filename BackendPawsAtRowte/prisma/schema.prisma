@@ -84,7 +84,8 @@ model RefreshToken {
 
 enum Rol {
   PASEADOR
-  DUEÑO
+  DUEÑO       @map("DUEÑO") 
+  @@map("Rol")  
 }
 
 enum EstadoPaseo {
