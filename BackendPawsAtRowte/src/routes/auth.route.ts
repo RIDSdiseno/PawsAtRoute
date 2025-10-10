@@ -6,12 +6,12 @@ import { RequestHandler, Router } from "express";
 import {
   login, registerUser, refresh, getProfile, logout,
   sendVerificationCode, verifyCode, resetPassword,
-  createPaseo,
   listPaseos,
   acceptPaseo,
   createMascota,
   getMisMascotas,
-  getMascotasByDuenio
+  getMascotasByDuenio,
+  crearPaseo
 } from "../controllers/auth.controller";
 import { authGuard } from "../middlewares/auth.middleware";
 
@@ -43,7 +43,7 @@ r.post("/send-code", sendVerificationCode);
 r.post("/verify-code", verifyCode);
 r.put("/reset-password", resetPassword);
 
-r.post("/paseos",authGuard,createPaseo);
+r.post("/paseos",authGuard,crearPaseo);
 r.get("/listpaseos",authGuard,listPaseos);
 r.post("/paseos/:id/accept",authGuard,acceptPaseo)
 

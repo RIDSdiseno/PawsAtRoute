@@ -619,59 +619,54 @@ function addMinutes(base: Date, minutes: number) {
 // controllers/auth.controller.ts
 import type { Prisma } from "@prisma/client";
 
-export const createPaseo = async (req: Request, res: Response) => {
+
+export const crearPaseo = async (req: Request, res: Response) => {
   try {
-    if (!req.user) return res.status(401).json({ error: "No autorizado" });
-    if (req.user.rol !== "DUEÑO") {
-      return res.status(403).json({ error: "Solo usuarios con rol DUEÑO pueden crear paseos" });
+    const {
+      mascotaId,
+      duenioId,
+      fecha,           // "YYYY-MM-DD"
+      hora,            // "HH:mm"
+      duracion,        // minutos
+      lugarEncuentro,
+      estado = "PENDIENTE",
+      notas,
+    } = req.body;
+
+    // Validaciones mínimas
+    const faltantes = ["mascotaId","duenioId","fecha","hora","duracion","lugarEncuentro"]
+      .filter(k => !req.body?.[k] && req.body?.[k] !== 0);
+    if (faltantes.length) {
+      return res.status(400).json({ error: `Faltan campos: ${faltantes.join(", ")}` });
     }
 
-    const mascotaId = Number(req.body?.mascotaId);
-    const fechaStr  = String(req.body?.fecha || "");
-    const horaISO   = String(req.body?.hora || "");
-    const lugar     = String(req.body?.lugarEncuentro || "");
-    const notas     = req.body?.notas ? String(req.body?.notas) : null;
-    const duracion  = Number(req.body?.duracion);
-
-    if (!mascotaId || !fechaStr || !horaISO || !lugar) {
-      return res.status(400).json({ error: "Faltan campos requeridos" });
-    }
-    if (!Number.isInteger(duracion) || ![30, 60, 90, 120].includes(duracion)) {
-      return res.status(400).json({ error: "Duración inválida" });
+    const mascotaIdInt  = Number(mascotaId);
+    const duenioIdInt   = Number(duenioId);
+    const duracionInt   = Number(duracion);
+    if ([mascotaIdInt, duenioIdInt, duracionInt].some(n => Number.isNaN(n))) {
+      return res.status(400).json({ error: "IDs y duración deben ser números válidos" });
     }
 
-    const dFecha = new Date(fechaStr);
-    const dHora  = new Date(horaISO);
-
-    const m = await prisma.mascota.findUnique({
-      where: { idMascota: mascotaId },
-      select: { usuarioId: true },
-    });
-    if (!m) return res.status(404).json({ error: "Mascota no encontrada" });
-    if (m.usuarioId !== req.user.id) {
-      return res.status(403).json({ error: "No puedes crear paseos para una mascota que no es tuya" });
+    // Combinar fecha/hora (ajusta zona si quieres -03:00 fijo)
+    const fechaDate = new Date(`${fecha}T00:00:00.000Z`);
+    const horaDate  = new Date(`${fecha}T${hora}:00.000Z`);
+    if (Number.isNaN(fechaDate.getTime()) || Number.isNaN(horaDate.getTime())) {
+      return res.status(400).json({ error: "Formato de fecha u hora inválido (usa fecha='YYYY-MM-DD', hora='HH:mm')." });
     }
 
-    const data: Prisma.PaseoCreateInput = {
-      mascota: { connect: { idMascota: mascotaId } },
-      duenio:  { connect: { idUsuario: req.user.id } },
-      fecha: dFecha,
-      hora: dHora,
-      duracion,
-      lugarEncuentro: lugar,
-      estado: "PENDIENTE",
-      ...(notas ? { notas } : {}),
-    };
-
-    // IMPORTANTE: no permitir que se cuele `paseadorId: undefined` por error
-    // (por si en algún refactor alguien lo añade)
-
-    delete (data as any).paseadorId;
-
-    delete (data as any).paseador;
-
-    const nuevo = await prisma.paseo.create({
-      data,
+    // Crear SIN paseador
+    const paseo = await prisma.paseo.create({
+      data: {
+        mascota: { connect: { idMascota: mascotaIdInt } },
+        duenio:  { connect: { idUsuario: duenioIdInt } },
+        // paseador: (SE ASIGNA EN EL OTRO ENDPOINT)
+        fecha: fechaDate,
+        hora: horaDate,
+        duracion: duracionInt,
+        lugarEncuentro: String(lugarEncuentro),
+        estado: "PENDIENTE", // forzamos PENDIENTE al crear
+        ...(notas ? { notas: String(notas) } : {}),
+      },
       select: {
         idPaseo: true,
         mascotaId: true,
@@ -686,13 +681,12 @@ export const createPaseo = async (req: Request, res: Response) => {
       },
     });
 
-    return res.status(201).json({ paseo: nuevo });
-  } catch (e) {
-    console.error("createPaseo error:", e);
-    return res.status(500).json({ error: "Error interno" });
+    return res.status(201).json({ paseo });
+  } catch (error: any) {
+    console.error("[crearPaseo] Error:", error);
+    return res.status(500).json({ error: `Error interno al crear el paseo: ${error.message || error}` });
   }
 };
-
 
 
 /** GET /api/paseos */
