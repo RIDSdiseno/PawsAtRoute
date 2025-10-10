@@ -656,7 +656,7 @@ export const createPaseo = async (req: Request, res: Response) => {
       data: {
         mascota: { connect: { idMascota: mascotaId } },
         duenio:  { connect: { idUsuario: req.user.id } },
-        // paseador: omitido -> null
+        paseadorId: undefined, 
         fecha: dFecha,
         hora: dHora,
         duracion,
