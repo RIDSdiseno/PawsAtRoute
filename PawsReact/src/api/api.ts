@@ -248,7 +248,7 @@ export const createMascota = async (payload: {
   raza: string;
   edad: number;
 }) => {
-  const res = await api.post<{ mascota: Mascota }>("/auth/mascotas", payload);
+  const res = await api.post<{ mascota: Mascota }>("/auth/crearmascotas", payload);
   return res.data.mascota;
 };
 
