@@ -626,8 +626,6 @@ export const createPaseo = async (req: Request, res: Response) => {
     const horaISO   = String(req.body?.hora || "");
     const lugar     = String(req.body?.lugarEncuentro || "");
     const notas     = req.body?.notas ? String(req.body?.notas) : null;
-
-    // duracion llega a veces como string desde el radio input
     const duracion  = Number(req.body?.duracion);
 
     if (!mascotaId || !fechaStr || !horaISO || !lugar) {
@@ -637,13 +635,13 @@ export const createPaseo = async (req: Request, res: Response) => {
       return res.status(400).json({ error: "Duración inválida (30, 60, 90 o 120)" });
     }
 
-    const dFecha = new Date(fechaStr); // 2025-10-14
-    const dHora  = new Date(horaISO);  // ISO completo (2025-10-14T22:50:00Z, etc.)
+    const dFecha = new Date(fechaStr);
+    const dHora  = new Date(horaISO);
     if (Number.isNaN(dFecha.getTime()) || Number.isNaN(dHora.getTime())) {
       return res.status(400).json({ error: "Fecha u hora inválidas" });
     }
 
-    // Verificar que la mascota existe y pertenece al dueño autenticado
+    // valida dueño de la mascota
     const mascota = await prisma.mascota.findUnique({
       where: { idMascota: mascotaId },
       select: { idMascota: true, usuarioId: true },
@@ -653,21 +651,30 @@ export const createPaseo = async (req: Request, res: Response) => {
       return res.status(403).json({ error: "No puedes crear paseos para una mascota que no es tuya" });
     }
 
+    // 👇 Usa connect en vez de pasar mascotaId/duenioId
     const nuevo = await prisma.paseo.create({
       data: {
-        mascotaId: mascota.idMascota,
-        duenioId : req.user.id,
-        fecha    : dFecha,
-        hora     : dHora,
+        mascota: { connect: { idMascota: mascotaId } },
+        duenio:  { connect: { idUsuario: req.user.id } },
+        // paseador: omitido -> null
+        fecha: dFecha,
+        hora: dHora,
         duracion,
         lugarEncuentro: lugar,
-        estado   : "PENDIENTE",
+        estado: "PENDIENTE",
         notas,
-        // paseadorId: omitido -> null
       },
       select: {
-        idPaseo: true, mascotaId: true, duenioId: true, paseadorId: true,
-        fecha: true, hora: true, duracion: true, lugarEncuentro: true, estado: true, notas: true,
+        idPaseo: true,
+        mascotaId: true,
+        duenioId: true,
+        paseadorId: true,
+        fecha: true,
+        hora: true,
+        duracion: true,
+        lugarEncuentro: true,
+        estado: true,
+        notas: true,
       },
     });
 
