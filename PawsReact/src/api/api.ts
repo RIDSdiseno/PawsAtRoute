@@ -7,8 +7,7 @@ const BASE_URL = import.meta.env.VITE_API_BASE_URL ||
 
 const api: AxiosInstance = axios.create({
   baseURL: BASE_URL,
-  withCredentials: false, // para enviar cookies httpOnly (refresh tokens)
-  timeout: 12000
+  withCredentials: false, // para enviar cookies httpOnly (refresh tokens)  timeout: 12000
 });
 
 // Guardamos accessToken en memoria (y localStorage para persistencia)
@@ -182,7 +181,104 @@ export const resetPassword = async (correo: string, nuevaClave: string) => {
 };
 
 
+// =========================
+//  Paseos endpoints
+// =========================
+export type EstadoPaseo = "PENDIENTE" | "ACEPTADO" | "EN_CURSO" | "FINALIZADO" | "CANCELADO";
+
+export type Paseo = {
+  idPaseo: number;
+  mascotaId: number;
+  duenioId: number;
+  paseadorId: number | null;
+  fecha: string;   // ISO
+  hora: string;    // ISO
+  duracion: number;
+  lugarEncuentro: string;
+  estado: EstadoPaseo;
+  notas: string | null;
+  mascota?: { nombre: string; especie: string; raza: string };
+};
+
+export const createPaseo = async (payload: {
+  mascotaId: number;
+  fecha: string;      // "YYYY-MM-DD"
+  hora: string;       // ISO completo
+  duracion: number;
+  lugarEncuentro: string;
+  notas?: string;
+}) => {
+  const res = await api.post<{ paseo: Paseo }>("/auth/paseos", payload);
+  return res.data.paseo;
+};
+
+export const listPaseos = async (params?: {
+  estado?: EstadoPaseo;
+  mias?: boolean;
+  disponibles?: boolean;
+  desde?: string;
+  hasta?: string;
+  page?: number;
+  pageSize?: number;
+}) => {
+  const res = await api.get("/auth/paseos", { params });
+  return res.data as { page: number; pageSize: number; total: number; items: Paseo[] };
+};
+
+export const acceptPaseo = async (idPaseo: number) => {
+  const res = await api.post<{ paseo: Paseo }>(`/auth/paseos/${idPaseo}/accept`, {});
+  return res.data.paseo;
+};
+
+// =========================
+//  Mascotas endpoints
+// =========================
+export type Mascota = {
+  idMascota: number;
+  usuarioId: number;
+  nombre: string;
+  especie: string;
+  raza: string;
+  edad: number;
+};
+
+export const createMascota = async (payload: {
+  nombre: string;
+  especie: string;
+  raza: string;
+  edad: number;
+}) => {
+  const res = await api.post<{ mascota: Mascota }>("/auth/mascotas", payload);
+  return res.data.mascota;
+};
+
+export type Paginated<T> = {
+  page: number;
+  pageSize: number;
+  total: number;
+  items: T[];
+};
+
+// Lista MIS mascotas (del dueño autenticado)
+export const listMisMascotas = async (params?: {
+  page?: number;
+  pageSize?: number;
+}) => {
+  const res = await api.get<Paginated<Mascota>>("/auth/mismascotas", { params });
+  return res.data;
+};
+
+// (Opcional) Lista mascotas por id de dueño (requiere que sea el propio dueño)
+export const listMascotasByDuenio = async (
+  duenioId: number,
+  params?: { page?: number; pageSize?: number }
+) => {
+  const res = await api.get<Paginated<Mascota>>(
+    `/auth/dueno/${duenioId}/mascotas`,
+    { params }
+  );
+  return res.data;
+};
+
 
 export default api;
-
-
