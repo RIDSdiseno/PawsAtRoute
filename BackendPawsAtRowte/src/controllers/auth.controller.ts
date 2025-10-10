@@ -651,12 +651,12 @@ export const createPaseo = async (req: Request, res: Response) => {
       return res.status(403).json({ error: "No puedes crear paseos para una mascota que no es tuya" });
     }
 
-    // 👇 Usa connect en vez de pasar mascotaId/duenioId
+    //  Usa connect en vez de pasar mascotaId/duenioId
     const nuevo = await prisma.paseo.create({
       data: {
-        mascota: { connect: { idMascota: mascotaId } },
-        duenio:  { connect: { idUsuario: req.user.id } },
-        paseadorId: undefined, 
+        mascotaId: mascotaId,          
+        duenioId : req.user.id, // Paseador no asignado al crear el paseo
+        paseadorId: null, // Paseador no asignado inicialmente
         fecha: dFecha,
         hora: dHora,
         duracion,
