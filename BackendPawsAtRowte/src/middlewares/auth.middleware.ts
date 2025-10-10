@@ -6,7 +6,7 @@ export type AuthJwtPayload = {
   id: number;
   nombre: string;
   email: string;
-  rol: string;
+  rol: Rol;
 };
 
 // Nunca uses "dev_secret" en producción

@@ -42,6 +42,7 @@ type JwtPayload = {
   id: number;
   email: string;       // derivado de nivel
   nombreUsuario: string;
+  rol:Rol;
 };
 
 
@@ -241,7 +242,8 @@ export const login = async (req: Request, res: Response) => {
     const at = signAccessToken({
       id: user.idUsuario,
       email: user.correo,
-      nombreUsuario: user.nombre
+      nombreUsuario: user.nombre,
+      rol: user.rol
     });
 
     // 2) Refresh Token (cookie httpOnly) + registro en DB
@@ -374,6 +376,7 @@ export const refresh = async (req: Request, res: Response) => {
       id: row.user.idUsuario,
       email: row.user.correo,
       nombreUsuario: row.user.nombre,
+      rol: row.user.rol
     });
 
     return res.json({ token: at, remember: rememberParam });

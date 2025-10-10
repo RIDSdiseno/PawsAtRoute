@@ -8,7 +8,7 @@ export type AuthJwtPayload = {
   id: number;
   email: string;
   nombre: string;
-  rol: string;
+  rol: Rol;
 };
 
 // Extiende Express.Request para tener req.user (opcional pero útil)
