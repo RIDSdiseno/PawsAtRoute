@@ -660,13 +660,14 @@ export const createPaseo = async (req: Request, res: Response) => {
         mascota: { connect: { idMascota: mascotaId } },
         duenio:  { connect: { idUsuario: req.user.id } },
         // NO pases paseador ni paseadorId si no hay paseador asignado
-        paseador: undefined, // placeholder para "sin asignar"
+        paseadorId: undefined, // placeholder para "sin asignar"
         fecha: dFecha,
         hora: dHora,
         duracion,
         lugarEncuentro: lugar,
         estado: EstadoPaseo.PENDIENTE,
         notas,
+        paseador: undefined
       },
       select: {
         idPaseo: true,
@@ -679,6 +680,7 @@ export const createPaseo = async (req: Request, res: Response) => {
         lugarEncuentro: true,
         estado: true,
         notas: true,
+        paseador:true
       },
     });
 
