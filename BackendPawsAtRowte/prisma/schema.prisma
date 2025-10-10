@@ -4,7 +4,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = "postgresql://postgres:DEkoSEMyeiqaOXEViwkmrrKQDFeHyLYC@interchange.proxy.rlwy.net:26066/railway"
+  url      = "postgresql://postgres:QpbxlUPXvGwwHsgEfuPZJEZvqsbSPoLz@shortline.proxy.rlwy.net:26785/railway"
 }
 
 model Usuario {
@@ -42,17 +42,16 @@ model Paseo {
   idPaseo        Int         @id @default(autoincrement())
   mascotaId      Int
   duenioId       Int
-  paseadorId     Int?        // OPCIONAL
+  paseadorId     Int?
   fecha          DateTime
   hora           DateTime
   duracion       Int
   lugarEncuentro String
   estado         EstadoPaseo @default(PENDIENTE)
   notas          String?
-
-  mascota  Mascota  @relation(fields: [mascotaId], references: [idMascota])
-  duenio   Usuario  @relation("DuenioPaseo", fields: [duenioId], references: [idUsuario])
-  paseador Usuario? @relation("PaseadorPaseo", fields: [paseadorId], references: [idUsuario])
+  duenio         Usuario     @relation("DuenioPaseo", fields: [duenioId], references: [idUsuario])
+  mascota        Mascota     @relation(fields: [mascotaId], references: [idMascota])
+  paseador       Usuario?    @relation("PaseadorPaseo", fields: [paseadorId], references: [idUsuario])
 }
 
 model Tarjeta {
@@ -84,8 +83,9 @@ model RefreshToken {
 
 enum Rol {
   PASEADOR
-  DUEÑO       @map("DUEÑO") 
-  @@map("Rol")  
+
+  DUEÑO @map("DUEÑO")
+  @@map("Rol")
 }
 
 enum EstadoPaseo {

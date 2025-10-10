@@ -660,6 +660,7 @@ export const crearPaseo = async (req: Request, res: Response) => {
       data: {
         mascota: { connect: { idMascota: mascota.idMascota } },
         duenio:  { connect: { idUsuario: mascota.usuarioId } }, 
+        paseadorId:undefined,
         fecha: fechaDate,
         hora: horaDate,
         duracion: duracionInt,
@@ -668,7 +669,7 @@ export const crearPaseo = async (req: Request, res: Response) => {
         ...(notas ? { notas: String(notas) } : {}),
       },
       select: {
-        idPaseo: true, mascotaId: true, duenioId: true,
+        idPaseo: true, mascotaId: true, duenioId: true, paseadorId: true,
         fecha: true, hora: true, duracion: true, lugarEncuentro: true, estado: true, notas: true
       },
     });
