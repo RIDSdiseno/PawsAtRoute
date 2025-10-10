@@ -67,7 +67,7 @@ model Paseo {
   idPaseo        Int         @id @default(autoincrement())
   mascotaId      Int
   duenioId       Int
-  paseadorId     Int
+  paseadorId     Int?
   fecha          DateTime
   hora           DateTime
   duracion       Int
@@ -77,7 +77,7 @@ model Paseo {
 
   mascota  Mascota @relation(fields: [mascotaId], references: [idMascota])
   duenio   Usuario @relation("DuenioPaseo", fields: [duenioId], references: [idUsuario])
-  paseador Usuario @relation("PaseadorPaseo", fields: [paseadorId], references: [idUsuario])
+  paseador Usuario? @relation("PaseadorPaseo", fields: [paseadorId], references: [idUsuario])
 }
 
 model Tarjeta {

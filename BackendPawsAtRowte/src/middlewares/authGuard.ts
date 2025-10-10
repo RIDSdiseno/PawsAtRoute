@@ -1,12 +1,14 @@
 // src/middlewares/authGuard.ts
 import type { Request, Response, NextFunction, RequestHandler } from "express";
 import { verifyAccessToken } from "../lib/jwt.js";
+import { Rol } from "@prisma/client";
 
 // Si quieres tipar lo que lleva el JWT:
 export type AuthJwtPayload = {
   id: number;
   email: string;
   nombre: string;
+  rol: string;
 };
 
 // Extiende Express.Request para tener req.user (opcional pero útil)

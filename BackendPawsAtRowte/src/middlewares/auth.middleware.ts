@@ -1,3 +1,4 @@
+import { Rol } from "@prisma/client";
 import type { Request, Response, NextFunction, RequestHandler } from "express";
 import jwt from "jsonwebtoken";
 
@@ -5,6 +6,7 @@ export type AuthJwtPayload = {
   id: number;
   nombre: string;
   email: string;
+  rol: string;
 };
 
 // Nunca uses "dev_secret" en producción

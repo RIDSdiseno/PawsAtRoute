@@ -5,7 +5,10 @@ import multer from "multer";
 import { RequestHandler, Router } from "express";
 import {
   login, registerUser, refresh, getProfile, logout,
-  sendVerificationCode, verifyCode, resetPassword
+  sendVerificationCode, verifyCode, resetPassword,
+  createPaseo,
+  listPaseos,
+  acceptPaseo
 } from "../controllers/auth.controller";
 import { authGuard } from "../middlewares/auth.middleware";
 
@@ -36,5 +39,10 @@ r.get("/profile", authGuard, getProfile);
 r.post("/send-code", sendVerificationCode);
 r.post("/verify-code", verifyCode);
 r.put("/reset-password", resetPassword);
+
+r.post("/paseos",authGuard,createPaseo);
+r.get("/listpaseos",authGuard,listPaseos);
+r.post("/paseos/:id/accept",authGuard,acceptPaseo)
+
 
 export default r;

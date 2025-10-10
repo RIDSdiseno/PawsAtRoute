@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { PrismaClient, Rol } from "@prisma/client";
+import { EstadoPaseo, PrismaClient, Rol } from "@prisma/client";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import type { Secret } from "jsonwebtoken";
@@ -241,7 +241,7 @@ export const login = async (req: Request, res: Response) => {
     const at = signAccessToken({
       id: user.idUsuario,
       email: user.correo,
-      nombreUsuario: user.nombre,
+      nombreUsuario: user.nombre
     });
 
     // 2) Refresh Token (cookie httpOnly) + registro en DB
@@ -595,6 +595,323 @@ export const resetPassword = async (req: Request, res: Response) => {
     return res.json({ message: "Contraseña actualizada correctamente" });
   } catch (error) {
     console.error("Error al restablecer la contraseña:", error);
+    return res.status(500).json({ error: "Error interno" });
+  }
+};
+
+/** Util: combina una fecha (YYYY-MM-DD) con una hora (HH:mm[:ss]) a un Date */
+function combineDateTime(fechaISO: string | Date, horaISO: string | Date): Date {
+  const d = new Date(fechaISO);
+  const h = new Date(horaISO);
+  const out = new Date(d);
+  out.setHours(h.getHours(), h.getMinutes(), h.getSeconds(), 0);
+  return out;
+}
+
+/** Util: suma minutos a un Date y retorna nuevo Date */
+function addMinutes(base: Date, minutes: number): Date {
+  return new Date(base.getTime() + minutes * 60 * 1000);
+}
+
+/** POST /api/paseos  (solo DUEÑO) */
+export const createPaseo = async (req: Request, res: Response) => {
+  try {
+    if (!req.user) return res.status(401).json({ error: "No autorizado" });
+    // Solo DUEÑO puede publicar
+    if (req.user.rol !== "DUEÑO") {
+      return res.status(403).json({ error: "Solo usuarios con rol DUEÑO pueden crear paseos" });
+    }
+
+    const { mascotaId, fecha, hora, duracion, lugarEncuentro, notas } = req.body;
+
+    if (!mascotaId || !fecha || !hora || !duracion || !lugarEncuentro) {
+      return res.status(400).json({ error: "Faltan campos requeridos" });
+    }
+    const dFecha = new Date(fecha);
+    const dHora = new Date(hora);
+    if (Number.isNaN(dFecha.getTime()) || Number.isNaN(dHora.getTime())) {
+      return res.status(400).json({ error: "Fecha u hora inválidas" });
+    }
+    if (duracion <= 0) return res.status(400).json({ error: "Duración inválida" });
+
+    // Validar que la mascota exista y pertenezca al dueño autenticado
+    const mascota = await prisma.mascota.findUnique({
+      where: { idMascota: Number(mascotaId) },
+      select: { idMascota: true, usuarioId: true },
+    });
+    if (!mascota) return res.status(404).json({ error: "Mascota no encontrada" });
+    if (mascota.usuarioId !== req.user.id) {
+      return res.status(403).json({ error: "No puedes crear paseos para una mascota que no es tuya" });
+    }
+
+    // Crear paseo PENDIENTE (sin paseador asignado)
+    const nuevo = await prisma.paseo.create({
+      data: {
+        mascotaId: mascota.idMascota,
+        duenioId: req.user.id,
+        paseadorId: undefined, // placeholder; usaremos null semánticamente con un “0” real no es válido para FK
+        fecha: dFecha,
+        hora: dHora,
+        duracion: Number(duracion),
+        lugarEncuentro: String(lugarEncuentro),
+        estado: "PENDIENTE",
+        notas: notas ?? null,
+      },
+      select: {
+        idPaseo: true,
+        mascotaId: true,
+        duenioId: true,
+        paseadorId: true,
+        fecha: true,
+        hora: true,
+        duracion: true,
+        lugarEncuentro: true,
+        estado: true,
+        notas: true,
+      },
+    });
+
+    // Ajuste: como el schema exige paseadorId:Int NOT NULL, usamos 0 al crear.
+    // Si prefieres, cambia en Prisma a `paseadorId Int?` para permitir null en PENDIENTE.
+    return res.status(201).json({ paseo: nuevo });
+  } catch (e) {
+    console.error("createPaseo error:", e);
+    return res.status(500).json({ error: "Error interno" });
+  }
+};
+
+/** GET /api/paseos */
+export const listPaseos = async (req: Request, res: Response) => {
+  try {
+    const estado = req.query.estado as EstadoPaseo | undefined;
+    const mias = String(req.query.mias || "false") === "true";
+    const disponibles = String(req.query.disponibles || "false") === "true";
+
+    const desde = req.query.desde ? new Date(String(req.query.desde)) : undefined;
+    const hasta = req.query.hasta ? new Date(String(req.query.hasta)) : undefined;
+
+    const page = Math.max(1, Number(req.query.page || 1));
+    const pageSize = Math.min(100, Math.max(1, Number(req.query.pageSize || 20)));
+    const skip = (page - 1) * pageSize;
+    const take = pageSize;
+
+    const where: any = {};
+
+    if (estado) where.estado = estado;
+
+    if (desde || hasta) {
+      where.fecha = {};
+      if (desde) where.fecha.gte = desde;
+      if (hasta) where.fecha.lte = hasta;
+    }
+
+    if (disponibles) {
+      // Paseos sin asignar (nuestro placeholder 0)
+      where.paseadorId = 0;
+      where.estado = "PENDIENTE";
+    }
+
+    if (mias && req.user) {
+      if (req.user.rol === "DUEÑO") {
+        where.duenioId = req.user.id;
+      } else if (req.user.rol === "PASEADOR") {
+        where.paseadorId = req.user.id;
+      }
+    }
+
+    const [items, total] = await Promise.all([
+      prisma.paseo.findMany({
+        where,
+        orderBy: [{ fecha: "asc" }, { hora: "asc" }],
+        skip,
+        take,
+        select: {
+          idPaseo: true,
+          mascotaId: true,
+          duenioId: true,
+          paseadorId: true,
+          fecha: true,
+          hora: true,
+          duracion: true,
+          lugarEncuentro: true,
+          estado: true,
+          notas: true,
+          mascota: { select: { nombre: true, especie: true, raza: true } },
+        },
+      }),
+      prisma.paseo.count({ where }),
+    ]);
+
+    return res.json({
+      page,
+      pageSize,
+      total,
+      items,
+    });
+  } catch (e) {
+    console.error("listPaseos error:", e);
+    return res.status(500).json({ error: "Error interno" });
+  }
+};
+
+/** POST /api/paseos/:id/accept  (solo PASEADOR)
+ * Asigna el paseo al paseador autenticado y cambia estado a ACEPTADO.
+ * Controla:
+ *  - que esté PENDIENTE
+ *  - que no esté ya asignado (paseadorId≠0)
+ *  - que el paseador no tenga solapes (ACEPTADO/EN_CURSO) en el rango
+ */
+export const acceptPaseo = async (req: Request, res: Response) => {
+  try {
+    if (!req.user) return res.status(401).json({ error: "No autorizado" });
+    if (req.user.rol !== "PASEADOR") {
+      return res.status(403).json({ error: "Solo PASEADOR puede aceptar paseos" });
+    }
+
+    const id = Number(req.params.id);
+    if (!id) return res.status(400).json({ error: "Id de paseo inválido" });
+
+    // Leer paseo actual
+    const paseo = await prisma.paseo.findUnique({
+      where: { idPaseo: id },
+      select: {
+        idPaseo: true,
+        estado: true,
+        paseadorId: true,
+        fecha: true,
+        hora: true,
+        duracion: true,
+      },
+    });
+
+    if (!paseo) return res.status(404).json({ error: "Paseo no encontrado" });
+    if (paseo.estado !== "PENDIENTE") {
+      return res.status(409).json({ error: "El paseo ya no está disponible" });
+    }
+    if (paseo.paseadorId && paseo.paseadorId !== 0) {
+      return res.status(409).json({ error: "El paseo ya fue asignado" });
+    }
+
+    // Chequeo de solapamiento con otros paseos del paseador
+    const start = combineDateTime(paseo.fecha, paseo.hora);
+    const end = addMinutes(start, paseo.duracion);
+
+    // Traer paseos del paseador el mismo día en estados críticos
+    const sameDayStart = new Date(paseo.fecha);
+    sameDayStart.setHours(0, 0, 0, 0);
+    const sameDayEnd = new Date(paseo.fecha);
+    sameDayEnd.setHours(23, 59, 59, 999);
+
+    const posiblesConflictos = await prisma.paseo.findMany({
+      where: {
+        paseadorId: req.user.id,
+        estado: { in: ["ACEPTADO", "EN_CURSO"] },
+        fecha: { gte: sameDayStart, lte: sameDayEnd },
+      },
+      select: { fecha: true, hora: true, duracion: true, idPaseo: true },
+    });
+
+    const overlap = posiblesConflictos.some((p) => {
+      const s = combineDateTime(p.fecha, p.hora);
+      const e = addMinutes(s, p.duracion);
+      return s < end && start < e; // solape si rangos se cruzan
+    });
+
+    if (overlap) {
+      return res.status(409).json({ error: "Tienes un paseo que se solapa en ese horario" });
+    }
+
+    // Concurrencia: aceptar solo si sigue PENDIENTE y paseadorId=0
+    const updated = await prisma.paseo.updateMany({
+      where: { idPaseo: id, estado: "PENDIENTE", paseadorId: 0 },
+      data: { estado: "ACEPTADO", paseadorId: req.user.id },
+    });
+
+    if (updated.count === 0) {
+      return res.status(409).json({ error: "Otro paseador tomó este paseo" });
+    }
+
+    const result = await prisma.paseo.findUnique({
+      where: { idPaseo: id },
+      select: {
+        idPaseo: true,
+        mascotaId: true,
+        duenioId: true,
+        paseadorId: true,
+        fecha: true,
+        hora: true,
+        duracion: true,
+        lugarEncuentro: true,
+        estado: true,
+        notas: true,
+      },
+    });
+
+    return res.json({ paseo: result });
+  } catch (e) {
+    console.error("acceptPaseo error:", e);
+    return res.status(500).json({ error: "Error interno" });
+  }
+};
+
+export const createMascota = async (req: Request, res: Response) => {
+  try {
+    if (!req.user) return res.status(401).json({ error: "No autorizado" });
+    if (req.user.rol !== "DUEÑO") {
+      return res.status(403).json({ error: "Solo usuarios con rol DUEÑO pueden crear mascotas" });
+    }
+
+    const nombre = String(req.body?.nombre ?? "").trim();
+    const especie = String(req.body?.especie ?? "").trim();
+    const raza = String(req.body?.raza ?? "").trim();
+    const edadNum = Number(req.body?.edad);
+
+    if (!nombre || !especie || !raza || Number.isNaN(edadNum)) {
+      return res.status(400).json({ error: "nombre, especie, raza y edad son obligatorios" });
+    }
+    if (edadNum < 0) {
+      return res.status(400).json({ error: "edad debe ser >= 0" });
+    }
+
+    try {
+      const mascota = await prisma.$transaction(async (tx) => {
+        const count = await tx.mascota.count({ where: { usuarioId: req.user!.id } });
+        if (count >= 3) {
+          // Lanzamos un error controlado para cortar la transacción
+          const err = new Error("LIMITE_MASCOTAS");
+          // @ts-expect-error mark
+          err.code = "LIMITE_MASCOTAS";
+          throw err;
+        }
+
+        return tx.mascota.create({
+          data: {
+            usuarioId: req.user!.id,
+            nombre,
+            especie,
+            raza,
+            edad: edadNum,
+          },
+          select: {
+            idMascota: true,
+            usuarioId: true,
+            nombre: true,
+            especie: true,
+            raza: true,
+            edad: true,
+          },
+        });
+      });
+
+      return res.status(201).json({ mascota });
+    } catch (e: any) {
+      if (e?.code === "LIMITE_MASCOTAS") {
+        return res.status(409).json({ error: "Has alcanzado el máximo de 3 mascotas por usuario" });
+      }
+      throw e;
+    }
+  } catch (error) {
+    console.error("createMascota error:", error);
     return res.status(500).json({ error: "Error interno" });
   }
 };
