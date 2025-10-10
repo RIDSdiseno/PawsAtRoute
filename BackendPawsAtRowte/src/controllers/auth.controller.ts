@@ -245,6 +245,7 @@ export const login = async (req: Request, res: Response) => {
       nombreUsuario: user.nombre,
       rol: user.rol
     });
+    
 
     // 2) Refresh Token (cookie httpOnly) + registro en DB
     const rememberFlag = Boolean(remember);
@@ -272,6 +273,7 @@ export const login = async (req: Request, res: Response) => {
 
     const { passwordHash, ...safeUser } = user;
     console.log(user)
+    console.log(at)
     return res.json({ token: at, user: { ...safeUser }, remember: rememberFlag });
   } catch (err) {
     console.error("login error:", err);
@@ -656,7 +658,6 @@ export const createPaseo = async (req: Request, res: Response) => {
       data: {
         mascotaId: mascotaId,          
         duenioId : req.user.id, // Paseador no asignado al crear el paseo
-        paseadorId: null, // Paseador no asignado inicialmente
         fecha: dFecha,
         hora: dHora,
         duracion,
