@@ -622,7 +622,11 @@ export const crearPaseo = async (req: Request, res: Response) => {
     console.log(req.body);
     console.log(req.user);
     // userId desde el token (ajusta según tu middleware)
-    const authUserId = (req as any).user?.idUsuario; 
+    if (!req.user) return res.status(401).json({ error: "No autorizado" });
+    if (req.user.rol !== "DUEÑO") {
+      return res.status(403).json({ error: "Solo DUEÑO puede crear paseos" });
+  }
+    const authUserId = Number(req.user.id);
     
     // Validaciones básicas
     if (![mascotaId, fecha, hora, duracion, lugarEncuentro].every(Boolean)) {
@@ -640,9 +644,9 @@ export const crearPaseo = async (req: Request, res: Response) => {
       select: { idMascota: true, usuarioId: true },
     });
     if (!mascota) return res.status(404).json({ error: "Mascota no encontrada" });
-    if (mascota.usuarioId !== authUserId) {
-      return res.status(403).json({ error: "No puedes crear paseos para mascotas de otro dueño" });
-    }
+    if (Number(mascota.usuarioId) !== authUserId) {
+  return res.status(403).json({ error: "No puedes crear paseos para mascotas de otro dueño" });
+}
 
     // Normalizar fecha/hora
     const fechaDate = new Date(`${fecha}T00:00:00.000Z`);
