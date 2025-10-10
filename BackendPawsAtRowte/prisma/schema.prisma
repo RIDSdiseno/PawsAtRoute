@@ -41,17 +41,18 @@ model Mascota {
 model Paseo {
   idPaseo        Int         @id @default(autoincrement())
   mascotaId      Int
+  duenioId       Int
+  paseadorId     Int?        // OPCIONAL
   fecha          DateTime
   hora           DateTime
+  duracion       Int
   lugarEncuentro String
-  duenioId       Int
   estado         EstadoPaseo @default(PENDIENTE)
   notas          String?
-  paseadorId     Int?
-  duracion       Int
-  duenio         Usuario     @relation("DuenioPaseo", fields: [duenioId], references: [idUsuario])
-  mascota        Mascota     @relation(fields: [mascotaId], references: [idMascota])
-  paseador       Usuario?    @relation("PaseadorPaseo", fields: [paseadorId], references: [idUsuario])
+
+  mascota  Mascota  @relation(fields: [mascotaId], references: [idMascota])
+  duenio   Usuario  @relation("DuenioPaseo", fields: [duenioId], references: [idUsuario])
+  paseador Usuario? @relation("PaseadorPaseo", fields: [paseadorId], references: [idUsuario])
 }
 
 model Tarjeta {

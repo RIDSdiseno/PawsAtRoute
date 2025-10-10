@@ -616,6 +616,7 @@ function addMinutes(base: Date, minutes: number) {
 }
 
 /** POST /paseos (solo DUEÑO) */
+// controllers/auth.controller.ts
 export const createPaseo = async (req: Request, res: Response) => {
   try {
     if (!req.user) return res.status(401).json({ error: "No autorizado" });
@@ -643,21 +644,22 @@ export const createPaseo = async (req: Request, res: Response) => {
       return res.status(400).json({ error: "Fecha u hora inválidas" });
     }
 
-    // valida dueño de la mascota
+    // validar dueño de la mascota
     const mascota = await prisma.mascota.findUnique({
       where: { idMascota: mascotaId },
-      select: { idMascota: true, usuarioId: true },
+      select: { usuarioId: true },
     });
     if (!mascota) return res.status(404).json({ error: "Mascota no encontrada" });
     if (mascota.usuarioId !== req.user.id) {
       return res.status(403).json({ error: "No puedes crear paseos para una mascota que no es tuya" });
     }
 
-    //  Usa connect en vez de pasar mascotaId/duenioId
+    // CREATE usando relaciones (nada de paseadorId ni mascotaId directo)
     const nuevo = await prisma.paseo.create({
       data: {
-        mascotaId: mascotaId,          
-        duenioId : req.user.id, // Paseador no asignado al crear el paseo
+        mascota: { connect: { idMascota: mascotaId } },
+        duenio:  { connect: { idUsuario: req.user.id } },
+        // NO pases paseador ni paseadorId si no hay paseador asignado
         fecha: dFecha,
         hora: dHora,
         duracion,
@@ -685,6 +687,7 @@ export const createPaseo = async (req: Request, res: Response) => {
     return res.status(500).json({ error: "Error interno" });
   }
 };
+
 
 /** GET /api/paseos */
 export const listPaseos = async (req: Request, res: Response) => {
