@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { createPaseo, listMisMascotas, type Mascota } from "../../api/api.ts";
+import { crearPaseo, listMisMascotas, type Mascota } from "../../api/api.ts";
 
 function NuevoPaseo() {
   const [duracion, setDuracion] = useState<number>(0);
@@ -67,19 +67,20 @@ function NuevoPaseo() {
     if (!metodoPago) return alert("Selecciona el método de pago.");
     if (mascotasSeleccionadas.length === 0) return alert("Selecciona al menos 1 mascota.");
 
-    const horaISO = new Date(`${fecha}T${horaLocal}:00`).toISOString();
+    // IMPORTANTE: enviar "HH:mm" tal cual. El backend ya arma la Date.
+    const horaEnvio = horaLocal; // "HH:mm"
 
     setPublicando(true);
     try {
       await Promise.all(
         mascotasSeleccionadas.map((idMascota) =>
-          createPaseo({
+          crearPaseo({
             mascotaId: idMascota,
-            fecha,                 // "YYYY-MM-DD"
-            hora: horaISO,         // ISO completo
-            duracion,              // minutos
+            fecha, // "YYYY-MM-DD"
+            hora: horaEnvio, // "HH:mm"  ⬅⬅⬅  (NO ISO)
+            duracion, // minutos
             lugarEncuentro: ubicacion,
-            notas: `Método de pago: ${metodoPago}`,
+            notas: `Método de pago: ${metodoPago}`
           })
         )
       );
@@ -175,7 +176,12 @@ function NuevoPaseo() {
           <fieldset className="flex flex-col gap-2 border rounded-lg p-4 bg-gray-50">
             <legend className="font-semibold text-center">Duración del paseo</legend>
             <div className="flex flex-col gap-2">
-              {DURACIONES.map((op) => (
+              {[
+                { label: "30 minutos", value: 30 },
+                { label: "1 hora", value: 60 },
+                { label: "1 hora 30 minutos", value: 90 },
+                { label: "2 horas", value: 120 },
+              ].map((op) => (
                 <label key={op.value} className="flex items-center gap-2">
                   <input
                     type="radio"

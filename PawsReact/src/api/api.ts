@@ -64,7 +64,7 @@ interface LoginResponse {
     nombre: string;
     correo: string;
     rol : string;
-    token : string
+    token: string;
   };
   remember: boolean;
 }
@@ -182,29 +182,34 @@ export const resetPassword = async (correo: string, nuevaClave: string) => {
 
 
 // =========================
-//  Paseos endpoints
+//  Paseos: tipos
 // =========================
-export type EstadoPaseo = "PENDIENTE" | "ACEPTADO" | "EN_CURSO" | "FINALIZADO" | "CANCELADO";
+export type EstadoPaseo = "PENDIENTE" | "CONFIRMADO" | "COMPLETADO" | "CANCELADO";
 
 export type Paseo = {
   idPaseo: number;
   mascotaId: number;
   duenioId: number;
   paseadorId: number | null;
-  fecha: string;   // ISO
-  hora: string;    // ISO
-  duracion: number;
+  fecha: string;          // ISO
+  hora: string;           // ISO
+  duracion: number;       // minutos
   lugarEncuentro: string;
   estado: EstadoPaseo;
-  notas: string | null;
-  mascota?: { nombre: string; especie: string; raza: string };
+  notas?: string | null;
 };
 
-export const createPaseo = async (payload: {
+// =========================
+//  Paseos: endpoints front
+// =========================
+
+// 1) Crear paseo (lo haría el dueño/cliente)
+//    payload.fecha: "YYYY-MM-DD", payload.hora: "HH:mm"
+export const crearPaseo = async (payload: {
   mascotaId: number;
-  fecha: string;      // "YYYY-MM-DD"
-  hora: string;       // ISO completo
-  duracion: number;
+  fecha: string;            // "YYYY-MM-DD"
+  hora: string;             // "HH:mm"
+  duracion: number;         // minutos
   lugarEncuentro: string;
   notas?: string;
 }) => {
@@ -212,23 +217,15 @@ export const createPaseo = async (payload: {
   return res.data.paseo;
 };
 
-export const listPaseos = async (params?: {
-  estado?: EstadoPaseo;
-  mias?: boolean;
-  disponibles?: boolean;
-  desde?: string;
-  hasta?: string;
-  page?: number;
-  pageSize?: number;
-}) => {
-  const res = await api.get("/auth/paseos", { params });
-  return res.data as { page: number; pageSize: number; total: number; items: Paseo[] };
-};
 
-export const acceptPaseo = async (idPaseo: number) => {
-  const res = await api.post<{ paseo: Paseo }>(`/auth/paseos/${idPaseo}/accept`, {});
-  return res.data.paseo;
-};
+
+
+
+
+
+
+
+
 
 // =========================
 //  Mascotas endpoints
