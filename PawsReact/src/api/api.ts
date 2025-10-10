@@ -242,12 +242,7 @@ export type Mascota = {
   edad: number;
 };
 
-export const createMascota = async (payload: {
-  nombre: string;
-  especie: string;
-  raza: string;
-  edad: number;
-}) => {
+export const createMascota = async (payload: { nombre:string; especie:string; raza:string; edad:number; }) => {
   const res = await api.post<{ mascota: Mascota }>("/auth/crearmascotas", payload);
   return res.data.mascota;
 };
