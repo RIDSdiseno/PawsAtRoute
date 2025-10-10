@@ -601,45 +601,51 @@ export const resetPassword = async (req: Request, res: Response) => {
     return res.status(500).json({ error: "Error interno" });
   }
 };
-
 /** Util: combina una fecha (YYYY-MM-DD) con una hora (HH:mm[:ss]) a un Date */
-function combineDateTime(fechaISO: string | Date, horaISO: string | Date): Date {
+function combineDateTime(fechaISO: string | Date, horaISO: string | Date) {
   const d = new Date(fechaISO);
   const h = new Date(horaISO);
   const out = new Date(d);
   out.setHours(h.getHours(), h.getMinutes(), h.getSeconds(), 0);
   return out;
 }
-
-/** Util: suma minutos a un Date y retorna nuevo Date */
-function addMinutes(base: Date, minutes: number): Date {
+function addMinutes(base: Date, minutes: number) {
   return new Date(base.getTime() + minutes * 60 * 1000);
 }
 
-/** POST /api/paseos  (solo DUEÑO) */
+/** POST /paseos (solo DUEÑO) */
 export const createPaseo = async (req: Request, res: Response) => {
   try {
     if (!req.user) return res.status(401).json({ error: "No autorizado" });
-    // Solo DUEÑO puede publicar
     if (req.user.rol !== "DUEÑO") {
       return res.status(403).json({ error: "Solo usuarios con rol DUEÑO pueden crear paseos" });
     }
 
-    const { mascotaId, fecha, hora, duracion, lugarEncuentro, notas } = req.body;
+    const mascotaId = Number(req.body?.mascotaId);
+    const fechaStr  = String(req.body?.fecha || "");
+    const horaISO   = String(req.body?.hora || "");
+    const lugar     = String(req.body?.lugarEncuentro || "");
+    const notas     = req.body?.notas ? String(req.body?.notas) : null;
 
-    if (!mascotaId || !fecha || !hora || !duracion || !lugarEncuentro) {
+    // duracion llega a veces como string desde el radio input
+    const duracion  = Number(req.body?.duracion);
+
+    if (!mascotaId || !fechaStr || !horaISO || !lugar) {
       return res.status(400).json({ error: "Faltan campos requeridos" });
     }
-    const dFecha = new Date(fecha);
-    const dHora = new Date(hora);
+    if (!Number.isInteger(duracion) || ![30, 60, 90, 120].includes(duracion)) {
+      return res.status(400).json({ error: "Duración inválida (30, 60, 90 o 120)" });
+    }
+
+    const dFecha = new Date(fechaStr); // 2025-10-14
+    const dHora  = new Date(horaISO);  // ISO completo (2025-10-14T22:50:00Z, etc.)
     if (Number.isNaN(dFecha.getTime()) || Number.isNaN(dHora.getTime())) {
       return res.status(400).json({ error: "Fecha u hora inválidas" });
     }
-    if (duracion <= 0) return res.status(400).json({ error: "Duración inválida" });
 
-    // Validar que la mascota exista y pertenezca al dueño autenticado
+    // Verificar que la mascota existe y pertenece al dueño autenticado
     const mascota = await prisma.mascota.findUnique({
-      where: { idMascota: Number(mascotaId) },
+      where: { idMascota: mascotaId },
       select: { idMascota: true, usuarioId: true },
     });
     if (!mascota) return res.status(404).json({ error: "Mascota no encontrada" });
@@ -647,35 +653,24 @@ export const createPaseo = async (req: Request, res: Response) => {
       return res.status(403).json({ error: "No puedes crear paseos para una mascota que no es tuya" });
     }
 
-    // Crear paseo PENDIENTE (sin paseador asignado)
     const nuevo = await prisma.paseo.create({
       data: {
         mascotaId: mascota.idMascota,
-        duenioId: req.user.id,
-        paseadorId: undefined, // placeholder; usaremos null semánticamente con un “0” real no es válido para FK
-        fecha: dFecha,
-        hora: dHora,
-        duracion: Number(duracion),
-        lugarEncuentro: String(lugarEncuentro),
-        estado: "PENDIENTE",
-        notas: notas ?? null,
+        duenioId : req.user.id,
+        fecha    : dFecha,
+        hora     : dHora,
+        duracion,
+        lugarEncuentro: lugar,
+        estado   : "PENDIENTE",
+        notas,
+        // paseadorId: omitido -> null
       },
       select: {
-        idPaseo: true,
-        mascotaId: true,
-        duenioId: true,
-        paseadorId: true,
-        fecha: true,
-        hora: true,
-        duracion: true,
-        lugarEncuentro: true,
-        estado: true,
-        notas: true,
+        idPaseo: true, mascotaId: true, duenioId: true, paseadorId: true,
+        fecha: true, hora: true, duracion: true, lugarEncuentro: true, estado: true, notas: true,
       },
     });
 
-    // Ajuste: como el schema exige paseadorId:Int NOT NULL, usamos 0 al crear.
-    // Si prefieres, cambia en Prisma a `paseadorId Int?` para permitir null en PENDIENTE.
     return res.status(201).json({ paseo: nuevo });
   } catch (e) {
     console.error("createPaseo error:", e);
@@ -757,13 +752,7 @@ export const listPaseos = async (req: Request, res: Response) => {
   }
 };
 
-/** POST /api/paseos/:id/accept  (solo PASEADOR)
- * Asigna el paseo al paseador autenticado y cambia estado a ACEPTADO.
- * Controla:
- *  - que esté PENDIENTE
- *  - que no esté ya asignado (paseadorId≠0)
- *  - que el paseador no tenga solapes (ACEPTADO/EN_CURSO) en el rango
- */
+/** POST /api/paseos/:id/accept  (solo PASEADOR) */
 export const acceptPaseo = async (req: Request, res: Response) => {
   try {
     if (!req.user) return res.status(401).json({ error: "No autorizado" });
@@ -791,9 +780,9 @@ export const acceptPaseo = async (req: Request, res: Response) => {
     if (paseo.estado !== "PENDIENTE") {
       return res.status(409).json({ error: "El paseo ya no está disponible" });
     }
-    if (paseo.paseadorId && paseo.paseadorId !== 0) {
-      return res.status(409).json({ error: "El paseo ya fue asignado" });
-    }
+    if (paseo.paseadorId != null) {
+  return res.status(409).json({ error: "El paseo ya fue asignado" });
+}
 
     // Chequeo de solapamiento con otros paseos del paseador
     const start = combineDateTime(paseo.fecha, paseo.hora);
@@ -825,10 +814,10 @@ export const acceptPaseo = async (req: Request, res: Response) => {
     }
 
     // Concurrencia: aceptar solo si sigue PENDIENTE y paseadorId=0
-    const updated = await prisma.paseo.updateMany({
-      where: { idPaseo: id, estado: "PENDIENTE", paseadorId: 0 },
-      data: { estado: "ACEPTADO", paseadorId: req.user.id },
-    });
+   const updated = await prisma.paseo.updateMany({
+  where: { idPaseo: id, estado: "PENDIENTE", paseadorId: null },
+  data : { estado: "ACEPTADO", paseadorId: req.user.id },
+});
 
     if (updated.count === 0) {
       return res.status(409).json({ error: "Otro paseador tomó este paseo" });
