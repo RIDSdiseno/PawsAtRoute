@@ -658,8 +658,8 @@ export const crearPaseo = async (req: Request, res: Response) => {
     // Crear paseo: paseadorId queda null, estado PENDIENTE
     const paseo = await prisma.paseo.create({
       data: {
-        mascotaId: mascota.idMascota,
-        duenioId: mascota.usuarioId,      // inferido de la mascota
+        mascota: { connect: { idMascota: mascota.idMascota } },
+        duenio:  { connect: { idUsuario: mascota.usuarioId } }, // inferido desde la mascota    // inferido de la mascota
         // paseadorId: null 
         fecha: fechaDate,
         hora: horaDate,
