@@ -665,7 +665,7 @@ export const createPaseo = async (req: Request, res: Response) => {
         hora: dHora,
         duracion,
         lugarEncuentro: lugar,
-        estado: "PENDIENTE",
+        estado: EstadoPaseo.PENDIENTE,
         notas,
       },
       select: {
@@ -685,7 +685,7 @@ export const createPaseo = async (req: Request, res: Response) => {
     return res.status(201).json({ paseo: nuevo });
   } catch (e) {
     console.error("createPaseo error:", e);
-    return res.status(500).json({ error: "Error interno" });
+    return res.status(500).json({ error: JSON.stringify(e) });
   }
 };
 
