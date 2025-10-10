@@ -8,7 +8,10 @@ import {
   sendVerificationCode, verifyCode, resetPassword,
   createPaseo,
   listPaseos,
-  acceptPaseo
+  acceptPaseo,
+  createMascota,
+  getMisMascotas,
+  getMascotasByDuenio
 } from "../controllers/auth.controller";
 import { authGuard } from "../middlewares/auth.middleware";
 
@@ -43,6 +46,10 @@ r.put("/reset-password", resetPassword);
 r.post("/paseos",authGuard,createPaseo);
 r.get("/listpaseos",authGuard,listPaseos);
 r.post("/paseos/:id/accept",authGuard,acceptPaseo)
+
+r.post("/crearmascotas",authGuard,createMascota);
+r.get("/mismascotas",authGuard,getMisMascotas);
+r.get("/dueno/:id/mascotas",authGuard,getMascotasByDuenio)
 
 
 export default r;

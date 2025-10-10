@@ -915,3 +915,68 @@ export const createMascota = async (req: Request, res: Response) => {
     return res.status(500).json({ error: "Error interno" });
   }
 };
+
+export const getMisMascotas = async (req: Request, res: Response) => {
+  try {
+    if (!req.user) return res.status(401).json({ error: "No autorizado" });
+    if (req.user.rol !== "DUEÑO") {
+      return res.status(403).json({ error: "Solo DUEÑO puede ver sus mascotas" });
+    }
+
+    const page = Math.max(1, Number(req.query.page || 1));
+    const pageSize = Math.min(50, Math.max(1, Number(req.query.pageSize || 20)));
+    const skip = (page - 1) * pageSize;
+
+    const [items, total] = await Promise.all([
+      prisma.mascota.findMany({
+        where: { usuarioId: req.user.id },
+        select: { idMascota: true, nombre: true, especie: true, raza: true, edad: true },
+        orderBy: { idMascota: "asc" },
+        skip,
+        take: pageSize,
+      }),
+      prisma.mascota.count({ where: { usuarioId: req.user.id } }),
+    ]);
+
+    return res.json({ page, pageSize, total, items });
+  } catch (error) {
+    console.error("getMisMascotas error:", error);
+    return res.status(500).json({ error: "Error interno" });
+  }
+};
+
+
+/** GET /api/usuarios/:duenioId/mascotas  (solo el propio dueño) */
+export const getMascotasByDuenio = async (req: Request, res: Response) => {
+  try {
+    if (!req.user) return res.status(401).json({ error: "No autorizado" });
+
+    const duenioId = Number(req.params.duenioId);
+    if (!duenioId) return res.status(400).json({ error: "duenioId inválido" });
+
+    // Solo el dueño puede leer sus propias mascotas
+    if (req.user.rol !== "DUEÑO" || req.user.id !== duenioId) {
+      return res.status(403).json({ error: "No tienes permiso para ver estas mascotas" });
+    }
+
+    const page = Math.max(1, Number(req.query.page || 1));
+    const pageSize = Math.min(50, Math.max(1, Number(req.query.pageSize || 20)));
+    const skip = (page - 1) * pageSize;
+
+    const [items, total] = await Promise.all([
+      prisma.mascota.findMany({
+        where: { usuarioId: duenioId },
+        select: { idMascota: true, nombre: true, especie: true, raza: true, edad: true },
+        orderBy: { idMascota: "asc" },
+        skip,
+        take: pageSize,
+      }),
+      prisma.mascota.count({ where: { usuarioId: duenioId } }),
+    ]);
+
+    return res.json({ page, pageSize, total, items });
+  } catch (error) {
+    console.error("getMascotasByDuenio error:", error);
+    return res.status(500).json({ error: "Error interno" });
+  }
+};
