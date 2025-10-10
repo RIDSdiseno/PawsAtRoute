@@ -616,68 +616,57 @@ function addMinutes(base: Date, minutes: number) {
 }
 
 /** POST /paseos (solo DUEÑO) */
-// controllers/auth.controller.ts
-import type { Prisma } from "@prisma/client";
-
-
 export const crearPaseo = async (req: Request, res: Response) => {
   try {
-    const {
-      mascotaId,
-      duenioId,
-      fecha,           // "YYYY-MM-DD"
-      hora,            // "HH:mm"
-      duracion,        // minutos
-      lugarEncuentro,
-      estado = "PENDIENTE",
-      notas,
-    } = req.body;
+    const { mascotaId, fecha, hora, duracion, lugarEncuentro, notas } = req.body;
 
-    // Validaciones mínimas
-    const faltantes = ["mascotaId","duenioId","fecha","hora","duracion","lugarEncuentro"]
-      .filter(k => !req.body?.[k] && req.body?.[k] !== 0);
-    if (faltantes.length) {
-      return res.status(400).json({ error: `Faltan campos: ${faltantes.join(", ")}` });
+    // userId desde el token (ajusta según tu middleware)
+    const authUserId = (req as any).user?.idUsuario; 
+    if (!authUserId) return res.status(401).json({ error: "No autenticado" });
+
+    // Validaciones básicas
+    if (![mascotaId, fecha, hora, duracion, lugarEncuentro].every(Boolean)) {
+      return res.status(400).json({ error: "Campos obligatorios: mascotaId, fecha, hora, duracion, lugarEncuentro" });
+    }
+    const mascotaIdInt = Number(mascotaId);
+    const duracionInt = Number(duracion);
+    if (Number.isNaN(mascotaIdInt) || Number.isNaN(duracionInt)) {
+      return res.status(400).json({ error: "mascotaId y duracion deben ser números válidos" });
     }
 
-    const mascotaIdInt  = Number(mascotaId);
-    const duenioIdInt   = Number(duenioId);
-    const duracionInt   = Number(duracion);
-    if ([mascotaIdInt, duenioIdInt, duracionInt].some(n => Number.isNaN(n))) {
-      return res.status(400).json({ error: "IDs y duración deben ser números válidos" });
+    // Traer mascota y verificar dueño
+    const mascota = await prisma.mascota.findUnique({
+      where: { idMascota: mascotaIdInt },
+      select: { idMascota: true, usuarioId: true },
+    });
+    if (!mascota) return res.status(404).json({ error: "Mascota no encontrada" });
+    if (mascota.usuarioId !== authUserId) {
+      return res.status(403).json({ error: "No puedes crear paseos para mascotas de otro dueño" });
     }
 
-    // Combinar fecha/hora (ajusta zona si quieres -03:00 fijo)
+    // Normalizar fecha/hora
     const fechaDate = new Date(`${fecha}T00:00:00.000Z`);
     const horaDate  = new Date(`${fecha}T${hora}:00.000Z`);
     if (Number.isNaN(fechaDate.getTime()) || Number.isNaN(horaDate.getTime())) {
-      return res.status(400).json({ error: "Formato de fecha u hora inválido (usa fecha='YYYY-MM-DD', hora='HH:mm')." });
+      return res.status(400).json({ error: "Formato de fecha/hora inválido. Usa fecha='YYYY-MM-DD' y hora='HH:mm'." });
     }
 
-    // Crear SIN paseador
+    // Crear paseo: paseadorId queda null, estado PENDIENTE
     const paseo = await prisma.paseo.create({
       data: {
-        mascota: { connect: { idMascota: mascotaIdInt } },
-        duenio:  { connect: { idUsuario: duenioIdInt } },
-        // paseador: (SE ASIGNA EN EL OTRO ENDPOINT)
+        mascotaId: mascota.idMascota,
+        duenioId: mascota.usuarioId,      // inferido de la mascota
+        // paseadorId: null 
         fecha: fechaDate,
         hora: horaDate,
         duracion: duracionInt,
         lugarEncuentro: String(lugarEncuentro),
-        estado: "PENDIENTE", // forzamos PENDIENTE al crear
+        estado: "PENDIENTE",
         ...(notas ? { notas: String(notas) } : {}),
       },
       select: {
-        idPaseo: true,
-        mascotaId: true,
-        duenioId: true,
-        paseadorId: true,
-        fecha: true,
-        hora: true,
-        duracion: true,
-        lugarEncuentro: true,
-        estado: true,
-        notas: true,
+        idPaseo: true, mascotaId: true, duenioId: true, paseadorId: true,
+        fecha: true, hora: true, duracion: true, lugarEncuentro: true, estado: true, notas: true
       },
     });
 
