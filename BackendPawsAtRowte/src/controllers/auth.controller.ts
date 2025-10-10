@@ -619,11 +619,11 @@ function addMinutes(base: Date, minutes: number) {
 export const crearPaseo = async (req: Request, res: Response) => {
   try {
     const { mascotaId, fecha, hora, duracion, lugarEncuentro, notas } = req.body;
-
+    console.log(req.body);
+    console.log(req.user);
     // userId desde el token (ajusta según tu middleware)
     const authUserId = (req as any).user?.idUsuario; 
-    if (!authUserId) return res.status(401).json({ error: "No autenticado" });
-
+    
     // Validaciones básicas
     if (![mascotaId, fecha, hora, duracion, lugarEncuentro].every(Boolean)) {
       return res.status(400).json({ error: "Campos obligatorios: mascotaId, fecha, hora, duracion, lugarEncuentro" });
