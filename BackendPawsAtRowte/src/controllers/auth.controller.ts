@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { EstadoPaseo, PrismaClient, Rol } from "@prisma/client";
+import { EstadoPaseo, Prisma, PrismaClient, Rol } from "@prisma/client";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import type { Secret } from "jsonwebtoken";
@@ -643,44 +643,36 @@ export const crearPaseo = async (req: Request, res: Response) => {
       estadoValue = estado as EstadoPaseo;
     }
 
-    const data: any = {
-      // 👇 Relaciones requeridas con connect (NO FKs crudos)
-      mascota: { connect: { idMascota: mascotaIdInt } },
-      duenio:  { connect: { idUsuario: duenioIdInt } },
-      ...(paseadorId ? { paseador: { connect: { idUsuario: Number(paseadorId) } } } : {}),
-      // Campos escalares
-      fecha: fechaDate,
-      hora: horaDate,
-      duracion: duracionInt,
-      lugarEncuentro: String(lugarEncuentro),
-      estado: estadoValue,
-    };
+    const data: Prisma.PaseoUncheckedCreateInput = {
+  mascotaId: mascotaIdInt,
+  duenioId: duenioIdInt,
+  // si no hay paseador, mándalo explícitamente como null o no lo incluyas
+  ...(paseadorId !== undefined && paseadorId !== null && paseadorId !== ""
+    ? { paseadorId: Number(paseadorId) }
+    : { paseadorId: null }),
+  fecha: fechaDate,
+  hora: horaDate,
+  duracion: duracionInt,
+  lugarEncuentro: String(lugarEncuentro),
+  estado: estadoValue,
+  ...(notas ? { notas: String(notas) } : {}),
+};
 
-    if (notas) data.notas = String(notas);
-
-    if (paseadorId !== undefined && paseadorId !== null && paseadorId !== "") {
-      const paseadorIdInt = Number(paseadorId);
-      if (Number.isNaN(paseadorIdInt)) {
-        return res.status(400).json({ error: "paseadorId debe ser un número válido" });
-      }
-      data.paseador = { connect: { idUsuario: paseadorIdInt } };
-    }
-
-    const paseo = await prisma.paseo.create({
-      data,
-      select: {
-        idPaseo: true,
-        mascotaId: true,
-        duenioId: true,
-        paseadorId: true,
-        fecha: true,
-        hora: true,
-        duracion: true,
-        lugarEncuentro: true,
-        estado: true,
-        notas: true,
-      },
-    });
+const paseo = await prisma.paseo.create({
+  data: data as Prisma.PaseoUncheckedCreateInput,
+  select: {
+    idPaseo: true,
+    mascotaId: true,
+    duenioId: true,
+    paseadorId: true,
+    fecha: true,
+    hora: true,
+    duracion: true,
+    lugarEncuentro: true,
+    estado: true,
+    notas: true,
+  },
+});
 
     return res.status(201).json({ paseo });
   } catch (error: any) {
