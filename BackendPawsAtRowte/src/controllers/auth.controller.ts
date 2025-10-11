@@ -647,7 +647,7 @@ export const crearPaseo = async (req: Request, res: Response) => {
       // 👇 Relaciones requeridas con connect (NO FKs crudos)
       mascota: { connect: { idMascota: mascotaIdInt } },
       duenio:  { connect: { idUsuario: duenioIdInt } },
-
+      ...(paseadorId ? { paseador: { connect: { idUsuario: Number(paseadorId) } } } : {}),
       // Campos escalares
       fecha: fechaDate,
       hora: horaDate,
