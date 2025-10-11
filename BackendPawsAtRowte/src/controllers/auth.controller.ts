@@ -604,86 +604,188 @@ export const resetPassword = async (req: Request, res: Response) => {
   }
 };
 /** Util: combina una fecha (YYYY-MM-DD) con una hora (HH:mm[:ss]) a un Date */
-function combineDateTime(fechaISO: string | Date, horaISO: string | Date) {
-  const d = new Date(fechaISO);
-  const h = new Date(horaISO);
-  const out = new Date(d);
-  out.setHours(h.getHours(), h.getMinutes(), h.getSeconds(), 0);
-  return out;
-}
-function addMinutes(base: Date, minutes: number) {
-  return new Date(base.getTime() + minutes * 60 * 1000);
-}
-
-/** POST /paseos (solo DUEÑO) */
 export const crearPaseo = async (req: Request, res: Response) => {
   try {
-    const { mascotaId, fecha, hora, duracion, lugarEncuentro, notas } = req.body;
-    console.log(req.body);
-    console.log(req.user);
-    // userId desde el token (ajusta según tu middleware)
-    if (!req.user) return res.status(401).json({ error: "No autorizado" });
-    if (req.user.rol !== "DUEÑO") {
-      return res.status(403).json({ error: "Solo DUEÑO puede crear paseos" });
-  }
-    const authUserId = Number(req.user.id);
-    
-    // Validaciones básicas
-    if (![mascotaId, fecha, hora, duracion, lugarEncuentro].every(Boolean)) {
-      return res.status(400).json({ error: "Campos obligatorios: mascotaId, fecha, hora, duracion, lugarEncuentro" });
+    console.log("[crearPaseo] body:", req.body);
+
+    const {
+      mascotaId,
+      duenioId,
+      paseadorId,        // opcional
+      fecha,             // "2025-10-11" o ISO completo
+      hora,              // "14:30" o ISO completo
+      duracion,          // en minutos
+      lugarEncuentro,
+      notas,             // opcional
+      estado,            // opcional: EstadoPaseo
+    } = req.body;
+
+    // --- Validaciones básicas
+    if (!mascotaId || !duenioId || !fecha || !hora || !duracion || !lugarEncuentro) {
+      return res.status(400).json({
+        error:
+          "mascotaId, duenioId, fecha, hora, duracion y lugarEncuentro son obligatorios",
+      });
     }
+
     const mascotaIdInt = Number(mascotaId);
+    const duenioIdInt = Number(duenioId);
     const duracionInt = Number(duracion);
-    if (Number.isNaN(mascotaIdInt) || Number.isNaN(duracionInt)) {
-      return res.status(400).json({ error: "mascotaId y duracion deben ser números válidos" });
+
+    if ([mascotaIdInt, duenioIdInt, duracionInt].some((n) => Number.isNaN(n))) {
+      return res.status(400).json({ error: "IDs y duración deben ser números válidos" });
     }
 
-    // Traer mascota y verificar dueño
-    const mascota = await prisma.mascota.findUnique({
-      where: { idMascota: mascotaIdInt },
-      select: { idMascota: true, usuarioId: true },
-    });
-    if (!mascota) return res.status(404).json({ error: "Mascota no encontrada" });
-    if (Number(mascota.usuarioId) !== authUserId) {
-  return res.status(403).json({ error: "No puedes crear paseos para mascotas de otro dueño" });
-}
-
-    // Normalizar fecha/hora
-    const fechaDate = new Date(`${fecha}T00:00:00.000Z`);
-    const horaDate  = new Date(`${fecha}T${hora}:00.000Z`);
-    if (Number.isNaN(fechaDate.getTime()) || Number.isNaN(horaDate.getTime())) {
-      return res.status(400).json({ error: "Formato de fecha/hora inválido. Usa fecha='YYYY-MM-DD' y hora='HH:mm'." });
+    // --- Parseo de fecha/hora
+    // fecha puede venir "YYYY-MM-DD" o ISO; hora "HH:mm" o ISO.
+    const fechaBase = parseFecha(fecha);
+    if (!fechaBase) {
+      return res.status(400).json({ error: "Formato de fecha inválido" });
     }
-    const paseador = undefined;
-    // Crear paseo: paseadorId queda null, estado PENDIENTE
+
+    const { fechaDate, horaDate } = parseFechaHora(fechaBase, hora);
+    if (!horaDate) {
+      return res.status(400).json({ error: "Formato de hora inválido" });
+    }
+
+    // --- Estado opcional
+    let estadoValue: EstadoPaseo = EstadoPaseo.PENDIENTE;
+    if (estado) {
+      if (!Object.values(EstadoPaseo).includes(estado as EstadoPaseo)) {
+        return res.status(400).json({
+          error:
+            `Estado inválido. Usa uno de: ${Object.values(EstadoPaseo).join(", ")}`,
+        });
+      }
+      estadoValue = estado as EstadoPaseo;
+    }
+
+    // --- Construcción de data. Solo incluimos paseadorId si es válido.
+    const data: any = {
+      mascotaId: mascotaIdInt,
+      duenioId: duenioIdInt,
+      fecha: fechaDate,          // tu modelo separa fecha/hora como DateTime independientes
+      hora: horaDate,
+      duracion: duracionInt,
+      lugarEncuentro: String(lugarEncuentro),
+      estado: estadoValue,
+    };
+
+    if (notas) data.notas = String(notas);
+
+    // paseadorId es OPCIONAL: si no viene o es NaN, NO lo enviamos
+    if (paseadorId !== undefined && paseadorId !== null && paseadorId !== "") {
+      const paseadorIdInt = Number(paseadorId);
+      if (Number.isNaN(paseadorIdInt)) {
+        return res.status(400).json({ error: "paseadorId debe ser un número válido" });
+      }
+      data.paseadorId = paseadorIdInt;
+    }
+
+    // --- Crear
     const paseo = await prisma.paseo.create({
-      data: {
-        mascota: { connect: { idMascota: mascota.idMascota } },
-        duenio:  { connect: { idUsuario: mascota.usuarioId } }, 
-        paseadorId:undefined,
-        fecha: fechaDate,
-        hora: horaDate,
-        duracion: duracionInt,
-        lugarEncuentro: String(lugarEncuentro),
-        estado: "PENDIENTE",
-        ...(notas ? { notas: String(notas) } : {}),
-        paseador: undefined
-      },
+      data,
       select: {
-        idPaseo: true, mascotaId: true, duenioId: true, paseadorId: true,
-        fecha: true, hora: true, duracion: true, lugarEncuentro: true, estado: true, notas: true,paseador:true
+        idPaseo: true,
+        mascotaId: true,
+        duenioId: true,
+        paseadorId: true,
+        fecha: true,
+        hora: true,
+        duracion: true,
+        lugarEncuentro: true,
+        estado: true,
+        notas: true,
       },
     });
 
     return res.status(201).json({ paseo });
   } catch (error: any) {
     console.error("[crearPaseo] Error:", error);
-    return res.status(500).json({ error: `Error interno al crear el paseo: ${error.message || error}` });
+
+    // Mensajes útiles ante errores comunes de Prisma
+    if (String(error?.message || "").includes("Argument") && String(error?.message || "").includes("is missing")) {
+      return res.status(400).json({
+        error:
+          "Solicitud inválida: faltan campos requeridos o tipos incorrectos. Revisa los datos enviados.",
+        detalle: error.message,
+      });
+    }
+
+    // Violaciones de FK (mascotaId / duenioId / paseadorId inexistentes)
+    if (String(error?.code) === "P2003") {
+      return res.status(400).json({
+        error:
+          "Relación inválida: verifica que mascotaId, duenioId y paseadorId existan.",
+      });
+    }
+
+    // Enums inválidos (por ejemplo, estado mal escrito)
+    if (String(error?.code) === "P2000" || String(error?.code) === "P2009") {
+      return res.status(400).json({
+        error:
+          "Valor inválido en algún campo (posible enum u overlength). Revisa 'estado' y longitudes de texto.",
+        detalle: error.message,
+      });
+    }
+
+    return res
+      .status(500)
+      .json({ error: `Error interno al crear el paseo: ${error.message || error}` });
   }
 };
 
+/** Helpers **/
 
-/** GET /api/paseos */
+/** Acepta "YYYY-MM-DD" o ISO y devuelve Date con hora 00:00 local si no trae tiempo */
+function parseFecha(input: string): Date | null {
+  if (!input) return null;
+
+  // Si viene como "YYYY-MM-DD"
+  if (/^\d{4}-\d{2}-\d{2}$/.test(input)) {
+    const [y, m, d] = input.split("-").map(Number);
+    // Construimos en local
+    return new Date(y, m - 1, d, 0, 0, 0, 0);
+  }
+
+  // ISO o algo que Date entienda
+  const d = new Date(input);
+  return isNaN(d.getTime()) ? null : d;
+}
+
+/**
+ * Si hora = "HH:mm", la fusiona con la fecha base.
+ * Si hora es ISO, la usa directo.
+ */
+function parseFechaHora(fechaBase: Date, hora: string): { fechaDate: Date; horaDate: Date | null } {
+  if (!hora) return { fechaDate: fechaBase, horaDate: null };
+
+  // "HH:mm"
+  const hhmm = /^([01]\d|2[0-3]):([0-5]\d)$/;
+  if (hhmm.test(hora)) {
+    const [hh, mm] = hora.split(":").map(Number);
+    const horaDate = new Date(
+      fechaBase.getFullYear(),
+      fechaBase.getMonth(),
+      fechaBase.getDate(),
+      hh,
+      mm,
+      0,
+      0
+    );
+    return { fechaDate: fechaBase, horaDate };
+  }
+
+  // ISO completo u otro parseable
+  const asDate = new Date(hora);
+  if (!isNaN(asDate.getTime())) {
+    return { fechaDate: fechaBase, horaDate: asDate };
+  }
+
+  return { fechaDate: fechaBase, horaDate: null };
+}
+
+/** GET /api/paseos 
 export const listPaseos = async (req: Request, res: Response) => {
   try {
     const estado = req.query.estado as EstadoPaseo | undefined;
@@ -757,7 +859,7 @@ export const listPaseos = async (req: Request, res: Response) => {
   }
 };
 
-/** POST /api/paseos/:id/accept  (solo PASEADOR) */
+ POST /api/paseos/:id/accept  (solo PASEADOR) 
 export const acceptPaseo = async (req: Request, res: Response) => {
   try {
     if (!req.user) return res.status(401).json({ error: "No autorizado" });
@@ -850,7 +952,7 @@ export const acceptPaseo = async (req: Request, res: Response) => {
     return res.status(500).json({ error: "Error interno" });
   }
 };
-
+*/
 export const createMascota = async (req: Request, res: Response) => {
   try {
     if (!req.user) return res.status(401).json({ error: "No autorizado" });

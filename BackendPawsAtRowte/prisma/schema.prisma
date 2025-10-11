@@ -4,7 +4,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url      = "postgresql://postgres:OVoYWcIJdwtGSlrkyvbgSjLmbgWGaptC@metro.proxy.rlwy.net:58071/railway"
 }
 
 model Usuario {
@@ -83,7 +83,6 @@ model RefreshToken {
 
 enum Rol {
   PASEADOR
-
   DUEÑO @map("DUEÑO")
   @@map("Rol")
 }
