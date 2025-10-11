@@ -607,69 +607,48 @@ export const resetPassword = async (req: Request, res: Response) => {
 
 export const crearPaseo = async (req: Request, res: Response) => {
   try {
-    console.log("[crearPaseo] content-type:", req.headers["content-type"]);
-    console.log("[crearPaseo] body:", req.body, "keys:", Object.keys(req.body || {}));
-
-    // 👇 incluye estado y paseadorId porque los usas más abajo
     const {
-      mascotaId,
-      duenioId,
-      fecha,
-      hora,
-      duracion,
+      mascotaId,        // number|string
+      duenioId,         // number|string
+      fecha,            // "YYYY-MM-DD" o ISO
+      hora,             // "HH:mm" o ISO
+      duracion,         // number|string
       lugarEncuentro,
       notas,
-      estado,        // <-- ahora sí
-      paseadorId,    // <-- ahora sí
-    } = req.body as {
-      mascotaId: number | string;
-      duenioId: number | string;
-      fecha: string;
-      hora: string;
-      duracion: number | string;
-      lugarEncuentro: string;
-      notas?: string;
-      estado?: EstadoPaseo | string;
-      paseadorId?: number | string | null;
-    };
+      estado,           // opcional
+      paseadorId,       // opcional number|string
+    } = req.body;
 
     if (!mascotaId || !duenioId || !fecha || !hora || !duracion || !lugarEncuentro) {
-      return res.status(400).json({
-        error: "mascotaId, duenioId, fecha, hora, duracion y lugarEncuentro son obligatorios",
-        debug: { body: req.body },
-      });
+      return res.status(400).json({ error: "mascotaId, duenioId, fecha, hora, duracion y lugarEncuentro son obligatorios" });
     }
 
-    const mascotaIdInt = Number(mascotaId);
-    const duenioIdInt = Number(duenioId);
-    const duracionInt = Number(duracion);
-
-    if ([mascotaIdInt, duenioIdInt, duracionInt].some((n) => Number.isNaN(n))) {
+    const mascotaIdInt  = Number(mascotaId);
+    const duenioIdInt   = Number(duenioId);
+    const duracionInt   = Number(duracion);
+    if ([mascotaIdInt, duenioIdInt, duracionInt].some(Number.isNaN)) {
       return res.status(400).json({ error: "IDs y duración deben ser números válidos" });
     }
 
-    // --- Parseo de fecha/hora
     const fechaBase = parseFecha(fecha);
     if (!fechaBase) return res.status(400).json({ error: "Formato de fecha inválido" });
-
     const { fechaDate, horaDate } = parseFechaHora(fechaBase, hora);
     if (!horaDate) return res.status(400).json({ error: "Formato de hora inválido" });
 
-    // --- Estado opcional
     let estadoValue: EstadoPaseo = EstadoPaseo.PENDIENTE;
     if (estado) {
       if (!Object.values(EstadoPaseo).includes(estado as EstadoPaseo)) {
-        return res.status(400).json({
-          error: `Estado inválido. Usa uno de: ${Object.values(EstadoPaseo).join(", ")}`,
-        });
+        return res.status(400).json({ error: `Estado inválido. Usa uno de: ${Object.values(EstadoPaseo).join(", ")}` });
       }
       estadoValue = estado as EstadoPaseo;
     }
 
-    // --- Data para Prisma
     const data: any = {
-      mascotaId: mascotaIdInt,
-      duenioId: duenioIdInt,
+      // 👇 Relaciones requeridas con connect (NO FKs crudos)
+      mascota: { connect: { idMascota: mascotaIdInt } },
+      duenio:  { connect: { idUsuario: duenioIdInt } },
+
+      // Campos escalares
       fecha: fechaDate,
       hora: horaDate,
       duracion: duracionInt,
@@ -679,13 +658,12 @@ export const crearPaseo = async (req: Request, res: Response) => {
 
     if (notas) data.notas = String(notas);
 
-    // paseadorId es OPCIONAL
     if (paseadorId !== undefined && paseadorId !== null && paseadorId !== "") {
       const paseadorIdInt = Number(paseadorId);
       if (Number.isNaN(paseadorIdInt)) {
         return res.status(400).json({ error: "paseadorId debe ser un número válido" });
       }
-      data.paseadorId = paseadorIdInt;
+      data.paseador = { connect: { idUsuario: paseadorIdInt } };
     }
 
     const paseo = await prisma.paseo.create({
@@ -701,70 +679,38 @@ export const crearPaseo = async (req: Request, res: Response) => {
         lugarEncuentro: true,
         estado: true,
         notas: true,
-    }});
+      },
+    });
 
     return res.status(201).json({ paseo });
   } catch (error: any) {
     console.error("[crearPaseo] Error:", error);
-
     if (String(error?.code) === "P2003") {
-      return res.status(400).json({
-        error: "Relación inválida: verifica que mascotaId, duenioId y paseadorId existan.",
-      });
+      return res.status(400).json({ error: "Relación inválida: verifica que mascotaId, duenioId y paseadorId existan." });
     }
     return res.status(500).json({ error: `Error interno al crear el paseo: ${error.message || error}` });
   }
 };
 
-
-/** Helpers **/
-
-/** Acepta "YYYY-MM-DD" o ISO y devuelve Date con hora 00:00 local si no trae tiempo */
+/** Helpers */
 function parseFecha(input: string): Date | null {
   if (!input) return null;
-
-  // Si viene como "YYYY-MM-DD"
   if (/^\d{4}-\d{2}-\d{2}$/.test(input)) {
     const [y, m, d] = input.split("-").map(Number);
-    // Construimos en local
     return new Date(y, m - 1, d, 0, 0, 0, 0);
   }
-
-  // ISO o algo que Date entienda
   const d = new Date(input);
   return isNaN(d.getTime()) ? null : d;
 }
-
-/**
- * Si hora = "HH:mm", la fusiona con la fecha base.
- * Si hora es ISO, la usa directo.
- */
 function parseFechaHora(fechaBase: Date, hora: string): { fechaDate: Date; horaDate: Date | null } {
   if (!hora) return { fechaDate: fechaBase, horaDate: null };
-
-  // "HH:mm"
   const hhmm = /^([01]\d|2[0-3]):([0-5]\d)$/;
   if (hhmm.test(hora)) {
     const [hh, mm] = hora.split(":").map(Number);
-    const horaDate = new Date(
-      fechaBase.getFullYear(),
-      fechaBase.getMonth(),
-      fechaBase.getDate(),
-      hh,
-      mm,
-      0,
-      0
-    );
-    return { fechaDate: fechaBase, horaDate };
+    return { fechaDate: fechaBase, horaDate: new Date(fechaBase.getFullYear(), fechaBase.getMonth(), fechaBase.getDate(), hh, mm, 0, 0) };
   }
-
-  // ISO completo u otro parseable
   const asDate = new Date(hora);
-  if (!isNaN(asDate.getTime())) {
-    return { fechaDate: fechaBase, horaDate: asDate };
-  }
-
-  return { fechaDate: fechaBase, horaDate: null };
+  return isNaN(asDate.getTime()) ? { fechaDate: fechaBase, horaDate: null } : { fechaDate: fechaBase, horaDate: asDate };
 }
 
 /** GET /api/paseos 
