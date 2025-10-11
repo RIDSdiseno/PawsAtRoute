@@ -1,5 +1,5 @@
 -- CreateEnum
-CREATE TYPE "Rol" AS ENUM ('PASEADOR', 'DUEÑO');
+CREATE TYPE "Rol" AS ENUM ('PASEADOR');
 
 -- CreateEnum
 CREATE TYPE "EstadoPaseo" AS ENUM ('PENDIENTE', 'ACEPTADO', 'EN_CURSO', 'FINALIZADO', 'CANCELADO');
@@ -91,10 +91,10 @@ CREATE INDEX "RefreshToken_userId_idx" ON "RefreshToken"("userId");
 ALTER TABLE "Mascota" ADD CONSTRAINT "Mascota_usuarioId_fkey" FOREIGN KEY ("usuarioId") REFERENCES "Usuario"("idUsuario") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Paseo" ADD CONSTRAINT "Paseo_mascotaId_fkey" FOREIGN KEY ("mascotaId") REFERENCES "Mascota"("idMascota") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Paseo" ADD CONSTRAINT "Paseo_duenioId_fkey" FOREIGN KEY ("duenioId") REFERENCES "Usuario"("idUsuario") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Paseo" ADD CONSTRAINT "Paseo_duenioId_fkey" FOREIGN KEY ("duenioId") REFERENCES "Usuario"("idUsuario") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Paseo" ADD CONSTRAINT "Paseo_mascotaId_fkey" FOREIGN KEY ("mascotaId") REFERENCES "Mascota"("idMascota") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Paseo" ADD CONSTRAINT "Paseo_paseadorId_fkey" FOREIGN KEY ("paseadorId") REFERENCES "Usuario"("idUsuario") ON DELETE SET NULL ON UPDATE CASCADE;
