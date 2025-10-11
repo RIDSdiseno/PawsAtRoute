@@ -667,10 +667,11 @@ export const crearPaseo = async (req: Request, res: Response) => {
         lugarEncuentro: String(lugarEncuentro),
         estado: "PENDIENTE",
         ...(notas ? { notas: String(notas) } : {}),
+        paseador: undefined
       },
       select: {
         idPaseo: true, mascotaId: true, duenioId: true, paseadorId: true,
-        fecha: true, hora: true, duracion: true, lugarEncuentro: true, estado: true, notas: true
+        fecha: true, hora: true, duracion: true, lugarEncuentro: true, estado: true, notas: true,paseador:true
       },
     });
 
