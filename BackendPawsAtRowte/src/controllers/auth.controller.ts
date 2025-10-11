@@ -405,6 +405,7 @@ export const getProfile = async (req: Request, res: Response) => {
         rut: true,
         telefono: true,
         correo: true,
+        comuna: true,
         rol:true
       },
     });
