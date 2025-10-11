@@ -606,6 +606,10 @@ export const resetPassword = async (req: Request, res: Response) => {
 /** Util: combina una fecha (YYYY-MM-DD) con una hora (HH:mm[:ss]) a un Date */
 
 export const crearPaseo = async (req: Request, res: Response) => {
+  console.log(
+  "[DMMF Paseo]\n",
+  JSON.stringify(Prisma.dmmf.datamodel.models.find(m => m.name === "Paseo"), null, 2)
+);
   try {
     const {
       mascotaId,        // number|string
@@ -643,13 +647,10 @@ export const crearPaseo = async (req: Request, res: Response) => {
       estadoValue = estado as EstadoPaseo;
     }
 
-    const data: Prisma.PaseoUncheckedCreateInput = {
-  mascotaId: mascotaIdInt,
-  duenioId: duenioIdInt,
-  // si no hay paseador, mándalo explícitamente como null o no lo incluyas
-  ...(paseadorId !== undefined && paseadorId !== null && paseadorId !== ""
-    ? { paseadorId: Number(paseadorId) }
-    : { paseadorId: null }),
+    const data = {
+   mascota: { connect: { idMascota: mascotaIdInt } },
+  duenio:  { connect: { idUsuario: duenioIdInt } },
+  ...(paseadorId ? { paseador: { connect: { idUsuario: Number(paseadorId) } } } : {}),
   fecha: fechaDate,
   hora: horaDate,
   duracion: duracionInt,
@@ -659,7 +660,7 @@ export const crearPaseo = async (req: Request, res: Response) => {
 };
 
 const paseo = await prisma.paseo.create({
-  data: data as Prisma.PaseoUncheckedCreateInput,
+  data,
   select: {
     idPaseo: true,
     mascotaId: true,
