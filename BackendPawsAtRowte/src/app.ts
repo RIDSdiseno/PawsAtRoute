@@ -23,7 +23,7 @@ app.use(cors({
 app.use("/uploads", express.static(UPLOAD_DIR));
 
 
-app.use(cookieParser());                             // DEBE ir antes de las rutas
+app.use(cookieParser());                          
 
 app.use(morgan('dev'));
 app.use(express.json());

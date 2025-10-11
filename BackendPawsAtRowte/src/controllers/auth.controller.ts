@@ -604,27 +604,39 @@ export const resetPassword = async (req: Request, res: Response) => {
   }
 };
 /** Util: combina una fecha (YYYY-MM-DD) con una hora (HH:mm[:ss]) a un Date */
+
 export const crearPaseo = async (req: Request, res: Response) => {
   try {
-    console.log("[crearPaseo] body:", req.body);
+    console.log("[crearPaseo] content-type:", req.headers["content-type"]);
+    console.log("[crearPaseo] body:", req.body, "keys:", Object.keys(req.body || {}));
 
+    // 👇 incluye estado y paseadorId porque los usas más abajo
     const {
       mascotaId,
       duenioId,
-      paseadorId,        // opcional
-      fecha,             // "2025-10-11" o ISO completo
-      hora,              // "14:30" o ISO completo
-      duracion,          // en minutos
+      fecha,
+      hora,
+      duracion,
       lugarEncuentro,
-      notas,             // opcional
-      estado,            // opcional: EstadoPaseo
-    } = req.body;
+      notas,
+      estado,        // <-- ahora sí
+      paseadorId,    // <-- ahora sí
+    } = req.body as {
+      mascotaId: number | string;
+      duenioId: number | string;
+      fecha: string;
+      hora: string;
+      duracion: number | string;
+      lugarEncuentro: string;
+      notas?: string;
+      estado?: EstadoPaseo | string;
+      paseadorId?: number | string | null;
+    };
 
-    // --- Validaciones básicas
     if (!mascotaId || !duenioId || !fecha || !hora || !duracion || !lugarEncuentro) {
       return res.status(400).json({
-        error:
-          "mascotaId, duenioId, fecha, hora, duracion y lugarEncuentro son obligatorios",
+        error: "mascotaId, duenioId, fecha, hora, duracion y lugarEncuentro son obligatorios",
+        debug: { body: req.body },
       });
     }
 
@@ -637,34 +649,28 @@ export const crearPaseo = async (req: Request, res: Response) => {
     }
 
     // --- Parseo de fecha/hora
-    // fecha puede venir "YYYY-MM-DD" o ISO; hora "HH:mm" o ISO.
     const fechaBase = parseFecha(fecha);
-    if (!fechaBase) {
-      return res.status(400).json({ error: "Formato de fecha inválido" });
-    }
+    if (!fechaBase) return res.status(400).json({ error: "Formato de fecha inválido" });
 
     const { fechaDate, horaDate } = parseFechaHora(fechaBase, hora);
-    if (!horaDate) {
-      return res.status(400).json({ error: "Formato de hora inválido" });
-    }
+    if (!horaDate) return res.status(400).json({ error: "Formato de hora inválido" });
 
     // --- Estado opcional
     let estadoValue: EstadoPaseo = EstadoPaseo.PENDIENTE;
     if (estado) {
       if (!Object.values(EstadoPaseo).includes(estado as EstadoPaseo)) {
         return res.status(400).json({
-          error:
-            `Estado inválido. Usa uno de: ${Object.values(EstadoPaseo).join(", ")}`,
+          error: `Estado inválido. Usa uno de: ${Object.values(EstadoPaseo).join(", ")}`,
         });
       }
       estadoValue = estado as EstadoPaseo;
     }
 
-    // --- Construcción de data. Solo incluimos paseadorId si es válido.
+    // --- Data para Prisma
     const data: any = {
       mascotaId: mascotaIdInt,
       duenioId: duenioIdInt,
-      fecha: fechaDate,          // tu modelo separa fecha/hora como DateTime independientes
+      fecha: fechaDate,
       hora: horaDate,
       duracion: duracionInt,
       lugarEncuentro: String(lugarEncuentro),
@@ -673,7 +679,7 @@ export const crearPaseo = async (req: Request, res: Response) => {
 
     if (notas) data.notas = String(notas);
 
-    // paseadorId es OPCIONAL: si no viene o es NaN, NO lo enviamos
+    // paseadorId es OPCIONAL
     if (paseadorId !== undefined && paseadorId !== null && paseadorId !== "") {
       const paseadorIdInt = Number(paseadorId);
       if (Number.isNaN(paseadorIdInt)) {
@@ -682,7 +688,6 @@ export const crearPaseo = async (req: Request, res: Response) => {
       data.paseadorId = paseadorIdInt;
     }
 
-    // --- Crear
     const paseo = await prisma.paseo.create({
       data,
       select: {
@@ -696,44 +701,21 @@ export const crearPaseo = async (req: Request, res: Response) => {
         lugarEncuentro: true,
         estado: true,
         notas: true,
-      },
-    });
+    }});
 
     return res.status(201).json({ paseo });
   } catch (error: any) {
     console.error("[crearPaseo] Error:", error);
 
-    // Mensajes útiles ante errores comunes de Prisma
-    if (String(error?.message || "").includes("Argument") && String(error?.message || "").includes("is missing")) {
-      return res.status(400).json({
-        error:
-          "Solicitud inválida: faltan campos requeridos o tipos incorrectos. Revisa los datos enviados.",
-        detalle: error.message,
-      });
-    }
-
-    // Violaciones de FK (mascotaId / duenioId / paseadorId inexistentes)
     if (String(error?.code) === "P2003") {
       return res.status(400).json({
-        error:
-          "Relación inválida: verifica que mascotaId, duenioId y paseadorId existan.",
+        error: "Relación inválida: verifica que mascotaId, duenioId y paseadorId existan.",
       });
     }
-
-    // Enums inválidos (por ejemplo, estado mal escrito)
-    if (String(error?.code) === "P2000" || String(error?.code) === "P2009") {
-      return res.status(400).json({
-        error:
-          "Valor inválido en algún campo (posible enum u overlength). Revisa 'estado' y longitudes de texto.",
-        detalle: error.message,
-      });
-    }
-
-    return res
-      .status(500)
-      .json({ error: `Error interno al crear el paseo: ${error.message || error}` });
+    return res.status(500).json({ error: `Error interno al crear el paseo: ${error.message || error}` });
   }
 };
+
 
 /** Helpers **/
 
