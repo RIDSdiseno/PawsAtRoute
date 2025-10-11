@@ -207,11 +207,12 @@ export type Paseo = {
 //    payload.fecha: "YYYY-MM-DD", payload.hora: "HH:mm"
 export const crearPaseo = async (payload: {
   mascotaId: number;
-  fecha: string;            // "YYYY-MM-DD"
-  hora: string;             // "HH:mm"
-  duracion: number;         // minutos
+  fecha: string;      // "YYYY-MM-DD"
+  hora: string;       // "HH:mm"
+  duracion: number;   // minutos
   lugarEncuentro: string;
   notas?: string;
+  duenioId?: number;  
 }) => {
   const res = await api.post<{ paseo: Paseo }>("/auth/paseos", payload);
   return res.data.paseo;

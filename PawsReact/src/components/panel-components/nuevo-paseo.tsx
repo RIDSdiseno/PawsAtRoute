@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { crearPaseo, listMisMascotas, type Mascota } from "../../api/api.ts";
+import { crearPaseo, getProfile, listMisMascotas, type Mascota } from "../../api/api.ts";
 
 function NuevoPaseo() {
   const [duracion, setDuracion] = useState<number>(0);
@@ -11,7 +11,7 @@ function NuevoPaseo() {
   const [fecha, setFecha] = useState<string>("");     // YYYY-MM-DD
   const [horaLocal, setHoraLocal] = useState<string>(""); // HH:mm
   const [ubicacion, setUbicacion] = useState<string>("");
-
+ const [yoId, setYoId] = useState<number | null>(null);
   const [publicando, setPublicando] = useState(false);
 
   const TARIFA_BASE = 10000;
@@ -30,8 +30,10 @@ function NuevoPaseo() {
   useEffect(() => {
     (async () => {
       try {
+        const me = await getProfile();
         const res = await listMisMascotas({ pageSize: 50 });
         setMisMascotas(res.items);
+        setYoId(me.idUsuario);
       } catch (e) {
         console.error("No se pudieron cargar las mascotas", e);
       } finally {
@@ -58,29 +60,37 @@ function NuevoPaseo() {
     return Math.min(p, PRECIO_MAXIMO);
   }, [duracion]);
 
-  async function onSubmit(e: React.FormEvent) {
+   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
 
+    if (yoId == null) return alert("Cargando tu sesión… intenta de nuevo en unos segundos.");
     if (!fecha || !horaLocal) return alert("Selecciona fecha y hora.");
     if (!duracion) return alert("Selecciona la duración.");
     if (!ubicacion.trim()) return alert("Ingresa la ubicación.");
     if (!metodoPago) return alert("Selecciona el método de pago.");
     if (mascotasSeleccionadas.length === 0) return alert("Selecciona al menos 1 mascota.");
 
-    // IMPORTANTE: enviar "HH:mm" tal cual. El backend ya arma la Date.
-    const horaEnvio = horaLocal; // "HH:mm"
-
+    const horaEnvio = horaLocal;
+    console.log("[payload a /auth/paseos]", {
+  mascotaId: mascotasSeleccionadas[0],
+  fecha,
+  hora: horaLocal,
+  duracion,
+  lugarEncuentro: ubicacion,
+  duenioId: yoId,
+});
     setPublicando(true);
     try {
       await Promise.all(
         mascotasSeleccionadas.map((idMascota) =>
           crearPaseo({
             mascotaId: idMascota,
-            fecha, // "YYYY-MM-DD"
-            hora: horaEnvio, // "HH:mm"  ⬅⬅⬅  (NO ISO)
-            duracion, // minutos
+            fecha,
+            hora: horaEnvio,
+            duracion,
             lugarEncuentro: ubicacion,
-            notas: `Método de pago: ${metodoPago}`
+            notas: `Método de pago: ${metodoPago}`,
+            duenioId: yoId,              
           })
         )
       );

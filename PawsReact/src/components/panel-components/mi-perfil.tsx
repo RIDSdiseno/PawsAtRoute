@@ -9,7 +9,7 @@ function MiPerfil() {
     rol: string;
     correo: string;
     telefono: string;
-    comuna?: string;
+    comuna: string;
     foto?: string; // Base64 o URL
   }>(null);
 
