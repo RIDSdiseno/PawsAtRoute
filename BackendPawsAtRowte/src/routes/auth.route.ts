@@ -6,8 +6,8 @@ import { RequestHandler, Router } from "express";
 import {
   login, registerUser, refresh, getProfile, logout,
   sendVerificationCode, verifyCode, resetPassword,
-  listPaseos,
-  acceptPaseo,
+  //acceptPaseo,
+  // listPaseos,
   createMascota,
   getMisMascotas,
   getMascotasByDuenio,
@@ -44,8 +44,8 @@ r.post("/verify-code", verifyCode);
 r.put("/reset-password", resetPassword);
 
 r.post("/paseos",authGuard,crearPaseo);
-r.get("/listpaseos",authGuard,listPaseos);
-r.post("/paseos/:id/accept",authGuard,acceptPaseo)
+//r.get("/listpaseos",authGuard,listPaseos);
+//r.post("/paseos/:id/accept",authGuard,acceptPaseo)
 
 r.post("/crearmascotas",authGuard,createMascota);
 r.get("/mismascotas",authGuard,getMisMascotas);
