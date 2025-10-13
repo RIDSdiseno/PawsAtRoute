@@ -7,7 +7,7 @@ import {
   login, registerUser, refresh, getProfile, logout,
   sendVerificationCode, verifyCode, resetPassword,
   //acceptPaseo,
-  listPaseos,
+  // listPaseos,
   createMascota,
   getMisMascotas,
   getMascotasByDuenio,
@@ -44,7 +44,7 @@ r.post("/verify-code", verifyCode);
 r.put("/reset-password", resetPassword);
 
 r.post("/paseos",authGuard,crearPaseo);
-r.get("/listpaseos",authGuard,listPaseos);
+//r.get("/listpaseos",authGuard,listPaseos);
 //r.post("/paseos/:id/accept",authGuard,acceptPaseo)
 
 r.post("/crearmascotas",authGuard,createMascota);
