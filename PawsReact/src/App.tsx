@@ -11,7 +11,6 @@ import Register from "./components/panel-components/register";
 import PanelDueño from "./components/panel-components/panel-dueño";
 import NuevoPaseo from "./components/panel-components/nuevo-paseo";
 import RecuperarClave from "./components/panel-components/recuperar-clave";
-import Postulantes from "./components/panel-components/postulantes";
 import PerfilPaseador from "./components/panel-components/perfil-paseador";
 import MiPerfil from "./components/panel-components/mi-perfil";
 import EditarPerfil from "./components/panel-components/editar-perfil";
@@ -119,20 +118,6 @@ function App() {
                 ]}
               />
               <RecuperarClave />
-              <Footer />
-            </>
-          }
-        />
-        <Route
-          path="/postulantes"
-          element={
-            <>
-              <Navbar
-                links={[
-                  { to: "/mi-perfil", label: "Mi perfil" },
-                ]}
-              />
-              <Postulantes />
               <Footer />
             </>
           }

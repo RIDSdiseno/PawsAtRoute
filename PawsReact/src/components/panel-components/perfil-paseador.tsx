@@ -78,7 +78,7 @@ function PerfilPaseador() {
   };
 
   return (
-    <main className="min-h-screen bg-gray-50 text-prussian-blue font-nunito px-4 py-10 sm:px-6 lg:px-12 max-w-6xl mx-auto">
+    <main className="min-h-screen px-4 py-10 sm:px-6 lg:px-12 max-w-6xl mx-auto">
       <header className="mb-10">
         <h1 className="text-3xl md:text-5xl font-bold mb-3">
           Perfil del Paseador
@@ -107,7 +107,7 @@ function PerfilPaseador() {
               <span className="font-semibold">Comuna:</span> {paseador.comuna}
             </p>
             <div className="flex items-center gap-2">
-              <span className="font-semibold">Calificación:</span>
+              <span className="font-semibold">Calificación promedio:</span>
               <Rating value={paseador.calificacion} />
             </div>
           </div>
@@ -175,10 +175,10 @@ function PerfilPaseador() {
 
         <div className="mt-10 flex justify-center md:justify-end">
           <Link
-            to="/postulantes"
+            to="/panel-dueño"
             className="inline-flex items-center justify-center rounded-full py-2 px-4 bg-prussian-blue hover:bg-prussian-blue/80 border border-cyan-900 text-white font-semibold shadow-lg shadow-prussian-blue/50 active:scale-90 transition-all duration-100"
           >
-            Ver otros
+            Volver al panel
           </Link>
         </div>
       </div>
