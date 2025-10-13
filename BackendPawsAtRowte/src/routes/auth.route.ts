@@ -11,7 +11,9 @@ import {
   createMascota,
   getMisMascotas,
   getMascotasByDuenio,
-  crearPaseo
+  crearPaseo,
+  finishPaseo,
+  startPaseo
 } from "../controllers/auth.controller";
 import { authGuard } from "../middlewares/auth.middleware";
 
@@ -50,6 +52,10 @@ r.post("/paseos/:id/accept",authGuard,acceptPaseo)
 r.post("/crearmascotas",authGuard,createMascota);
 r.get("/mismascotas",authGuard,getMisMascotas);
 r.get("/dueno/:id/mascotas",authGuard,getMascotasByDuenio)
+
+r.post("/paseos/:id/start",  authGuard, startPaseo);
+r.post("/paseos/:id/finish", authGuard, finishPaseo);
+
 
 
 export default r;

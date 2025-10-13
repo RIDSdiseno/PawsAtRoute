@@ -1051,3 +1051,100 @@ export const getMascotasByDuenio = async (req: Request, res: Response) => {
     return res.status(500).json({ error: "Error interno" });
   }
 };
+
+export const startPaseo = async (req: Request, res: Response) => {
+  try {
+    if (!req.user) return res.status(401).json({ error: "No autorizado" });
+    if (req.user.rol !== "PASEADOR") {
+      return res.status(403).json({ error: "Solo PASEADOR puede iniciar paseos" });
+    }
+
+    const id = Number(req.params.id);
+    if (!id || Number.isNaN(id)) return res.status(400).json({ error: "Id de paseo inválido" });
+
+    const paseo = await prisma.paseo.findUnique({
+      where: { idPaseo: id },
+      select: { idPaseo: true, paseadorId: true, estado: true, fecha: true, hora: true, duracion: true },
+    });
+    if (!paseo) return res.status(404).json({ error: "Paseo no encontrado" });
+    if (paseo.paseadorId !== req.user.id) {
+      return res.status(403).json({ error: "No eres el paseador asignado" });
+    }
+    if (paseo.estado !== "ACEPTADO") {
+      return res.status(409).json({ error: "Solo se puede iniciar un paseo en estado ACEPTADO" });
+    }
+
+    // (opcional) Validación de ventana de inicio (por ej. +/- 2h alrededor)
+    // const now = new Date();
+    // const start = combineDateTime(paseo.fecha, paseo.hora);
+    // if (Math.abs(now.getTime() - start.getTime()) > 2 * 60 * 60 * 1000) { ... }
+
+    const updated = await prisma.paseo.updateMany({
+      where: { idPaseo: id, paseadorId: req.user.id, estado: "ACEPTADO" },
+      data:  { estado: "EN_CURSO" },
+    });
+    if (updated.count === 0) {
+      return res.status(409).json({ error: "No se pudo iniciar: el estado cambió" });
+    }
+
+    const result = await prisma.paseo.findUnique({
+      where: { idPaseo: id },
+      select: {
+        idPaseo: true, mascotaId: true, duenioId: true, paseadorId: true,
+        fecha: true, hora: true, duracion: true, lugarEncuentro: true, estado: true, notas: true,
+        mascota: { select: { nombre: true, especie: true, raza: true } },
+      },
+    });
+
+    return res.json({ paseo: result });
+  } catch (e) {
+    console.error("startPaseo error:", e);
+    return res.status(500).json({ error: "Error interno" });
+  }
+};
+
+export const finishPaseo = async (req: Request, res: Response) => {
+  try {
+    if (!req.user) return res.status(401).json({ error: "No autorizado" });
+    if (req.user.rol !== "PASEADOR") {
+      return res.status(403).json({ error: "Solo PASEADOR puede finalizar paseos" });
+    }
+
+    const id = Number(req.params.id);
+    if (!id || Number.isNaN(id)) return res.status(400).json({ error: "Id de paseo inválido" });
+
+    const paseo = await prisma.paseo.findUnique({
+      where: { idPaseo: id },
+      select: { idPaseo: true, paseadorId: true, estado: true },
+    });
+    if (!paseo) return res.status(404).json({ error: "Paseo no encontrado" });
+    if (paseo.paseadorId !== req.user.id) {
+      return res.status(403).json({ error: "No eres el paseador asignado" });
+    }
+    if (paseo.estado !== "EN_CURSO") {
+      return res.status(409).json({ error: "Solo se puede finalizar un paseo EN_CURSO" });
+    }
+
+    const updated = await prisma.paseo.updateMany({
+      where: { idPaseo: id, paseadorId: req.user.id, estado: "EN_CURSO" },
+      data:  { estado: "FINALIZADO" },
+    });
+    if (updated.count === 0) {
+      return res.status(409).json({ error: "No se pudo finalizar: el estado cambió" });
+    }
+
+    const result = await prisma.paseo.findUnique({
+      where: { idPaseo: id },
+      select: {
+        idPaseo: true, mascotaId: true, duenioId: true, paseadorId: true,
+        fecha: true, hora: true, duracion: true, lugarEncuentro: true, estado: true, notas: true,
+        mascota: { select: { nombre: true, especie: true, raza: true } },
+      },
+    });
+
+    return res.json({ paseo: result });
+  } catch (e) {
+    console.error("finishPaseo error:", e);
+    return res.status(500).json({ error: "Error interno" });
+  }
+};
