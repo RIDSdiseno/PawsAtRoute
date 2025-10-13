@@ -6,7 +6,7 @@ import { RequestHandler, Router } from "express";
 import {
   login, registerUser, refresh, getProfile, logout,
   sendVerificationCode, verifyCode, resetPassword,
-  //acceptPaseo,
+  acceptPaseo,
   listPaseos,
   createMascota,
   getMisMascotas,
@@ -45,7 +45,7 @@ r.put("/reset-password", resetPassword);
 
 r.post("/paseos",authGuard,crearPaseo);
 r.get("/listpaseos",authGuard,listPaseos);
-//r.post("/paseos/:id/accept",authGuard,acceptPaseo)
+r.post("/paseos/:id/accept",authGuard,acceptPaseo)
 
 r.post("/crearmascotas",authGuard,createMascota);
 r.get("/mismascotas",authGuard,getMisMascotas);
