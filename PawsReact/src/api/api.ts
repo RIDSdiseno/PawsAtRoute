@@ -313,4 +313,14 @@ export const listMascotasByDuenio = async (
 };
 
 
+export const startPaseo = async (idPaseo: number) => {
+  const res = await api.post<{ paseo: Paseo }>(`/auth/paseos/${idPaseo}/start`);
+  return res.data.paseo;
+};
+
+export const finishPaseo = async (idPaseo: number) => {
+  const res = await api.post<{ paseo: Paseo }>(`/auth/paseos/${idPaseo}/finish`);
+  return res.data.paseo;
+};
+
 export default api;

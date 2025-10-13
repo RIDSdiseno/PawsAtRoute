@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { getProfile, listPaseosDisponibles, listMisPaseosComoPaseador, aceptarPaseo, type Paseo } from "../../api/api";
+import { getProfile, listPaseosDisponibles, listMisPaseosComoPaseador, aceptarPaseo, startPaseo,finishPaseo,type Paseo, type EstadoPaseo } from "../../api/api";
 
 type User = {
   idUsuario: number;
@@ -17,14 +17,29 @@ function combinarFechaHora(fISO: string, hISO: string) {
 function durPretty(mins: number) {
   return mins >= 60 ? `${Math.floor(mins/60)}h ${mins % 60 ? `${mins%60}m` : ""}`.trim() : `${mins}m`;
 }
-
+function prettyEstado(e: EstadoPaseo):string {
+  switch (e) {
+    case "PENDIENTE":  return "Pendiente";
+    case "ACEPTADO":   return "Aceptado";
+    case "EN_CURSO":   return "En curso";
+    case "FINALIZADO": return "Completado";
+    case "CANCELADO":  return "Cancelado";
+    default: return e;
+  }
+}
 function DashboardPaseador() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const [disponibles, setDisponibles] = useState<(Paseo & { mascota: { nombre: string; especie: string; raza: string }})[]>([]);
-  const [misPaseos, setMisPaseos] = useState<(Paseo & { mascota: { nombre: string; especie: string; raza: string }})[]>([]);
+  const [disponibles, setDisponibles] = useState<
+    (Paseo & { mascota: { nombre: string; especie: string; raza: string } })[]
+  >([]);
+  const [misPaseos, setMisPaseos] = useState<
+    (Paseo & { mascota: { nombre: string; especie: string; raza: string } })[]
+  >([]);
+
   const [tomando, setTomando] = useState<number | null>(null);
+  const [accionando, setAccionando] = useState<null | "start" | "finish">(null); 
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   // cargar perfil + listas
@@ -32,7 +47,12 @@ function DashboardPaseador() {
     (async () => {
       try {
         const profile = await getProfile();
-        setUser({ idUsuario: profile.idUsuario, nombre: profile.nombre, apellido: profile.apellido, rol: profile.rol });
+        setUser({
+          idUsuario: profile.idUsuario,
+          nombre: profile.nombre,
+          apellido: profile.apellido,
+          rol: profile.rol,
+        });
 
         const [disp, mias] = await Promise.all([
           listPaseosDisponibles({ page: 1, pageSize: 30 }),
@@ -49,41 +69,77 @@ function DashboardPaseador() {
     })();
   }, []);
 
-  // paseo activo = primero ACEPATADO/EN_CURSO futuro más cercano
+  // paseo activo = primero ACEPTADO/EN_CURSO futuro más cercano
   const paseoActivo = useMemo(() => {
-    return misPaseos
-      .filter(p => p.estado === "ACEPTADO" || p.estado === "EN_CURSO")
-      .map(p => ({ ...p, when: combinarFechaHora(p.fecha, p.hora) }))
-      .sort((a, b) => a.when.getTime() - b.when.getTime())[0] || null;
+    return (
+      misPaseos
+        .filter((p) => p.estado === "ACEPTADO" || p.estado === "EN_CURSO")
+        .map((p) => ({ ...p, when: combinarFechaHora(p.fecha, p.hora) }))
+        .sort((a, b) => a.when.getTime() - b.when.getTime())[0] || null
+    );
   }, [misPaseos]);
 
   // historial = FINALIZADO más recientes
   const historial = useMemo(() => {
     return misPaseos
-      .filter(p => p.estado === "FINALIZADO")
-      .map(p => ({ ...p, when: combinarFechaHora(p.fecha, p.hora) }))
+      .filter((p) => p.estado === "FINALIZADO")
+      .map((p) => ({ ...p, when: combinarFechaHora(p.fecha, p.hora) }))
       .sort((a, b) => b.when.getTime() - a.when.getTime())
       .slice(0, 10);
   }, [misPaseos]);
+
+  async function refreshLists() {
+    const [disp, mias] = await Promise.all([
+      listPaseosDisponibles({ page: 1, pageSize: 30 }),
+      listMisPaseosComoPaseador({ page: 1, pageSize: 30 }),
+    ]);
+    setDisponibles(disp.items);
+    setMisPaseos(mias.items);
+  }
 
   async function onTomarPaseo(idPaseo: number) {
     try {
       setTomando(idPaseo);
       setErrorMsg(null);
       await aceptarPaseo(idPaseo);
-
-      // refrescar listas: el paseo sale de "disponibles" y entra en "mis paseos"
-      const [disp, mias] = await Promise.all([
-        listPaseosDisponibles({ page: 1, pageSize: 30 }),
-        listMisPaseosComoPaseador({ page: 1, pageSize: 30 }),
-      ]);
-      setDisponibles(disp.items);
-      setMisPaseos(mias.items);
+      await refreshLists();
     } catch (e: any) {
       console.error("Aceptar paseo error:", e);
-      alert(e?.response?.data?.error ?? "No se pudo tomar el paseo (puede que otro paseador lo haya tomado)");
+      alert(
+        e?.response?.data?.error ??
+          "No se pudo tomar el paseo (puede que otro paseador lo haya tomado)"
+      );
     } finally {
       setTomando(null);
+    }
+  }
+
+  // 👇 NUEVOS HANDLERS
+  async function onStart() {
+    if (!paseoActivo) return;
+    try {
+      setAccionando("start");
+      await startPaseo(paseoActivo.idPaseo);
+      await refreshLists();
+    } catch (e: any) {
+      console.error("Start paseo error:", e);
+      alert(e?.response?.data?.error ?? "No se pudo iniciar el paseo");
+    } finally {
+      setAccionando(null);
+    }
+  }
+
+  async function onFinish() {
+    if (!paseoActivo) return;
+    try {
+      setAccionando("finish");
+      await finishPaseo(paseoActivo.idPaseo);
+      await refreshLists();
+    } catch (e: any) {
+      console.error("Finish paseo error:", e);
+      alert(e?.response?.data?.error ?? "No se pudo finalizar el paseo");
+    } finally {
+      setAccionando(null);
     }
   }
 
@@ -113,12 +169,48 @@ function DashboardPaseador() {
           <p className="text-gray-600 text-xl md:text-2xl font-bold">Paseo Activo</p>
           {paseoActivo ? (
             <div className="mt-3 space-y-2">
-              <p className="text-gray-600"><strong>Mascota:</strong> {paseoActivo.mascota?.nombre ?? "-"}</p>
-              <p className="text-gray-600"><strong>Duración:</strong> {durPretty(paseoActivo.duracion)}</p>
-              <p className="text-gray-600"><strong>Ubicación:</strong> {paseoActivo.lugarEncuentro}</p>
-              <p className="text-gray-600"><strong>Fecha:</strong> {paseoActivo.when.toLocaleDateString()}</p>
-              <p className="text-gray-600"><strong>Hora:</strong> {paseoActivo.when.toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"})}</p>
-              <p className="text-gray-600"><strong>Estado:</strong> {paseoActivo.estado}</p>
+              <p className="text-gray-600">
+                <strong>Mascota:</strong> {paseoActivo.mascota?.nombre ?? "-"}
+              </p>
+              <p className="text-gray-600">
+                <strong>Duración:</strong> {durPretty(paseoActivo.duracion)}
+              </p>
+              <p className="text-gray-600">
+                <strong>Ubicación:</strong> {paseoActivo.lugarEncuentro}
+              </p>
+              <p className="text-gray-600">
+                <strong>Fecha:</strong> {paseoActivo.when.toLocaleDateString()}
+              </p>
+              <p className="text-gray-600">
+                <strong>Hora:</strong>{" "}
+                {paseoActivo.when.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+              </p>
+              <p className="text-gray-600">
+                <strong>Estado:</strong> {prettyEstado(paseoActivo.estado)}
+              </p>
+
+              {/* 👇 BOTONES */}
+              <div className="mt-6 flex flex-wrap gap-3">
+                {paseoActivo.estado === "ACEPTADO" && (
+                  <button
+                    onClick={onStart}
+                    disabled={accionando === "start"}
+                    className="cursor-pointer rounded-full py-2 px-4 bg-green-600 hover:bg-green-700 text-white font-semibold shadow-lg active:scale-90 transition-all duration-100 disabled:opacity-60"
+                  >
+                    {accionando === "start" ? "Iniciando…" : "Iniciar"}
+                  </button>
+                )}
+
+                {paseoActivo.estado === "EN_CURSO" && (
+                  <button
+                    onClick={onFinish}
+                    disabled={accionando === "finish"}
+                    className="cursor-pointer rounded-full py-2 px-4 bg-yellow-500 hover:bg-yellow-600 text-white font-semibold shadow-lg active:scale-90 transition-all duration-100 disabled:opacity-60"
+                  >
+                    {accionando === "finish" ? "Finalizando…" : "Finalizar"}
+                  </button>
+                )}
+              </div>
             </div>
           ) : (
             <p className="mt-3 text-gray-600">No tienes un paseo activo.</p>
@@ -129,7 +221,7 @@ function DashboardPaseador() {
         <article className="animate-fade-in-up animate-delay-200 p-6 card-neumorphism">
           <p className="text-gray-600">Paseos Completados</p>
           <p className="text-3xl md:text-4xl font-extrabold mt-1">
-            {misPaseos.filter(p => p.estado === "FINALIZADO").length}
+            {misPaseos.filter((p) => p.estado === "FINALIZADO").length}
           </p>
         </article>
 
@@ -148,14 +240,20 @@ function DashboardPaseador() {
               </thead>
               <tbody className="divide-y divide-gray-200">
                 {historial.length === 0 ? (
-                  <tr><td className="px-6 py-4" colSpan={4}>Aún no tienes historial.</td></tr>
+                  <tr>
+                    <td className="px-6 py-4" colSpan={4}>
+                      Aún no tienes historial.
+                    </td>
+                  </tr>
                 ) : (
                   historial.map((p) => {
                     const when = combinarFechaHora(p.fecha, p.hora);
                     return (
                       <tr key={p.idPaseo}>
                         <td className="px-6 py-4">{when.toLocaleDateString()}</td>
-                        <td className="px-6 py-4">{when.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</td>
+                        <td className="px-6 py-4">
+                          {when.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                        </td>
                         <td className="px-6 py-4">{p.mascota?.nombre ?? "-"}</td>
                         <td className="px-6 py-4">
                           <span className="inline-flex rounded-full px-4 py-1 bg-emerald-50 text-emerald-700 font-semibold">
@@ -174,7 +272,9 @@ function DashboardPaseador() {
 
       {/* Paseos disponibles */}
       <section>
-        <h2 className="text-2xl md:text-3xl font-bold mb-6">Paseos Publicados (Disponibles)</h2>
+        <h2 className="text-2xl md:text-3xl font-bold mb-6">
+          Paseos Publicados (Disponibles)
+        </h2>
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 animate-fade-in-up animate-delay-800">
           {disponibles.length === 0 ? (
             <p className="text-gray-600">No hay paseos disponibles por ahora.</p>
@@ -187,12 +287,25 @@ function DashboardPaseador() {
                   className="flex flex-col rounded-2xl bg-white border border-gray-200 shadow-md hover:shadow-xl transition-shadow overflow-hidden"
                 >
                   <div className="flex flex-col flex-1 p-5">
-                    <h3 className="text-xl font-bold mb-2">{s.mascota?.nombre ?? "Mascota"}</h3>
-                    <p className="text-gray-600"><strong>Fecha:</strong> {when.toLocaleDateString()}</p>
-                    <p className="text-gray-600"><strong>Hora:</strong> {when.toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"})}</p>
-                    <p className="text-gray-600"><strong>Duración:</strong> {durPretty(s.duracion)}</p>
-                    <p className="text-gray-600"><strong>Ubicación:</strong> {s.lugarEncuentro}</p>
-                    <p className="text-gray-600 mb-4"><strong>Estado:</strong> {s.estado}</p>
+                    <h3 className="text-xl font-bold mb-2">
+                      {s.mascota?.nombre ?? "Mascota"}
+                    </h3>
+                    <p className="text-gray-600">
+                      <strong>Fecha:</strong> {when.toLocaleDateString()}
+                    </p>
+                    <p className="text-gray-600">
+                      <strong>Hora:</strong>{" "}
+                      {when.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                    </p>
+                    <p className="text-gray-600">
+                      <strong>Duración:</strong> {durPretty(s.duracion)}
+                    </p>
+                    <p className="text-gray-600">
+                      <strong>Ubicación:</strong> {s.lugarEncuentro}
+                    </p>
+                    <p className="text-gray-600 mb-4">
+                      <strong>Estado:</strong> {s.estado}
+                    </p>
                     <button
                       disabled={tomando === s.idPaseo}
                       onClick={() => onTomarPaseo(s.idPaseo)}
@@ -210,5 +323,6 @@ function DashboardPaseador() {
     </main>
   );
 }
+
 
 export default DashboardPaseador;
