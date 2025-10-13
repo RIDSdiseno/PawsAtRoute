@@ -58,12 +58,16 @@ function Home() {
   }, []);
 
   const proximo = useMemo(() => {
-    const futuros = paseos
-      .map(p => ({ ...p, when: combinarFechaHora(p.fecha, p.hora) }))
-      .filter(p => p.when.getTime() > Date.now() && p.estado !== "CANCELADO")
-      .sort((a, b) => a.when.getTime() - b.when.getTime());
-    return futuros[0] || null;
-  }, [paseos]);
+  const activos = new Set<EstadoPaseo>(["PENDIENTE", "ACEPTADO", "EN_CURSO"]);
+  const ahora = Date.now();
+
+  const futuros = paseos
+    .map(p => ({ ...p, when: combinarFechaHora(p.fecha, p.hora) }))
+    .filter(p => activos.has(p.estado) && p.when.getTime() > ahora)
+    .sort((a, b) => a.when.getTime() - b.when.getTime());
+
+  return futuros[0] || null;
+}, [paseos]);
 
   const completados = useMemo(
     () => paseos.filter(p => p.estado === "FINALIZADO").length,
@@ -100,6 +104,11 @@ function Home() {
                 {proximo.when.toLocaleDateString()} —{" "}
                 {proximo.when.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
               </p>
+
+              <p className="text-gray-600 mt-2">Estado</p>
+      <p className="text-2xl md:text-3xl font-extrabold">
+        {prettyEstado(proximo.estado)}
+      </p>
               <p className="text-gray-600 mt-2">Paseador</p>
               <p className="text-2xl md:text-3xl font-extrabold">
                 {proximo.paseadorId ? "Asignado" : "Sin asignar"}
