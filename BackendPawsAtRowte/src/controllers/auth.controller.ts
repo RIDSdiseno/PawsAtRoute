@@ -707,42 +707,53 @@ function parseFechaHora(fechaBase: Date, hora: string): { fechaDate: Date; horaD
   return isNaN(asDate.getTime()) ? { fechaDate: fechaBase, horaDate: null } : { fechaDate: fechaBase, horaDate: asDate };
 }
 
-/** GET /api/paseos 
 export const listPaseos = async (req: Request, res: Response) => {
   try {
-    const estado = req.query.estado as EstadoPaseo | undefined;
+    // Flags
     const mias = String(req.query.mias || "false") === "true";
     const disponibles = String(req.query.disponibles || "false") === "true";
 
-    const desde = req.query.desde ? new Date(String(req.query.desde)) : undefined;
-    const hasta = req.query.hasta ? new Date(String(req.query.hasta)) : undefined;
+    // Estado (validado)
+    const estadoStr = typeof req.query.estado === "string" ? req.query.estado.toUpperCase() : undefined;
+    const estado: EstadoPaseo | undefined =
+      estadoStr && (Object.values(EstadoPaseo) as string[]).includes(estadoStr)
+        ? (estadoStr as EstadoPaseo)
+        : undefined;
 
+    // Fechas (desde/hasta) con fin de día
+    const desde = typeof req.query.desde === "string" ? parseDate(req.query.desde) : undefined;
+    const hasta = typeof req.query.hasta === "string" ? endOfDay(parseDate(req.query.hasta)!) : undefined;
+
+    // Paginación
     const page = Math.max(1, Number(req.query.page || 1));
     const pageSize = Math.min(100, Math.max(1, Number(req.query.pageSize || 20)));
     const skip = (page - 1) * pageSize;
     const take = pageSize;
 
+    // Filtros
     const where: any = {};
 
     if (estado) where.estado = estado;
 
     if (desde || hasta) {
       where.fecha = {};
-      if (desde) where.fecha.gte = desde;
-      if (hasta) where.fecha.lte = hasta;
+      if (desde && !isNaN(desde.getTime())) where.fecha.gte = desde;
+      if (hasta && !isNaN(hasta.getTime())) where.fecha.lte = hasta;
     }
 
     if (disponibles) {
-      // Paseos sin asignar (nuestro placeholder 0)
-      where.paseadorId = 0;
-      where.estado = "PENDIENTE";
+      // Paseos sin asignar
+      where.paseadorId = null;
+      if (!where.estado) where.estado = EstadoPaseo.PENDIENTE;
     }
 
-    if (mias && req.user) {
-      if (req.user.rol === "DUEÑO") {
-        where.duenioId = req.user.id;
-      } else if (req.user.rol === "PASEADOR") {
-        where.paseadorId = req.user.id;
+    // Usuario autenticado (ajusta según tu middleware)
+    const user = (req as any).user as { idUsuario: number; rol: "PASEADOR" | "DUEÑO" } | undefined;
+    if (mias && user) {
+      if (user.rol === "DUEÑO") {
+        where.duenioId = user.idUsuario;
+      } else if (user.rol === "PASEADOR") {
+        where.paseadorId = user.idUsuario;
       }
     }
 
@@ -769,19 +780,30 @@ export const listPaseos = async (req: Request, res: Response) => {
       prisma.paseo.count({ where }),
     ]);
 
-    return res.json({
-      page,
-      pageSize,
-      total,
-      items,
-    });
+    return res.json({ page, pageSize, total, items });
   } catch (e) {
     console.error("listPaseos error:", e);
     return res.status(500).json({ error: "Error interno" });
   }
 };
 
- POST /api/paseos/:id/accept  (solo PASEADOR) 
+/* Helpers */
+function parseDate(input: string): Date {
+  // acepta "YYYY-MM-DD" o ISO
+  if (/^\d{4}-\d{2}-\d{2}$/.test(input)) {
+    const [y, m, d] = input.split("-").map(Number);
+    return new Date(y, m - 1, d, 0, 0, 0, 0);
+  }
+  const d = new Date(input);
+  return d;
+}
+function endOfDay(d: Date): Date {
+  if (!d || isNaN(d.getTime())) return d;
+  const copy = new Date(d);
+  copy.setHours(23, 59, 59, 999);
+  return copy;
+}
+ /*POST /api/paseos/:id/accept  (solo PASEADOR) 
 export const acceptPaseo = async (req: Request, res: Response) => {
   try {
     if (!req.user) return res.status(401).json({ error: "No autorizado" });
