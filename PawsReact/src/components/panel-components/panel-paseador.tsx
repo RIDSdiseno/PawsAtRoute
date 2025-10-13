@@ -1,139 +1,96 @@
-import { useEffect, useState } from "react";
-import { getProfile } from "../../api/api";
+import { useEffect, useMemo, useState } from "react";
+import { getProfile, listPaseosDisponibles, listMisPaseosComoPaseador, aceptarPaseo, type Paseo } from "../../api/api";
 
-interface Mascota {
-  nombre: string;
-  especie: string;
-  raza: string;
-  edad: string;
-}
-
-interface Paseo {
-  id: number;
-  dueno: string;
-  mascota: Mascota;
-  ubicacion: string;
-  duracion: string;
-  precio: string;
-}
-
-interface Historial {
-  fecha: string;
-  hora: string;
-  mascota: string;
-  estado: string;
-}
-
-interface User {
+type User = {
+  idUsuario: number;
   nombre: string;
   apellido: string;
-  paseosCompletados: number;
+  rol: string; // "PASEADOR"
+};
+
+function combinarFechaHora(fISO: string, hISO: string) {
+  const f = new Date(fISO);
+  const h = new Date(hISO);
+  return new Date(f.getFullYear(), f.getMonth(), f.getDate(), h.getHours(), h.getMinutes(), h.getSeconds(), h.getMilliseconds());
+}
+
+function durPretty(mins: number) {
+  return mins >= 60 ? `${Math.floor(mins/60)}h ${mins % 60 ? `${mins%60}m` : ""}`.trim() : `${mins}m`;
 }
 
 function DashboardPaseador() {
-  const [selectedPaseo, setSelectedPaseo] = useState<Paseo | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const [modal, setModal] = useState<null | "iniciar" | "finalizar" | "pagar">(
-    null
-  );
 
+  const [disponibles, setDisponibles] = useState<(Paseo & { mascota: { nombre: string; especie: string; raza: string }})[]>([]);
+  const [misPaseos, setMisPaseos] = useState<(Paseo & { mascota: { nombre: string; especie: string; raza: string }})[]>([]);
+  const [tomando, setTomando] = useState<number | null>(null);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  // cargar perfil + listas
   useEffect(() => {
-    const fetchUser = async () => {
+    (async () => {
       try {
         const profile = await getProfile();
-        setUser({
-          nombre: profile.nombre,
-          apellido: profile.apellido,
-          paseosCompletados: profile.paseos?.length || 0,
-        });
-      } catch {
-        setUser(null);
+        setUser({ idUsuario: profile.idUsuario, nombre: profile.nombre, apellido: profile.apellido, rol: profile.rol });
+
+        const [disp, mias] = await Promise.all([
+          listPaseosDisponibles({ page: 1, pageSize: 30 }),
+          listMisPaseosComoPaseador({ page: 1, pageSize: 30 }),
+        ]);
+        setDisponibles(disp.items);
+        setMisPaseos(mias.items);
+      } catch (e: any) {
+        console.error("Error cargando panel paseador:", e);
+        setErrorMsg(e?.response?.data?.error ?? "No se pudieron cargar los datos");
       } finally {
         setLoading(false);
       }
-    };
-    fetchUser();
+    })();
   }, []);
 
-  const abrirModal = (accion: "iniciar" | "finalizar" | "pagar") =>
-    setModal(accion);
-  const cerrarModal = () => setModal(null);
-  const confirmarAccion = () => {
-    if (modal === "iniciar") console.log("Paseo iniciado");
-    if (modal === "finalizar") console.log("Paseo finalizado");
-    if (modal === "pagar") console.log("Pago realizado");
-    cerrarModal();
-  };
+  // paseo activo = primero ACEPATADO/EN_CURSO futuro más cercano
+  const paseoActivo = useMemo(() => {
+    return misPaseos
+      .filter(p => p.estado === "ACEPTADO" || p.estado === "EN_CURSO")
+      .map(p => ({ ...p, when: combinarFechaHora(p.fecha, p.hora) }))
+      .sort((a, b) => a.when.getTime() - b.when.getTime())[0] || null;
+  }, [misPaseos]);
 
-  const solicitudes: Paseo[] = [
-    {
-      id: 1,
-      dueno: "Andrea",
-      mascota: {
-        nombre: "Firulais",
-        especie: "Canino",
-        raza: "Labrador Retriever",
-        edad: "1 a 2 años",
-      },
-      ubicacion: "Psj. Water Seven 2500, Huechuraba",
-      duracion: "30 minutos",
-      precio: "5000",
-    },
-    {
-      id: 2,
-      dueno: "Martín",
-      mascota: {
-        nombre: "Tito",
-        especie: "Felino",
-        raza: "British Shorthair",
-        edad: "3 a 4 años",
-      },
-      ubicacion: "Psj. Wano 2323, Colina",
-      duracion: "60 minutos",
-      precio: "10000",
-    },
-    {
-      id: 3,
-      dueno: "Fernanda",
-      mascota: {
-        nombre: "Chispa",
-        especie: "Canino",
-        raza: "Border Collie",
-        edad: "Menor de 1 año",
-      },
-      ubicacion: "Psj. Dressrosa 1244, Conchalí",
-      duracion: "120 minutos",
-      precio: "20000",
-    },
-  ];
+  // historial = FINALIZADO más recientes
+  const historial = useMemo(() => {
+    return misPaseos
+      .filter(p => p.estado === "FINALIZADO")
+      .map(p => ({ ...p, when: combinarFechaHora(p.fecha, p.hora) }))
+      .sort((a, b) => b.when.getTime() - a.when.getTime())
+      .slice(0, 10);
+  }, [misPaseos]);
 
-  const historial: Historial[] = [
-    {
-      fecha: "15 de Mayo",
-      hora: "10:00 AM",
-      mascota: "Firulais",
-      estado: "Completado",
-    },
-    {
-      fecha: "12 de Mayo",
-      hora: "3:00 PM",
-      mascota: "Tito",
-      estado: "Completado",
-    },
-  ];
+  async function onTomarPaseo(idPaseo: number) {
+    try {
+      setTomando(idPaseo);
+      setErrorMsg(null);
+      await aceptarPaseo(idPaseo);
 
-  const handleConfirm = () => {
-    if (selectedPaseo) {
-      alert(`Te has postulado al paseo con ${selectedPaseo.mascota.nombre}`);
-      setSelectedPaseo(null);
+      // refrescar listas: el paseo sale de "disponibles" y entra en "mis paseos"
+      const [disp, mias] = await Promise.all([
+        listPaseosDisponibles({ page: 1, pageSize: 30 }),
+        listMisPaseosComoPaseador({ page: 1, pageSize: 30 }),
+      ]);
+      setDisponibles(disp.items);
+      setMisPaseos(mias.items);
+    } catch (e: any) {
+      console.error("Aceptar paseo error:", e);
+      alert(e?.response?.data?.error ?? "No se pudo tomar el paseo (puede que otro paseador lo haya tomado)");
+    } finally {
+      setTomando(null);
     }
-  };
+  }
 
   if (loading) {
     return (
       <main className="min-h-screen flex items-center justify-center text-prussian-blue">
-        <p className="text-lg font-semibold">Cargando perfil...</p>
+        <p className="text-lg font-semibold">Cargando…</p>
       </main>
     );
   }
@@ -144,72 +101,39 @@ function DashboardPaseador() {
         <h1 className="text-3xl md:text-5xl font-bold mb-3">
           Hola, Paseador {user?.nombre} {user?.apellido}!
         </h1>
+        {errorMsg && <p className="text-red-600 mt-2">{errorMsg}</p>}
         <p className="text-lg md:text-xl text-gray-700 max-w-2xl mx-auto md:mx-0">
-          Bienvenid@ a tu panel de control. Aquí puedes gestionar tus paseos y
-          hacer que las mascotas disfruten de un paseo seguro y agradable.
+          Gestiona tus paseos y toma nuevas solicitudes disponibles.
         </p>
       </header>
 
       <section className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+        {/* Paseo activo */}
+        <article className="animate-fade-in-up animate-delay-400 p-6 card-neumorphism">
+          <p className="text-gray-600 text-xl md:text-2xl font-bold">Paseo Activo</p>
+          {paseoActivo ? (
+            <div className="mt-3 space-y-2">
+              <p className="text-gray-600"><strong>Mascota:</strong> {paseoActivo.mascota?.nombre ?? "-"}</p>
+              <p className="text-gray-600"><strong>Duración:</strong> {durPretty(paseoActivo.duracion)}</p>
+              <p className="text-gray-600"><strong>Ubicación:</strong> {paseoActivo.lugarEncuentro}</p>
+              <p className="text-gray-600"><strong>Fecha:</strong> {paseoActivo.when.toLocaleDateString()}</p>
+              <p className="text-gray-600"><strong>Hora:</strong> {paseoActivo.when.toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"})}</p>
+              <p className="text-gray-600"><strong>Estado:</strong> {paseoActivo.estado}</p>
+            </div>
+          ) : (
+            <p className="mt-3 text-gray-600">No tienes un paseo activo.</p>
+          )}
+        </article>
+
+        {/* Resumen completados */}
         <article className="animate-fade-in-up animate-delay-200 p-6 card-neumorphism">
           <p className="text-gray-600">Paseos Completados</p>
           <p className="text-3xl md:text-4xl font-extrabold mt-1">
-            {user?.paseosCompletados}
+            {misPaseos.filter(p => p.estado === "FINALIZADO").length}
           </p>
         </article>
 
-        <article className="animate-fade-in-up animate-delay-400 p-6 card-neumorphism">
-          <p className="text-gray-600 text-xl md:text-2xl font-bold">
-            Paseo Activo
-          </p>
-          <div className="mt-3 space-y-2">
-            <p className="text-gray-600">
-              <strong>Dueño:</strong> {solicitudes[0].dueno}
-            </p>
-            <p className="text-gray-600">
-              <strong>Mascota:</strong> {solicitudes[0].mascota.nombre}
-            </p>
-            <p className="text-gray-600">
-              <strong>Especie:</strong> {solicitudes[0].mascota.especie}
-            </p>
-            <p className="text-gray-600">
-              <strong>Raza:</strong> {solicitudes[0].mascota.raza}
-            </p>
-            <p className="text-gray-600">
-              <strong>Edad:</strong> {solicitudes[0].mascota.edad}
-            </p>
-            <p className="text-gray-600">
-              <strong>Duración:</strong> {solicitudes[0].duracion}
-            </p>
-            <p className="text-gray-600">
-              <strong>Ubicación:</strong> {solicitudes[0].ubicacion}
-            </p>
-            <p className="text-gray-600">
-              <strong>Precio:</strong> ${solicitudes[0].precio}
-            </p>
-          </div>
-          <div className="mt-6 flex flex-wrap gap-3">
-            <button
-              onClick={() => abrirModal("iniciar")}
-              className="cursor-pointer rounded-full py-2 px-4 bg-green-600 hover:bg-green-700 text-white font-semibold shadow-lg active:scale-90 transition-all duration-100"
-            >
-              Iniciar
-            </button>
-            <button
-              onClick={() => abrirModal("finalizar")}
-              className="cursor-pointer rounded-full py-2 px-4 bg-yellow-500 hover:bg-yellow-600 text-white font-semibold shadow-lg active:scale-90 transition-all duration-100"
-            >
-              Finalizar
-            </button>
-            <button
-              onClick={() => abrirModal("pagar")}
-              className="cursor-pointer rounded-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-lg active:scale-90 transition-all duration-100"
-            >
-              Pagar
-            </button>
-          </div>
-        </article>
-
+        {/* Historial */}
         <article className="animate-fade-in-up animate-delay-700 p-6 card-neumorphism md:col-span-2">
           <h2 className="text-xl md:text-2xl font-bold">Historial de Paseos</h2>
           <div className="mt-4 overflow-x-auto">
@@ -223,136 +147,66 @@ function DashboardPaseador() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {historial.map((paseo, i) => (
-                  <tr key={i}>
-                    <td className="px-6 py-4">{paseo.fecha}</td>
-                    <td className="px-6 py-4">{paseo.hora}</td>
-                    <td className="px-6 py-4">{paseo.mascota}</td>
-                    <td className="px-6 py-4">
-                      <span className="inline-flex rounded-full px-4 py-1 bg-emerald-50 text-emerald-700 font-semibold">
-                        {paseo.estado}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
+                {historial.length === 0 ? (
+                  <tr><td className="px-6 py-4" colSpan={4}>Aún no tienes historial.</td></tr>
+                ) : (
+                  historial.map((p) => {
+                    const when = combinarFechaHora(p.fecha, p.hora);
+                    return (
+                      <tr key={p.idPaseo}>
+                        <td className="px-6 py-4">{when.toLocaleDateString()}</td>
+                        <td className="px-6 py-4">{when.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</td>
+                        <td className="px-6 py-4">{p.mascota?.nombre ?? "-"}</td>
+                        <td className="px-6 py-4">
+                          <span className="inline-flex rounded-full px-4 py-1 bg-emerald-50 text-emerald-700 font-semibold">
+                            {p.estado}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
               </tbody>
             </table>
           </div>
         </article>
       </section>
 
+      {/* Paseos disponibles */}
       <section>
-        <h2 className="text-2xl md:text-3xl font-bold mb-6">
-          Paseos Publicados
-        </h2>
+        <h2 className="text-2xl md:text-3xl font-bold mb-6">Paseos Publicados (Disponibles)</h2>
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 animate-fade-in-up animate-delay-800">
-          {solicitudes.map((s) => (
-            <div
-              key={s.id}
-              className="flex flex-col rounded-2xl bg-white border border-gray-200 shadow-md hover:shadow-xl transition-shadow overflow-hidden"
-            >
-              <div className="flex flex-col flex-1 p-5">
-                <h3 className="text-xl font-bold mb-2">{s.mascota.nombre}</h3>
-                <p className="text-gray-600">
-                  <strong>Especie:</strong> {s.mascota.especie}
-                </p>
-                <p className="text-gray-600">
-                  <strong>Raza:</strong> {s.mascota.raza}
-                </p>
-                <p className="text-gray-600 mb-2">
-                  <strong>Edad:</strong> {s.mascota.edad}
-                </p>
-                <p className="text-gray-600">
-                  <strong>Dueño:</strong> {s.dueno}
-                </p>
-                <p className="text-gray-600">
-                  <strong>Ubicación:</strong> {s.ubicacion}
-                </p>
-                <p className="text-gray-600 mb-4">
-                  <strong>Duración:</strong> {s.duracion}
-                </p>
-                <p className="text-gray-700 font-semibold mb-4">
-                  <strong>Precio:</strong> ${s.precio}
-                </p>
-                <button
-                  onClick={() => setSelectedPaseo(s)}
-                  className="mt-auto bg-prussian-blue border-2 border-cyan-900 text-white font-semibold px-4 py-2 rounded-lg shadow-md shadow-prussian-blue/50 hover:bg-prussian-blue/80 active:scale-95 transition-transform"
+          {disponibles.length === 0 ? (
+            <p className="text-gray-600">No hay paseos disponibles por ahora.</p>
+          ) : (
+            disponibles.map((s) => {
+              const when = combinarFechaHora(s.fecha, s.hora);
+              return (
+                <div
+                  key={s.idPaseo}
+                  className="flex flex-col rounded-2xl bg-white border border-gray-200 shadow-md hover:shadow-xl transition-shadow overflow-hidden"
                 >
-                  Postularme
-                </button>
-              </div>
-            </div>
-          ))}
+                  <div className="flex flex-col flex-1 p-5">
+                    <h3 className="text-xl font-bold mb-2">{s.mascota?.nombre ?? "Mascota"}</h3>
+                    <p className="text-gray-600"><strong>Fecha:</strong> {when.toLocaleDateString()}</p>
+                    <p className="text-gray-600"><strong>Hora:</strong> {when.toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"})}</p>
+                    <p className="text-gray-600"><strong>Duración:</strong> {durPretty(s.duracion)}</p>
+                    <p className="text-gray-600"><strong>Ubicación:</strong> {s.lugarEncuentro}</p>
+                    <p className="text-gray-600 mb-4"><strong>Estado:</strong> {s.estado}</p>
+                    <button
+                      disabled={tomando === s.idPaseo}
+                      onClick={() => onTomarPaseo(s.idPaseo)}
+                      className="mt-auto bg-prussian-blue border-2 border-cyan-900 text-white font-semibold px-4 py-2 rounded-lg shadow-md shadow-prussian-blue/50 hover:bg-prussian-blue/80 active:scale-95 transition-transform disabled:opacity-60"
+                    >
+                      {tomando === s.idPaseo ? "Tomando…" : "Tomar paseo"}
+                    </button>
+                  </div>
+                </div>
+              );
+            })
+          )}
         </div>
       </section>
-
-      {selectedPaseo && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl shadow-xl max-w-lg w-full p-6">
-            <h3 className="text-xl font-bold mb-4 text-prussian-blue">
-              ¿Estás seguro?
-            </h3>
-            <p className="text-gray-700 mb-2">
-              Vas a postularte al paseo de{" "}
-              <strong>{selectedPaseo.mascota.nombre}</strong>
-            </p>
-            <ul className="text-gray-600 mb-6">
-              <li>
-                <strong>Dueño:</strong> {selectedPaseo.dueno}
-              </li>
-              <li>
-                <strong>Ubicación:</strong> {selectedPaseo.ubicacion}
-              </li>
-              <li>
-                <strong>Duración:</strong> {selectedPaseo.duracion}
-              </li>
-              <li>
-                <strong>Precio:</strong> ${selectedPaseo.precio}
-              </li>
-            </ul>
-            <div className="flex justify-end gap-4">
-              <button
-                onClick={() => setSelectedPaseo(null)}
-                className="px-4 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={handleConfirm}
-                className="px-4 py-2 rounded-lg bg-prussian-blue text-white font-semibold shadow hover:bg-prussian-blue/80"
-              >
-                Confirmar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {modal && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
-          <div className="bg-white rounded-2xl shadow-xl p-6 w-80 text-center">
-            <h2 className="text-lg font-bold text-gray-800 mb-4">
-              {modal === "iniciar" && "¿Estás seguro de iniciar el paseo?"}
-              {modal === "finalizar" && "¿Estás seguro de finalizar el paseo?"}
-              {modal === "pagar" && "¿Deseas confirmar el pago?"}
-            </h2>
-            <div className="flex justify-center gap-4 mt-4">
-              <button
-                onClick={cerrarModal}
-                className="px-4 py-2 rounded-full bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold transition-all"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={confirmarAccion}
-                className="px-4 py-2 rounded-full bg-green-600 hover:bg-green-700 text-white font-semibold transition-all"
-              >
-                Confirmar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </main>
   );
 }

@@ -184,7 +184,7 @@ export const resetPassword = async (correo: string, nuevaClave: string) => {
 // =========================
 //  Paseos: tipos
 // =========================
-export type EstadoPaseo = "PENDIENTE" | "CONFIRMADO" | "COMPLETADO" | "CANCELADO";
+export type EstadoPaseo = "PENDIENTE" | "ACEPTADO" | "EN_CURSO" | "FINALIZADO" | "CANCELADO";
 
 export type Paseo = {
   idPaseo: number;
@@ -218,13 +218,52 @@ export const crearPaseo = async (payload: {
   return res.data.paseo;
 };
 
+export type PaseoListItem = Paseo & {
+  mascota: { nombre: string; especie: string; raza: string };
+  // si el back selecciona duenio/paseador, añade aquí:
+  // duenio?: { nombre: string; apellido: string };
+  // paseador?: { nombre: string; apellido: string } | null;
+};
 
+export const listPaseos = async (params?: {
+  mias?: boolean;            // panel dueño: true
+  disponibles?: boolean;     // panel paseador: true
+  estado?: EstadoPaseo;      // opcional
+  desde?: string;            // "YYYY-MM-DD"
+  hasta?: string;            // "YYYY-MM-DD"
+  page?: number;
+  pageSize?: number;
+}) => {
+  const res = await api.get<Paginated<PaseoListItem>>("/auth/listpaseos", { params });
+  return res.data;
+};
 
+// GET /api/auth/listpaseos?disponibles=true
+export const listPaseosDisponibles = async (params?: {
+  page?: number; pageSize?: number; desde?: string; hasta?: string;
+}) => {
+  const res = await api.get<Paginated<Paseo & {
+    mascota: { nombre: string; especie: string; raza: string }
+  }>>("/auth/listpaseos", { params: { disponibles: true, ...(params || {}) }});
+  return res.data;
+};
 
+// === Mis paseos como paseador ===
+// GET /api/auth/listpaseos?mias=true
+export const listMisPaseosComoPaseador = async (params?: {
+  page?: number; pageSize?: number; desde?: string; hasta?: string; estado?: EstadoPaseo
+}) => {
+  const res = await api.get<Paginated<Paseo & {
+    mascota: { nombre: string; especie: string; raza: string }
+  }>>("/auth/listpaseos", { params: { mias: true, ...(params || {}) }});
+  return res.data;
+};
 
-
-
-
+// POST /api/auth/paseos/:id/accept
+export const aceptarPaseo = async (idPaseo: number) => {
+  const res = await api.post<{ paseo: Paseo }>(`/auth/paseos/${idPaseo}/accept`);
+  return res.data.paseo;
+};
 
 
 
