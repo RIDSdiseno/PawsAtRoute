@@ -1,0 +1,81 @@
+:root {
+  --ion-font-family: "Onest";
+}
+
+:root {
+  --ion-color-ut-orange: #fb8500ff;
+  --ion-color-ut-orange-rgb: 133, 0, 255;
+  --ion-color-ut-orange-contrast: #ffffff;
+  --ion-color-ut-orange-contrast-rgb: 255, 255, 255;
+  --ion-color-ut-orange-shade: #7500e0;
+  --ion-color-ut-orange-tint: #911aff;
+}
+
+.ion-color-ut-orange {
+  --ion-color-base: var(--ion-color-ut-orange);
+  --ion-color-base-rgb: var(--ion-color-ut-orange-rgb);
+  --ion-color-contrast: var(--ion-color-ut-orange-contrast);
+  --ion-color-contrast-rgb: var(--ion-color-ut-orange-contrast-rgb);
+  --ion-color-shade: var(--ion-color-ut-orange-shade);
+  --ion-color-tint: var(--ion-color-ut-orange-tint);
+}
+
+:root {
+  --ion-color-selective-yellow: #ffb703ff;
+  --ion-color-selective-yellow-rgb: 183, 3, 255;
+  --ion-color-selective-yellow-contrast: #ffffff;
+  --ion-color-selective-yellow-contrast-rgb: 255, 255, 255;
+  --ion-color-selective-yellow-shade: #a103e0;
+  --ion-color-selective-yellow-tint: #be1cff;
+}
+
+.ion-color-selective-yellow {
+  --ion-color-base: var(--ion-color-selective-yellow);
+  --ion-color-base-rgb: var(--ion-color-selective-yellow-rgb);
+  --ion-color-contrast: var(--ion-color-selective-yellow-contrast);
+  --ion-color-contrast-rgb: var(--ion-color-selective-yellow-contrast-rgb);
+  --ion-color-shade: var(--ion-color-selective-yellow-shade);
+  --ion-color-tint: var(--ion-color-selective-yellow-tint);
+}
+
+:root {
+  --ion-color-prussian-blue: #023047ff;
+  --ion-color-prussian-blue-rgb: 48, 71, 255;
+  --ion-color-prussian-blue-contrast: #ffffff;
+  --ion-color-prussian-blue-contrast-rgb: 255, 255, 255;
+  --ion-color-prussian-blue-shade: #2a3ee0;
+  --ion-color-prussian-blue-tint: #4559ff;
+}
+
+.ion-color-prussian-blue {
+  --ion-color-base: var(--ion-color-prussian-blue);
+  --ion-color-base-rgb: var(--ion-color-prussian-blue-rgb);
+  --ion-color-contrast: var(--ion-color-prussian-blue-contrast);
+  --ion-color-contrast-rgb: var(--ion-color-prussian-blue-contrast-rgb);
+  --ion-color-shade: var(--ion-color-prussian-blue-shade);
+  --ion-color-tint: var(--ion-color-prussian-blue-tint);
+}
+
+@font-face {
+  font-family: "CoffeeCake";
+  src: url("/src/assets/fonts/CoffeCake 400.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+.coffeecake {
+  font-family: "CoffeeCake";
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Onest";
+  src: url("/src/assets/fonts/onest-latin-400-normal.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+

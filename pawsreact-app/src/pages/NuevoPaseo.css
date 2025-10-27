@@ -1,0 +1,11 @@
+ion-list ion-item::part(native) {
+  padding-inline-start: 0;
+  background: transparent;
+}
+
+ion-radio-group > ion-item {
+  --inner-padding-start: 0;
+}
+ion-card-content > ion-list > ion-item {
+    margin-bottom: 16px;
+}

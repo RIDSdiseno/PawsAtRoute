@@ -1,0 +1,8 @@
+{
+  "name": "pawsreact-app",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "react-vite",
+  "npmClient": "pnpm"
+}
