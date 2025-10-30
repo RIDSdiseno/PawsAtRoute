@@ -71,7 +71,6 @@ function Navbar({ links = [] }: NavbarProps) {
   return (
     <nav className="bg-selective-yellow">
       <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
-        {/* Logo */}
         <Link
           to="/"
           className="flex items-center space-x-3 rtl:space-x-reverse"
@@ -82,7 +81,6 @@ function Navbar({ links = [] }: NavbarProps) {
           </span>
         </Link>
 
-        {/* Botón hamburguesa visible en md y menores */}
         <button
           type="button"
           className="inline-flex items-center p-2 w-10 h-10 justify-center text-sm rounded-lg text-white bg-prussian-blue hover:bg-prussian-blue/80 focus:ring-2 focus:ring-cyan-900 md:inline-flex lg:hidden"

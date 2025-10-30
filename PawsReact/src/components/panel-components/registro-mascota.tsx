@@ -1,16 +1,16 @@
 import { useState } from "react";
-import { createMascota } from "../../api/api.ts"; // ajusta la ruta según tu proyecto
+import { createMascota } from "../../api/api.ts";
 
 function RegistroMascota() {
   const [nombre, setNombre] = useState("");
   const [especie, setEspecie] = useState("");
   const [raza, setRaza] = useState("");
-  const [edadGrupo, setEdadGrupo] = useState<string>(""); // "-1" | "1-2" | "3-5" | "6-9" | "10+"
+  const [edadGrupo, setEdadGrupo] = useState<string>("");
   const [submitting, setSubmitting] = useState(false);
 
   const edadMapToNumber = (g: string): number => {
     switch (g) {
-      case "-1": return 0;   // < 1 año
+      case "-1": return 0;
       case "1-2": return 1;
       case "3-5": return 3;
       case "6-9": return 6;
@@ -50,7 +50,7 @@ function RegistroMascota() {
   };
 
   return (
-    <main className="min-h-screen mx-auto text-prussian-blue font-nunito p-4 sm:p-6 lg:p-8 my-6">
+    <main className="min-h-screen mx-auto text-prussian-blue p-4 sm:p-6 lg:p-8 my-6">
       <header className="max-w-3xl mx-auto mb-8">
         <h1 className="text-3xl md:text-5xl font-bold">Registro de Mascota</h1>
         <p className="text-lg">Registra tu mascota para que pueda ser paseada.</p>

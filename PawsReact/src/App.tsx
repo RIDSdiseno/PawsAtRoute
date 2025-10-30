@@ -17,183 +17,273 @@ import EditarPerfil from "./components/panel-components/editar-perfil";
 import PanelPaseador from "./components/panel-components/panel-paseador";
 import Pricing from "./components/pricing";
 import RegistroMascota from "./components/panel-components/registro-mascota";
+import PanelAdmin from "./components/panel-components/panel-admin";
+import PoliticaPrivacidad from "./components/politica-privacidad";
+import TerminosCondiciones from "./components/terminos-condiciones";
 
 function App() {
+  const footerSections = [
+    {
+      title: "Paws At Route",
+      links: [
+        { label: "Inicio", href: "/" },
+        { label: "Beneficios", href: "/beneficios" },
+        { label: "Pasos", href: "/pasos" },
+      ],
+    },
+    {
+      title: "Legal",
+      links: [
+        { label: "Términos y Condiciones", href: "/terminos-condiciones" },
+        { label: "Política de Privacidad", href: "/politica-privacidad" },
+      ],
+    },
+  ];
+
+  const developers = ["Mateo Sepúlveda", "Mario Benedetti", "Jois Rosales"];
+
   return (
     <AuthProvider>
-    <Router>
-      <Routes>
-        {/* Rutas de las páginas */}
-        <Route
-          path="/"
-          element={
-            <>
-              <Navbar
-                links={[
-                  { href: "#beneficios", label: "Beneficios" },
-                  { href: "#pasos", label: "Pasos" },
-                  { href: "#pricing", label: "Planes" },
-                  { to: "/login", label: "Ingresar", primary: true },
-                ]}
-              />
-              <Hero />
-              <Beneficios />
-              <Pasos />
-              <Pricing />
-              <Footer />
-            </>
-          }
-        />
+      <Router>
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <>
+                <Navbar
+                  links={[
+                    { href: "#beneficios", label: "Beneficios" },
+                    { href: "#pasos", label: "Pasos" },
+                    { href: "#pricing", label: "Planes" },
+                    { to: "/login", label: "Ingresar", primary: true },
+                  ]}
+                />
+                <Hero />
+                <Beneficios />
+                <Pasos />
+                <Pricing />
+                <Footer sections={footerSections} developers={developers} />
+              </>
+            }
+          />
 
-        <Route
-          path="/login"
-          element={
-            <>
-              <Navbar
-                links={[
-                  { to: "/", label: "Inicio" },
-                  { to: "/recuperar-clave", label: "Recuperar clave" },
-                  { to: "/register", label: "Registrarse", primary: true },
-                ]}
-              />
-              <Login />
-              <Footer />
-            </>
-          }
-        />
+          <Route
+            path="/beneficios"
+            element={
+              <>
+                <Navbar
+                  links={[
+                    { to: "/", label: "Inicio" },
+                    { to: "/pasos", label: "Pasos" },
+                    { to: "/pricing", label: "Planes" },
+                  ]}
+                />
+                <Beneficios />
+                <Footer sections={footerSections} developers={developers} />
+              </>
+            }
+          />
 
-        <Route
-          path="/register"
-          element={
-            <>
-              <Navbar
-                links={[
-                  { to: "/", label: "Inicio" },
-                  { to: "/login", label: "Ingresar", primary: true },
-                ]}
-              />
-              <Register />
-              <Footer />
-            </>
-          }
-        />
-        <Route
-          path="/panel-dueño"
-          element={
-            <>
-              <Navbar
-                links={[
-                  { to: "/registro-mascota", label: "Registrar Mascota" },
-                  { to: "/nuevo-paseo", label: "Nuevo Paseo" },
-                  { to: "/mi-perfil", label: "Mi perfil" },
-                ]}
-              />
-              <PanelDueño />
-              <Footer />
-            </>
-          }
-        />
-        <Route
-          path="/nuevo-paseo"
-          element={
-            <>
-              <Navbar
-                links={[
-                  { to: "/mi-perfil", label: "Mi perfil" },
-                ]}
-              />
-              <NuevoPaseo />
-              <Footer />
-            </>
-          }
-        />
-        <Route
-          path="/recuperar-clave"
-          element={
-            <>
-              <Navbar
-                links={[
-                  { to: "/", label: "Inicio" },
-                  { to: "/login", label: "Ingresar", primary: true },
-                ]}
-              />
-              <RecuperarClave />
-              <Footer />
-            </>
-          }
-        />
-        <Route
-          path="/perfil-paseador"
-          element={
-            <>
-              <Navbar
-                links={[
-                  { to: "/mi-perfil", label: "Mi perfil" },
-                ]}
-              />
-              <PerfilPaseador />
-              <Footer />
-            </>
-          }
-        />
-        <Route
-          path="/mi-perfil"
-          element={
-            <>
-              <Navbar
-                links={[
-                  { to: "/editar-perfil", label: "Editar Perfil" },
-                ]}
-              />
-              <MiPerfil />
-              <Footer />
-            </>
-          }
-        />
-        <Route
-          path="/editar-perfil"
-          element={
-            <>
-              <Navbar
-                links={[
-                  { to: "/mi-perfil", label: "Mi perfil" },
-                ]}
-              />
-              <EditarPerfil />
-              <Footer />
-            </>
-          }
-        />
-        <Route
-          path="/panel-paseador"
-          element={
-            <>
-              <Navbar
-                links={[
-                  { to: "/mi-perfil", label: "Mi perfil" },
-                ]}
-              />
-              <PanelPaseador />
-              <Footer />
-            </>
-          }
-        />
-        <Route
-          path="/registro-mascota"
-          element={
-            <>
-              <Navbar
-                links={[
-                  { to: "/mi-perfil", label: "Mi perfil" },
-                ]}
-              />
-              <RegistroMascota />
-              <Footer />
-            </>
-          }
-        />
-      </Routes>
-    </Router>
+          <Route
+            path="/pasos"
+            element={
+              <>
+                <Navbar
+                  links={[
+                    { to: "/", label: "Inicio" },
+                    { to: "/beneficios", label: "Beneficios" },
+                    { to: "/pricing", label: "Planes" },
+                  ]}
+                />
+                <Pasos />
+                <Footer sections={footerSections} developers={developers} />
+              </>
+            }
+          />
+
+          <Route
+            path="/pricing"
+            element={
+              <>
+                <Navbar
+                  links={[
+                    { to: "/", label: "Inicio" },
+                    { to: "/beneficios", label: "Beneficios" },
+                    { to: "/pasos", label: "Pasos" },
+                  ]}
+                />
+                <Pricing />
+                <Footer sections={footerSections} developers={developers} />
+              </>
+            }
+          />
+
+          <Route
+            path="/login"
+            element={
+              <>
+                <Navbar
+                  links={[
+                    { to: "/", label: "Inicio" },
+                    { to: "/recuperar-clave", label: "Recuperar clave" },
+                    { to: "/register", label: "Registrarse", primary: true },
+                  ]}
+                />
+                <Login />
+                <Footer sections={footerSections} developers={developers} />
+              </>
+            }
+          />
+
+          <Route
+            path="/register"
+            element={
+              <>
+                <Navbar
+                  links={[
+                    { to: "/", label: "Inicio" },
+                    { to: "/login", label: "Ingresar", primary: true },
+                  ]}
+                />
+                <Register />
+                <Footer sections={footerSections} developers={developers} />
+              </>
+            }
+          />
+
+          <Route
+            path="/panel-dueño"
+            element={
+              <>
+                <Navbar
+                  links={[
+                    { to: "/registro-mascota", label: "Registrar Mascota" },
+                    { to: "/nuevo-paseo", label: "Nuevo Paseo" },
+                    { to: "/mi-perfil", label: "Mi perfil" },
+                  ]}
+                />
+                <PanelDueño />
+                <Footer sections={footerSections} developers={developers} />
+              </>
+            }
+          />
+
+          <Route
+            path="/nuevo-paseo"
+            element={
+              <>
+                <Navbar links={[{ to: "/mi-perfil", label: "Mi perfil" }]} />
+                <NuevoPaseo />
+                <Footer sections={footerSections} developers={developers} />
+              </>
+            }
+          />
+
+          <Route
+            path="/recuperar-clave"
+            element={
+              <>
+                <Navbar
+                  links={[
+                    { to: "/", label: "Inicio" },
+                    { to: "/login", label: "Ingresar", primary: true },
+                  ]}
+                />
+                <RecuperarClave />
+                <Footer sections={footerSections} developers={developers} />
+              </>
+            }
+          />
+
+          <Route
+            path="/perfil-paseador"
+            element={
+              <>
+                <Navbar links={[{ to: "/mi-perfil", label: "Mi perfil" }]} />
+                <PerfilPaseador />
+                <Footer sections={footerSections} developers={developers} />
+              </>
+            }
+          />
+
+          <Route
+            path="/mi-perfil"
+            element={
+              <>
+                <Navbar
+                  links={[{ to: "/editar-perfil", label: "Editar Perfil" }]}
+                />
+                <MiPerfil />
+                <Footer sections={footerSections} developers={developers} />
+              </>
+            }
+          />
+
+          <Route
+            path="/editar-perfil"
+            element={
+              <>
+                <Navbar links={[{ to: "/mi-perfil", label: "Mi perfil" }]} />
+                <EditarPerfil />
+                <Footer sections={footerSections} developers={developers} />
+              </>
+            }
+          />
+
+          <Route
+            path="/panel-paseador"
+            element={
+              <>
+                <Navbar links={[{ to: "/mi-perfil", label: "Mi perfil" }]} />
+                <PanelPaseador />
+                <Footer sections={footerSections} developers={developers} />
+              </>
+            }
+          />
+
+          <Route
+            path="/registro-mascota"
+            element={
+              <>
+                <Navbar links={[{ to: "/mi-perfil", label: "Mi perfil" }]} />
+                <RegistroMascota />
+                <Footer sections={footerSections} developers={developers} />
+              </>
+            }
+          />
+
+          <Route
+            path="/panel-admin"
+            element={
+              <>
+                <Navbar links={[{ to: "/mi-perfil", label: "Mi perfil" }]} />
+                <PanelAdmin />
+                <Footer sections={footerSections} developers={developers} />
+              </>
+            }
+          />
+          <Route
+            path="/politica-privacidad"
+            element={
+              <>
+                <Navbar links={[{ to: "/mi-perfil", label: "Mi perfil" }]} />
+                <PoliticaPrivacidad />
+                <Footer sections={footerSections} developers={developers} />
+              </>
+            }
+          />
+          <Route
+            path="/terminos-condiciones"
+            element={
+              <>
+                <Navbar links={[{ to: "/mi-perfil", label: "Mi perfil" }]} />
+                <TerminosCondiciones />
+                <Footer sections={footerSections} developers={developers} />
+              </>
+            }
+          />
+        </Routes>
+      </Router>
     </AuthProvider>
   );
 }
