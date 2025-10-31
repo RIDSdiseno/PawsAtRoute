@@ -78,8 +78,7 @@ function Pricing() {
             </li>
           </ul>
           <button className="cursor-pointer bg-selective-yellow/80 text-prussian-blue font-bold py-2 px-4 rounded-full flex justify-center items-center gap-2 hover:bg-selective-yellow hover:scale-105 active:scale-90 transition-all duration-200">
-            {/* Aquí debería de pasar por un proceso de seguridad hasta la pasarela de pago */}
-            <Link to="/">Obtener ahora</Link>
+            <Link to="/pago">Obtener ahora</Link>
             <img
               src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+Cgk8ZyBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2Utd2lkdGg9IjIiPgoJCTxwYXRoIHN0cm9rZS1kYXNoYXJyYXk9IjIwIiBzdHJva2UtZGFzaG9mZnNldD0iMjAiIGQ9Ik0zIDEyaDE3LjUiPgoJCQk8YW5pbWF0ZSBmaWxsPSJmcmVlemUiIGF0dHJpYnV0ZU5hbWU9InN0cm9rZS1kYXNob2Zmc2V0IiBkdXI9IjAuMnMiIHZhbHVlcz0iMjA7MCIgLz4KCQk8L3BhdGg+CgkJPHBhdGggc3Ryb2tlLWRhc2hhcnJheT0iMTIiIHN0cm9rZS1kYXNob2Zmc2V0PSIxMiIgZD0iTTIxIDEybC03IDdNMjEgMTJsLTcgLTciPgoJCQk8YW5pbWF0ZSBmaWxsPSJmcmVlemUiIGF0dHJpYnV0ZU5hbWU9InN0cm9rZS1kYXNob2Zmc2V0IiBiZWdpbj0iMC4ycyIgZHVyPSIwLjJzIiB2YWx1ZXM9IjEyOzAiIC8+CgkJPC9wYXRoPgoJPC9nPgo8L3N2Zz4="
               className="size-6"

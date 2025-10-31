@@ -20,6 +20,7 @@ import RegistroMascota from "./components/panel-components/registro-mascota";
 import PanelAdmin from "./components/panel-components/panel-admin";
 import PoliticaPrivacidad from "./components/politica-privacidad";
 import TerminosCondiciones from "./components/terminos-condiciones";
+import NotFound from "./components/notfound";
 
 function App() {
   const footerSections = [
@@ -46,6 +47,7 @@ function App() {
     <AuthProvider>
       <Router>
         <Routes>
+          <Route path="*" element={<NotFound />} />
           <Route
             path="/"
             element={
