@@ -23,6 +23,7 @@ import EditarPerfil from "./pages/editar-perfil";
 import PerfilPaseador from "./pages/perfil-paseador";
 import PanelPaseador from "./pages/panel-paseador";
 import EstadisticasPaseador from "./pages/estadisticas-paseador";
+import NotFound from "./pages/notfound";
 
 import "@ionic/react/css/core.css";
 import "@ionic/react/css/normalize.css";
@@ -36,111 +37,96 @@ import "@ionic/react/css/flex-utils.css";
 import "@ionic/react/css/display.css";
 import "./theme/variables.css";
 
-setupIonicReact({
-  mode: "ios",
-});
+setupIonicReact({ mode: "ios" });
 
 const App: React.FC = () => (
   <IonApp>
     <IonReactRouter>
-      <Route exact path="/login">
-        <Login />
-      </Route>
-      <Route exact path="/recuperar-clave">
-        <RecuperarClave />
-      </Route>
-      <Route exact path="/registro">
-        <Registro />
-      </Route>
-      <Route exact path="/nuevo-paseo">
-        <NuevoPaseo />
-      </Route>
-      <Route exact path="/registro-mascota">
-        <RegistroMascota />
-      </Route>
-      <Route exact path="/editar-perfil">
-        <EditarPerfil />
-      </Route>
-      <Route exact path="/perfil-paseador">
-        <PerfilPaseador />
-      </Route>
+      <IonRouterOutlet>
+        <Redirect exact from="/" to="/login" />
+        <Route exact path="/login" component={Login} />
+        <Route exact path="/recuperar-clave" component={RecuperarClave} />
+        <Route exact path="/registro" component={Registro} />
+        <Route exact path="/nuevo-paseo" component={NuevoPaseo} />
+        <Route exact path="/registro-mascota" component={RegistroMascota} />
+        <Route exact path="/editar-perfil" component={EditarPerfil} />
+        <Route exact path="/perfil-paseador" component={PerfilPaseador} />
 
-      <Route
-        path="/tabs"
-        render={() => (
-          <IonTabs>
-            <IonRouterOutlet>
-              <Route exact path="/tabs/tab1" component={Tab1} />
-              <Route exact path="/tabs/tab2" component={Tab2} />
-              <Route exact path="/tabs/tab3" component={Tab3} />
-              <Redirect exact from="/tabs" to="/tabs/tab1" />
-            </IonRouterOutlet>
+        <Route
+          path="/tabs"
+          render={() => (
+            <IonTabs>
+              <IonRouterOutlet>
+                <Route exact path="/tabs/tab1" component={Tab1} />
+                <Route exact path="/tabs/tab2" component={Tab2} />
+                <Route exact path="/tabs/tab3" component={Tab3} />
+                <Redirect exact from="/tabs" to="/tabs/tab1" />
+              </IonRouterOutlet>
 
-            <IonTabBar slot="bottom">
-              <IonTabButton tab="tab1" href="/tabs/tab1">
-                <IonIcon icon={home} />
-                <IonLabel>Inicio</IonLabel>
-              </IonTabButton>
-              <IonTabButton tab="tab2" href="/tabs/tab2">
-                <IonIcon icon={analytics} />
-                <IonLabel>Estadísticas</IonLabel>
-              </IonTabButton>
-              <IonTabButton tab="tab3" href="/tabs/tab3">
-                <IonIcon icon={person} />
-                <IonLabel>Perfil</IonLabel>
-              </IonTabButton>
-            </IonTabBar>
-          </IonTabs>
-        )}
-      />
+              <IonTabBar slot="bottom">
+                <IonTabButton tab="tab1" href="/tabs/tab1">
+                  <IonIcon icon={home} />
+                  <IonLabel>Inicio</IonLabel>
+                </IonTabButton>
+                <IonTabButton tab="tab2" href="/tabs/tab2">
+                  <IonIcon icon={analytics} />
+                  <IonLabel>Estadísticas</IonLabel>
+                </IonTabButton>
+                <IonTabButton tab="tab3" href="/tabs/tab3">
+                  <IonIcon icon={person} />
+                  <IonLabel>Perfil</IonLabel>
+                </IonTabButton>
+              </IonTabBar>
+            </IonTabs>
+          )}
+        />
 
-      <Route
-        path="/panel-paseador"
-        render={() => (
-          <IonTabs>
-            <IonRouterOutlet>
-              <Route
-                exact
-                path="/panel-paseador/inicio"
-                component={PanelPaseador}
-              />
-              <Route
-                exact
-                path="/panel-paseador/estadisticas"
-                component={EstadisticasPaseador}
-              />
-              <Route exact path="/panel-paseador/perfil" component={Tab3} />
-              <Redirect
-                exact
-                from="/panel-paseador"
-                to="/panel-paseador/inicio"
-              />
-            </IonRouterOutlet>
+        <Route
+          path="/panel-paseador"
+          render={() => (
+            <IonTabs>
+              <IonRouterOutlet>
+                <Route
+                  exact
+                  path="/panel-paseador/inicio"
+                  component={PanelPaseador}
+                />
+                <Route
+                  exact
+                  path="/panel-paseador/estadisticas"
+                  component={EstadisticasPaseador}
+                />
+                <Route exact path="/panel-paseador/perfil" component={Tab3} />
+                <Redirect
+                  exact
+                  from="/panel-paseador"
+                  to="/panel-paseador/inicio"
+                />
+              </IonRouterOutlet>
 
-            <IonTabBar slot="bottom">
-              <IonTabButton tab="inicio" href="/panel-paseador/inicio">
-                <IonIcon icon={home} />
-                <IonLabel>Inicio</IonLabel>
-              </IonTabButton>
+              <IonTabBar slot="bottom">
+                <IonTabButton tab="inicio" href="/panel-paseador/inicio">
+                  <IonIcon icon={home} />
+                  <IonLabel>Inicio</IonLabel>
+                </IonTabButton>
+                <IonTabButton
+                  tab="estadisticas"
+                  href="/panel-paseador/estadisticas"
+                >
+                  <IonIcon icon={analytics} />
+                  <IonLabel>Estadísticas</IonLabel>
+                </IonTabButton>
+                <IonTabButton tab="perfil" href="/panel-paseador/perfil">
+                  <IonIcon icon={person} />
+                  <IonLabel>Perfil</IonLabel>
+                </IonTabButton>
+              </IonTabBar>
+            </IonTabs>
+          )}
+        />
 
-              <IonTabButton
-                tab="estadisticas"
-                href="/panel-paseador/estadisticas"
-              >
-                <IonIcon icon={analytics} />
-                <IonLabel>Estadísticas</IonLabel>
-              </IonTabButton>
-
-              <IonTabButton tab="perfil" href="/panel-paseador/perfil">
-                <IonIcon icon={person} />
-                <IonLabel>Perfil</IonLabel>
-              </IonTabButton>
-            </IonTabBar>
-          </IonTabs>
-        )}
-      />
-
-      <Redirect exact from="/" to="/login" />
+        <Route component={NotFound} />
+      </IonRouterOutlet>
     </IonReactRouter>
   </IonApp>
 );
