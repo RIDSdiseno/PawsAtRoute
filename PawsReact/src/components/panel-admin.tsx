@@ -1,5 +1,5 @@
 import { useState } from "react";
-import ConfirmModal from "./ConfirmModal";
+import ConfirmModal from "./panel-components/ConfirmModal";
 
 export default function PanelAdmin() {
   const [modalOpen, setModalOpen] = useState(false);

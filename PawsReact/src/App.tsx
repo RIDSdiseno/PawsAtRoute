@@ -17,7 +17,7 @@ import EditarPerfil from "./components/panel-components/editar-perfil";
 import PanelPaseador from "./components/panel-components/panel-paseador";
 import Pricing from "./components/pricing";
 import RegistroMascota from "./components/panel-components/registro-mascota";
-import PanelAdmin from "./components/panel-components/panel-admin";
+import PanelAdmin from "./components/panel-admin";
 import PoliticaPrivacidad from "./components/politica-privacidad";
 import TerminosCondiciones from "./components/terminos-condiciones";
 import NotFound from "./components/notfound";
