@@ -37,6 +37,7 @@ function App() {
       links: [
         { label: "Términos y Condiciones", href: "/terminos-condiciones" },
         { label: "Política de Privacidad", href: "/politica-privacidad" },
+        { label: "Panel Administrador", href: "/panel-admin" },
       ],
     },
   ];
