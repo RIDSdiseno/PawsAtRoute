@@ -17,7 +17,8 @@ if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 app.use(cors({
     origin: '*',
     methods: ['GET','POST','PUT','DELETE'],
-    allowedHeaders: ['Content-Type','Authorization']
+    allowedHeaders: ['Content-Type','Authorization'],
+    credentials: true,
 }));
 
 app.use("/uploads", express.static(UPLOAD_DIR));
