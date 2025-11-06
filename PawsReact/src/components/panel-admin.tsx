@@ -2,6 +2,14 @@ import { useState } from "react";
 import ConfirmModal from "./panel-components/ConfirmModal";
 
 export default function PanelAdmin() {
+  const [pdfModalOpen, setPdfModalOpen] = useState(false);
+  const [pdfSrc, setPdfSrc] = useState<string | null>(null);
+
+  const handleViewPdf = (fileUrl: string) => {
+    setPdfSrc(fileUrl);
+    setPdfModalOpen(true);
+  };
+
   const [modalOpen, setModalOpen] = useState(false);
   const [modalConfig, setModalConfig] = useState({
     title: "",
@@ -80,13 +88,27 @@ export default function PanelAdmin() {
                   <td className="p-3">pedro@gmail.com</td>
                   <td className="p-3">30/10/2025</td>
                   <td className="p-3 text-center">
-                    <button className="bg-blue-green hover:bg-prussian-blue text-white font-semibold py-2 px-4 rounded-lg transition-all duration-200">
-                      Descargar
+                    <button
+                      onClick={() =>
+                        handleViewPdf(
+                          "/ejemplo-pdf/CV_Jois_Rosales_Analista_Junior.pdf"
+                        )
+                      }
+                      className="bg-blue-green hover:bg-prussian-blue text-white font-semibold py-2 px-4 rounded-lg transition-all duration-200"
+                    >
+                      Ver PDF
                     </button>
                   </td>
                   <td className="p-3 text-center">
-                    <button className="bg-blue-green hover:bg-prussian-blue text-white font-semibold py-2 px-4 rounded-lg transition-all duration-200">
-                      Descargar
+                    <button
+                      onClick={() =>
+                        handleViewPdf(
+                          "/ejemplo-pdf/CV_Jois_Rosales_Frontend_Junior.pdf"
+                        )
+                      }
+                      className="bg-blue-green hover:bg-prussian-blue text-white font-semibold py-2 px-4 rounded-lg transition-all duration-200"
+                    >
+                      Ver PDF
                     </button>
                   </td>
                   <td className="p-3 text-center">
@@ -261,6 +283,44 @@ export default function PanelAdmin() {
         onConfirm={modalConfig.onConfirm}
         onClose={() => setModalOpen(false)}
       />
+      {pdfModalOpen && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl w-[90%] max-w-3xl p-4 shadow-lg">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-bold text-prussian-blue">
+                Visualización de documento
+              </h3>
+              <button
+                onClick={() => setPdfModalOpen(false)}
+                className="text-gray-500 hover:text-red-600 text-2xl font-bold"
+                aria-label="Cerrar visor de PDF"
+              >
+                &times;
+              </button>
+            </div>
+            <iframe
+              src={pdfSrc || ""}
+              className="w-full h-[70vh] border rounded-lg"
+              title="Vista previa PDF"
+            />
+            <div className="mt-4 flex justify-end gap-3">
+              <a
+                href={pdfSrc || "#"}
+                download
+                className="bg-prussian-blue text-white font-medium px-4 py-2 rounded-lg hover:bg-blue-green transition-all duration-200"
+              >
+                Descargar
+              </a>
+              <button
+                onClick={() => setPdfModalOpen(false)}
+                className="bg-gray-200 text-gray-800 font-medium px-4 py-2 rounded-lg hover:bg-gray-300 transition-all duration-200"
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
