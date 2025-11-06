@@ -36,4 +36,6 @@ r.post("/paseos/:id/accept", auth_middleware_1.authGuard, auth_controller_1.acce
 r.post("/crearmascotas", auth_middleware_1.authGuard, auth_controller_1.createMascota);
 r.get("/mismascotas", auth_middleware_1.authGuard, auth_controller_1.getMisMascotas);
 r.get("/dueno/:id/mascotas", auth_middleware_1.authGuard, auth_controller_1.getMascotasByDuenio);
+r.post("/paseos/:id/start", auth_middleware_1.authGuard, auth_controller_1.startPaseo);
+r.post("/paseos/:id/finish", auth_middleware_1.authGuard, auth_controller_1.finishPaseo);
 exports.default = r;

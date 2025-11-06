@@ -23,7 +23,7 @@ exports.app.use((0, cors_1.default)({
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
 exports.app.use("/uploads", express_1.default.static(UPLOAD_DIR));
-exports.app.use((0, cookie_parser_1.default)()); // DEBE ir antes de las rutas
+exports.app.use((0, cookie_parser_1.default)());
 exports.app.use((0, morgan_1.default)('dev'));
 exports.app.use(express_1.default.json());
 exports.app.use(express_1.default.urlencoded({ extended: true }));

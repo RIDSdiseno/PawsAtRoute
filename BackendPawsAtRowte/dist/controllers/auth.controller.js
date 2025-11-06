@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getMascotasByDuenio = exports.getMisMascotas = exports.createMascota = exports.acceptPaseo = exports.listPaseos = exports.crearPaseo = exports.resetPassword = exports.verifyCode = exports.sendVerificationCode = exports.getProfile = exports.refresh = exports.logout = exports.login = exports.registerUser = void 0;
+exports.finishPaseo = exports.startPaseo = exports.getMascotasByDuenio = exports.getMisMascotas = exports.createMascota = exports.acceptPaseo = exports.listPaseos = exports.crearPaseo = exports.resetPassword = exports.verifyCode = exports.sendVerificationCode = exports.getProfile = exports.refresh = exports.logout = exports.login = exports.registerUser = void 0;
 exports.sendRecoveryEmail = sendRecoveryEmail;
 const client_1 = require("@prisma/client");
 const bcrypt_1 = __importDefault(require("bcrypt"));
@@ -320,6 +320,7 @@ const getProfile = async (req, res) => {
                 rut: true,
                 telefono: true,
                 correo: true,
+                comuna: true,
                 rol: true
             },
         });
@@ -479,114 +480,142 @@ const resetPassword = async (req, res) => {
 };
 exports.resetPassword = resetPassword;
 /** Util: combina una fecha (YYYY-MM-DD) con una hora (HH:mm[:ss]) a un Date */
-function combineDateTime(fechaISO, horaISO) {
-    const d = new Date(fechaISO);
-    const h = new Date(horaISO);
-    const out = new Date(d);
-    out.setHours(h.getHours(), h.getMinutes(), h.getSeconds(), 0);
-    return out;
-}
-function addMinutes(base, minutes) {
-    return new Date(base.getTime() + minutes * 60 * 1000);
-}
-/** POST /paseos (solo DUEÑO) */
 const crearPaseo = async (req, res) => {
+    console.log("[DMMF Paseo]\n", JSON.stringify(client_1.Prisma.dmmf.datamodel.models.find(m => m.name === "Paseo"), null, 2));
     try {
-        const { mascotaId, fecha, hora, duracion, lugarEncuentro, notas } = req.body;
-        console.log(req.body);
-        console.log(req.user);
-        // userId desde el token (ajusta según tu middleware)
-        if (!req.user)
-            return res.status(401).json({ error: "No autorizado" });
-        if (req.user.rol !== "DUEÑO") {
-            return res.status(403).json({ error: "Solo DUEÑO puede crear paseos" });
-        }
-        const authUserId = Number(req.user.id);
-        // Validaciones básicas
-        if (![mascotaId, fecha, hora, duracion, lugarEncuentro].every(Boolean)) {
-            return res.status(400).json({ error: "Campos obligatorios: mascotaId, fecha, hora, duracion, lugarEncuentro" });
+        const { mascotaId, // number|string
+        duenioId, // number|string
+        fecha, // "YYYY-MM-DD" o ISO
+        hora, // "HH:mm" o ISO
+        duracion, // number|string
+        lugarEncuentro, notas, estado, // opcional
+        paseadorId, // opcional number|string
+         } = req.body;
+        if (!mascotaId || !duenioId || !fecha || !hora || !duracion || !lugarEncuentro) {
+            return res.status(400).json({ error: "mascotaId, duenioId, fecha, hora, duracion y lugarEncuentro son obligatorios" });
         }
         const mascotaIdInt = Number(mascotaId);
+        const duenioIdInt = Number(duenioId);
         const duracionInt = Number(duracion);
-        if (Number.isNaN(mascotaIdInt) || Number.isNaN(duracionInt)) {
-            return res.status(400).json({ error: "mascotaId y duracion deben ser números válidos" });
+        if ([mascotaIdInt, duenioIdInt, duracionInt].some(Number.isNaN)) {
+            return res.status(400).json({ error: "IDs y duración deben ser números válidos" });
         }
-        // Traer mascota y verificar dueño
-        const mascota = await prisma.mascota.findUnique({
-            where: { idMascota: mascotaIdInt },
-            select: { idMascota: true, usuarioId: true },
-        });
-        if (!mascota)
-            return res.status(404).json({ error: "Mascota no encontrada" });
-        if (Number(mascota.usuarioId) !== authUserId) {
-            return res.status(403).json({ error: "No puedes crear paseos para mascotas de otro dueño" });
+        const fechaBase = parseFecha(fecha);
+        if (!fechaBase)
+            return res.status(400).json({ error: "Formato de fecha inválido" });
+        const { fechaDate, horaDate } = parseFechaHora(fechaBase, hora);
+        if (!horaDate)
+            return res.status(400).json({ error: "Formato de hora inválido" });
+        let estadoValue = client_1.EstadoPaseo.PENDIENTE;
+        if (estado) {
+            if (!Object.values(client_1.EstadoPaseo).includes(estado)) {
+                return res.status(400).json({ error: `Estado inválido. Usa uno de: ${Object.values(client_1.EstadoPaseo).join(", ")}` });
+            }
+            estadoValue = estado;
         }
-        // Normalizar fecha/hora
-        const fechaDate = new Date(`${fecha}T00:00:00.000Z`);
-        const horaDate = new Date(`${fecha}T${hora}:00.000Z`);
-        if (Number.isNaN(fechaDate.getTime()) || Number.isNaN(horaDate.getTime())) {
-            return res.status(400).json({ error: "Formato de fecha/hora inválido. Usa fecha='YYYY-MM-DD' y hora='HH:mm'." });
-        }
-        const paseador = undefined;
-        // Crear paseo: paseadorId queda null, estado PENDIENTE
+        const data = {
+            mascota: { connect: { idMascota: mascotaIdInt } },
+            duenio: { connect: { idUsuario: duenioIdInt } },
+            ...(paseadorId ? { paseador: { connect: { idUsuario: Number(paseadorId) } } } : {}),
+            fecha: fechaDate,
+            hora: horaDate,
+            duracion: duracionInt,
+            lugarEncuentro: String(lugarEncuentro),
+            estado: estadoValue,
+            ...(notas ? { notas: String(notas) } : {}),
+        };
         const paseo = await prisma.paseo.create({
-            data: {
-                mascota: { connect: { idMascota: mascota.idMascota } },
-                duenio: { connect: { idUsuario: mascota.usuarioId } },
-                paseadorId: undefined,
-                fecha: fechaDate,
-                hora: horaDate,
-                duracion: duracionInt,
-                lugarEncuentro: String(lugarEncuentro),
-                estado: "PENDIENTE",
-                ...(notas ? { notas: String(notas) } : {}),
-            },
+            data,
             select: {
-                idPaseo: true, mascotaId: true, duenioId: true, paseadorId: true,
-                fecha: true, hora: true, duracion: true, lugarEncuentro: true, estado: true, notas: true
+                idPaseo: true,
+                mascotaId: true,
+                duenioId: true,
+                paseadorId: true,
+                fecha: true,
+                hora: true,
+                duracion: true,
+                lugarEncuentro: true,
+                estado: true,
+                notas: true,
             },
         });
         return res.status(201).json({ paseo });
     }
     catch (error) {
         console.error("[crearPaseo] Error:", error);
+        if (String(error?.code) === "P2003") {
+            return res.status(400).json({ error: "Relación inválida: verifica que mascotaId, duenioId y paseadorId existan." });
+        }
         return res.status(500).json({ error: `Error interno al crear el paseo: ${error.message || error}` });
     }
 };
 exports.crearPaseo = crearPaseo;
-/** GET /api/paseos */
+/** Helpers */
+function parseFecha(input) {
+    if (!input)
+        return null;
+    if (/^\d{4}-\d{2}-\d{2}$/.test(input)) {
+        const [y, m, d] = input.split("-").map(Number);
+        return new Date(y, m - 1, d, 0, 0, 0, 0);
+    }
+    const d = new Date(input);
+    return isNaN(d.getTime()) ? null : d;
+}
+function parseFechaHora(fechaBase, hora) {
+    if (!hora)
+        return { fechaDate: fechaBase, horaDate: null };
+    const hhmm = /^([01]\d|2[0-3]):([0-5]\d)$/;
+    if (hhmm.test(hora)) {
+        const [hh, mm] = hora.split(":").map(Number);
+        return { fechaDate: fechaBase, horaDate: new Date(fechaBase.getFullYear(), fechaBase.getMonth(), fechaBase.getDate(), hh, mm, 0, 0) };
+    }
+    const asDate = new Date(hora);
+    return isNaN(asDate.getTime()) ? { fechaDate: fechaBase, horaDate: null } : { fechaDate: fechaBase, horaDate: asDate };
+}
+// GET /api/paseos 
 const listPaseos = async (req, res) => {
     try {
-        const estado = req.query.estado;
+        // flags
         const mias = String(req.query.mias || "false") === "true";
         const disponibles = String(req.query.disponibles || "false") === "true";
-        const desde = req.query.desde ? new Date(String(req.query.desde)) : undefined;
-        const hasta = req.query.hasta ? new Date(String(req.query.hasta)) : undefined;
+        // estado (validado contra enum)
+        const estadoStr = typeof req.query.estado === "string" ? req.query.estado.toUpperCase() : undefined;
+        const estado = estadoStr && Object.values(client_1.EstadoPaseo).includes(estadoStr)
+            ? estadoStr
+            : undefined;
+        // fechas (acepta "YYYY-MM-DD" o ISO)
+        const desde = toDate(String(req.query.desde || ""));
+        const hasta = endOfDay(toDate(String(req.query.hasta || "")));
+        // paginación
         const page = Math.max(1, Number(req.query.page || 1));
         const pageSize = Math.min(100, Math.max(1, Number(req.query.pageSize || 20)));
         const skip = (page - 1) * pageSize;
         const take = pageSize;
+        // where base
         const where = {};
         if (estado)
             where.estado = estado;
         if (desde || hasta) {
             where.fecha = {};
-            if (desde)
+            if (desde && !isNaN(desde.getTime()))
                 where.fecha.gte = desde;
-            if (hasta)
+            if (hasta && !isNaN(hasta.getTime()))
                 where.fecha.lte = hasta;
         }
         if (disponibles) {
-            // Paseos sin asignar (nuestro placeholder 0)
-            where.paseadorId = 0;
-            where.estado = "PENDIENTE";
+            // Paseos sin paseador asignado y (por defecto) PENDIENTE
+            where.paseadorId = null;
+            if (!where.estado)
+                where.estado = client_1.EstadoPaseo.PENDIENTE;
         }
-        if (mias && req.user) {
-            if (req.user.rol === "DUEÑO") {
-                where.duenioId = req.user.id;
+        // Mis paseos (según rol del usuario autenticado)
+        const user = req.user;
+        if (mias && user) {
+            if (user.rol === client_1.Rol.DUEÑO) {
+                where.duenioId = user.id;
             }
-            else if (req.user.rol === "PASEADOR") {
-                where.paseadorId = req.user.id;
+            else if (user.rol === client_1.Rol.PASEADOR) {
+                where.paseadorId = user.id;
             }
         }
         const [items, total] = await Promise.all([
@@ -606,17 +635,15 @@ const listPaseos = async (req, res) => {
                     lugarEncuentro: true,
                     estado: true,
                     notas: true,
+                    // datos útiles para UI
                     mascota: { select: { nombre: true, especie: true, raza: true } },
+                    duenio: { select: { nombre: true, apellido: true } },
+                    paseador: { select: { nombre: true, apellido: true } },
                 },
             }),
             prisma.paseo.count({ where }),
         ]);
-        return res.json({
-            page,
-            pageSize,
-            total,
-            items,
-        });
+        return res.json({ page, pageSize, total, items });
     }
     catch (e) {
         console.error("listPaseos error:", e);
@@ -624,7 +651,35 @@ const listPaseos = async (req, res) => {
     }
 };
 exports.listPaseos = listPaseos;
-/** POST /api/paseos/:id/accept  (solo PASEADOR) */
+/* Helpers */
+function toDate(s) {
+    if (!s)
+        return undefined;
+    if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
+        const [y, m, d] = s.split("-").map(Number);
+        return new Date(y, m - 1, d, 0, 0, 0, 0);
+    }
+    const d = new Date(s);
+    return isNaN(d.getTime()) ? undefined : d;
+}
+function endOfDay(d) {
+    if (!d || isNaN(d.getTime()))
+        return undefined;
+    const c = new Date(d);
+    c.setHours(23, 59, 59, 999);
+    return c;
+}
+/** Helpers de tiempo */
+function combineDateTime(fecha, hora) {
+    // fecha y hora vienen como Date (solo fecha / solo hora en tu modelo)
+    const f = new Date(fecha);
+    const h = new Date(hora);
+    return new Date(f.getFullYear(), f.getMonth(), f.getDate(), h.getHours(), h.getMinutes(), h.getSeconds(), h.getMilliseconds());
+}
+function addMinutes(d, mins) {
+    return new Date(d.getTime() + mins * 60000);
+}
+// POST /api/auth/paseos/:id/accept  (solo PASEADOR)
 const acceptPaseo = async (req, res) => {
     try {
         if (!req.user)
@@ -633,9 +688,10 @@ const acceptPaseo = async (req, res) => {
             return res.status(403).json({ error: "Solo PASEADOR puede aceptar paseos" });
         }
         const id = Number(req.params.id);
-        if (!id)
+        if (!id || Number.isNaN(id)) {
             return res.status(400).json({ error: "Id de paseo inválido" });
-        // Leer paseo actual
+        }
+        // 1) Leer paseo actual
         const paseo = await prisma.paseo.findUnique({
             where: { idPaseo: id },
             select: {
@@ -649,16 +705,15 @@ const acceptPaseo = async (req, res) => {
         });
         if (!paseo)
             return res.status(404).json({ error: "Paseo no encontrado" });
-        if (paseo.estado !== "PENDIENTE") {
+        if (paseo.estado !== client_1.EstadoPaseo.PENDIENTE) {
             return res.status(409).json({ error: "El paseo ya no está disponible" });
         }
         if (paseo.paseadorId != null) {
             return res.status(409).json({ error: "El paseo ya fue asignado" });
         }
-        // Chequeo de solapamiento con otros paseos del paseador
+        // 2) Chequeo de solapamiento con otros paseos del paseador en ese día (ACEPTADO / EN_CURSO)
         const start = combineDateTime(paseo.fecha, paseo.hora);
         const end = addMinutes(start, paseo.duracion);
-        // Traer paseos del paseador el mismo día en estados críticos
         const sameDayStart = new Date(paseo.fecha);
         sameDayStart.setHours(0, 0, 0, 0);
         const sameDayEnd = new Date(paseo.fecha);
@@ -666,27 +721,28 @@ const acceptPaseo = async (req, res) => {
         const posiblesConflictos = await prisma.paseo.findMany({
             where: {
                 paseadorId: req.user.id,
-                estado: { in: ["ACEPTADO", "EN_CURSO"] },
+                estado: { in: [client_1.EstadoPaseo.ACEPTADO, client_1.EstadoPaseo.EN_CURSO] },
                 fecha: { gte: sameDayStart, lte: sameDayEnd },
             },
-            select: { fecha: true, hora: true, duracion: true, idPaseo: true },
+            select: { idPaseo: true, fecha: true, hora: true, duracion: true },
         });
         const overlap = posiblesConflictos.some((p) => {
             const s = combineDateTime(p.fecha, p.hora);
             const e = addMinutes(s, p.duracion);
-            return s < end && start < e; // solape si rangos se cruzan
+            return s < end && start < e; // Hay cruce si los rangos se pisan
         });
         if (overlap) {
             return res.status(409).json({ error: "Tienes un paseo que se solapa en ese horario" });
         }
-        // Concurrencia: aceptar solo si sigue PENDIENTE y paseadorId=0
+        // 3) Concurrencia fuerte: aceptar solo si sigue PENDIENTE y sin paseador (null)
         const updated = await prisma.paseo.updateMany({
-            where: { idPaseo: id, estado: "PENDIENTE", paseadorId: null },
-            data: { estado: "ACEPTADO", paseadorId: req.user.id },
+            where: { idPaseo: id, estado: client_1.EstadoPaseo.PENDIENTE, paseadorId: null },
+            data: { estado: client_1.EstadoPaseo.ACEPTADO, paseadorId: req.user.id },
         });
         if (updated.count === 0) {
             return res.status(409).json({ error: "Otro paseador tomó este paseo" });
         }
+        // 4) Devolver la versión actualizada
         const result = await prisma.paseo.findUnique({
             where: { idPaseo: id },
             select: {
@@ -700,6 +756,7 @@ const acceptPaseo = async (req, res) => {
                 lugarEncuentro: true,
                 estado: true,
                 notas: true,
+                mascota: { select: { nombre: true, especie: true, raza: true } },
             },
         });
         return res.json({ paseo: result });
@@ -831,3 +888,97 @@ const getMascotasByDuenio = async (req, res) => {
     }
 };
 exports.getMascotasByDuenio = getMascotasByDuenio;
+const startPaseo = async (req, res) => {
+    try {
+        if (!req.user)
+            return res.status(401).json({ error: "No autorizado" });
+        if (req.user.rol !== "PASEADOR") {
+            return res.status(403).json({ error: "Solo PASEADOR puede iniciar paseos" });
+        }
+        const id = Number(req.params.id);
+        if (!id || Number.isNaN(id))
+            return res.status(400).json({ error: "Id de paseo inválido" });
+        const paseo = await prisma.paseo.findUnique({
+            where: { idPaseo: id },
+            select: { idPaseo: true, paseadorId: true, estado: true, fecha: true, hora: true, duracion: true },
+        });
+        if (!paseo)
+            return res.status(404).json({ error: "Paseo no encontrado" });
+        if (paseo.paseadorId !== req.user.id) {
+            return res.status(403).json({ error: "No eres el paseador asignado" });
+        }
+        if (paseo.estado !== "ACEPTADO") {
+            return res.status(409).json({ error: "Solo se puede iniciar un paseo en estado ACEPTADO" });
+        }
+        // (opcional) Validación de ventana de inicio (por ej. +/- 2h alrededor)
+        // const now = new Date();
+        // const start = combineDateTime(paseo.fecha, paseo.hora);
+        // if (Math.abs(now.getTime() - start.getTime()) > 2 * 60 * 60 * 1000) { ... }
+        const updated = await prisma.paseo.updateMany({
+            where: { idPaseo: id, paseadorId: req.user.id, estado: "ACEPTADO" },
+            data: { estado: "EN_CURSO" },
+        });
+        if (updated.count === 0) {
+            return res.status(409).json({ error: "No se pudo iniciar: el estado cambió" });
+        }
+        const result = await prisma.paseo.findUnique({
+            where: { idPaseo: id },
+            select: {
+                idPaseo: true, mascotaId: true, duenioId: true, paseadorId: true,
+                fecha: true, hora: true, duracion: true, lugarEncuentro: true, estado: true, notas: true,
+                mascota: { select: { nombre: true, especie: true, raza: true } },
+            },
+        });
+        return res.json({ paseo: result });
+    }
+    catch (e) {
+        console.error("startPaseo error:", e);
+        return res.status(500).json({ error: "Error interno" });
+    }
+};
+exports.startPaseo = startPaseo;
+const finishPaseo = async (req, res) => {
+    try {
+        if (!req.user)
+            return res.status(401).json({ error: "No autorizado" });
+        if (req.user.rol !== "PASEADOR") {
+            return res.status(403).json({ error: "Solo PASEADOR puede finalizar paseos" });
+        }
+        const id = Number(req.params.id);
+        if (!id || Number.isNaN(id))
+            return res.status(400).json({ error: "Id de paseo inválido" });
+        const paseo = await prisma.paseo.findUnique({
+            where: { idPaseo: id },
+            select: { idPaseo: true, paseadorId: true, estado: true },
+        });
+        if (!paseo)
+            return res.status(404).json({ error: "Paseo no encontrado" });
+        if (paseo.paseadorId !== req.user.id) {
+            return res.status(403).json({ error: "No eres el paseador asignado" });
+        }
+        if (paseo.estado !== "EN_CURSO") {
+            return res.status(409).json({ error: "Solo se puede finalizar un paseo EN_CURSO" });
+        }
+        const updated = await prisma.paseo.updateMany({
+            where: { idPaseo: id, paseadorId: req.user.id, estado: "EN_CURSO" },
+            data: { estado: "FINALIZADO" },
+        });
+        if (updated.count === 0) {
+            return res.status(409).json({ error: "No se pudo finalizar: el estado cambió" });
+        }
+        const result = await prisma.paseo.findUnique({
+            where: { idPaseo: id },
+            select: {
+                idPaseo: true, mascotaId: true, duenioId: true, paseadorId: true,
+                fecha: true, hora: true, duracion: true, lugarEncuentro: true, estado: true, notas: true,
+                mascota: { select: { nombre: true, especie: true, raza: true } },
+            },
+        });
+        return res.json({ paseo: result });
+    }
+    catch (e) {
+        console.error("finishPaseo error:", e);
+        return res.status(500).json({ error: "Error interno" });
+    }
+};
+exports.finishPaseo = finishPaseo;
