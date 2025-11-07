@@ -143,13 +143,20 @@ export const registerUser = async (req: Request, res: Response) => {
       }
 
       const carnetRes = await uploadBufferToCloudinary(
-        carnetFile.buffer, "paws/uploads/carnet", carnetFile.originalname, carnetFile.mimetype
-      );
-      const antecedentesRes = await uploadBufferToCloudinary(
-        antecedentesFile.buffer, "paws/uploads/antecedentes", antecedentesFile.originalname, antecedentesFile.mimetype
-      );
-      carnetIdentidad = carnetRes.secure_url;
-      antecedentes = antecedentesRes.secure_url;
+  carnetFile.buffer,
+  "paws/uploads/carnet",
+  carnetFile.originalname,
+  carnetFile.mimetype
+);
+const antecedentesRes = await uploadBufferToCloudinary(
+  antecedentesFile.buffer,
+  "paws/uploads/antecedentes",
+  antecedentesFile.originalname,
+  antecedentesFile.mimetype
+);
+
+carnetIdentidad = carnetRes.secure_url;  // termina en .pdf
+antecedentes   = antecedentesRes.secure_url;
     }
 
     // ---- existencia ----

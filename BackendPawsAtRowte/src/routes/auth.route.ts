@@ -21,7 +21,6 @@ import {
   setEstadoUsuarioAdmin
 } from "../controllers/auth.controller";
 import { authGuard } from "../middlewares/auth.middleware";
-import { requireAdmin } from "../middlewares/requireAdmin";
 
 const upload = multer({
   storage: multer.memoryStorage(),
