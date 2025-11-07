@@ -16,7 +16,9 @@ import {
   startPaseo,
   listarPaseadoresPendientes,
   aprobarPaseador,
-  rechazarPaseador
+  rechazarPaseador,
+  listarUsuariosAdmin,
+  setEstadoUsuarioAdmin
 } from "../controllers/auth.controller";
 import { authGuard } from "../middlewares/auth.middleware";
 import { requireAdmin } from "../middlewares/requireAdmin";
@@ -69,6 +71,6 @@ r.put("/paseadores/:idUsuario/aprobar", authGuard, aprobarPaseador);
 // Rechazar (con opción de devolver a DUEÑO)
 r.put("/paseadores/:idUsuario/rechazar", authGuard, rechazarPaseador);
 
-
-
+r.get("/admin/usuarios", authGuard, listarUsuariosAdmin);
+r.put("/admin/usuarios/:idUsuario/status", authGuard, setEstadoUsuarioAdmin);
 export default r;

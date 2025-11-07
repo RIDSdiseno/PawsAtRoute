@@ -1235,3 +1235,98 @@ export const rechazarPaseador = async (req: Request, res: Response) => {
     return res.status(500).json({ error: "Error interno" });
   }
 };
+
+export const listarUsuariosAdmin = async (req: Request, res: Response) => {
+  try {
+    // filtros opcionales: ?rol=PASEADOR|DUEÑO|ADMIN & ?status=true|false
+    const { rol, status, page = "1", pageSize = "20", q } = req.query as {
+      rol?: "PASEADOR" | "DUEÑO" | "ADMIN";
+      status?: string;
+      page?: string;
+      pageSize?: string;
+      q?: string;
+    };
+
+    const p = Math.max(parseInt(page || "1", 10), 1);
+    const ps = Math.min(Math.max(parseInt(pageSize || "20", 10), 1), 100);
+
+    const where: any = {};
+
+    if (rol) where.rol = rol;
+    if (typeof status === "string") {
+      if (status === "true") where.status = true;
+      if (status === "false") where.status = false;
+    }
+
+    if (q && q.trim()) {
+      const s = q.trim();
+      where.OR = [
+        { nombre:   { contains: s, mode: "insensitive" } },
+        { apellido: { contains: s, mode: "insensitive" } },
+        { correo:   { contains: s, mode: "insensitive" } },
+        { telefono: { contains: s, mode: "insensitive" } },
+      ];
+    }
+
+    const [total, items] = await Promise.all([
+      prisma.usuario.count({ where }),
+      prisma.usuario.findMany({
+        where,
+        skip: (p - 1) * ps,
+        take: ps,
+        orderBy: { idUsuario: "desc" },
+        select: {
+          idUsuario: true,
+          nombre: true,
+          apellido: true,
+          correo: true,
+          telefono: true,
+          rol: true,
+          status: true,
+          carnetIdentidad: true,
+          antecedentes: true,
+        },
+      }),
+    ]);
+
+    return res.json({ total, page: p, pageSize: ps, items });
+  } catch (err: any) {
+    console.error("listarUsuariosAdmin error:", err);
+    return res.status(500).json({ error: "No se pudo listar usuarios" });
+  }
+};
+export const setEstadoUsuarioAdmin = async (req: Request, res: Response) => {
+  try {
+    const idUsuario = Number(req.params.idUsuario);
+    const { status } = req.body as { status?: boolean };
+
+    if (!idUsuario || typeof status !== "boolean") {
+      return res.status(400).json({ error: "Parámetros inválidos" });
+    }
+
+    const usuario = await prisma.usuario.update({
+      where: { idUsuario },
+      data: { status },
+      select: {
+        idUsuario: true,
+        nombre: true,
+        apellido: true,
+        correo: true,
+        telefono: true,
+        rol: true,
+        status: true,
+        carnetIdentidad: true,
+        antecedentes: true,
+      },
+    });
+
+    return res.json({ ok: true, usuario });
+  } catch (err: any) {
+    console.error("setEstadoUsuarioAdmin error:", err);
+    if (err.code === "P2025") {
+      return res.status(404).json({ error: "Usuario no encontrado" });
+    }
+    return res.status(500).json({ error: "No se pudo actualizar estado" });
+  }
+};
+
