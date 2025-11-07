@@ -6,6 +6,7 @@ function Login() {
   const navigate = useNavigate(); // Usamos el hook useNavigate de React Router
   const [correo, setCorreo] = useState("");
   const [password, setPassword] = useState("");
+    const [remember, setRemember] = useState(false); // ← conecta el checkbox
   const [errors, setErrors] = useState<{ correo?: string; password?: string }>(
     {}
   );
@@ -62,8 +63,13 @@ function Login() {
           navigate("/panel-paseador");
           window.location.reload();
           break;
+        case "ADMIN":
+          navigate("/panel-admin")
+          window.location.reload();
+          break;
         default:
           navigate("/");
+          window.location.reload();
           break;
       }
     } catch (error: any) {
@@ -130,14 +136,14 @@ function Login() {
               )}
             </label>
             <label className="flex gap-2 items-center" htmlFor="recordarme">
-              <input
-                id="recordarme"
-                type="checkbox"
-                name="recordarme"
-                value="recordarme"
-              ></input>
-              Recordarme
-            </label>
+        <input
+          id="recordarme"
+          type="checkbox"
+          checked={remember}
+          onChange={(e) => setRemember(e.target.checked)}
+        />
+        Recordarme
+      </label>
 
             {loginError && (
               <p className="text-center text-red-600 font-semibold">

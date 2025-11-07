@@ -2,8 +2,8 @@ import axios, { AxiosError } from "axios";
 import type {AxiosInstance, InternalAxiosRequestConfig} from "axios";
 
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 
-"https://pawsatroute.onrender.com/api";
+const BASE_URL =  
+"https://pawsatroute-production.up.railway.app/api";
 
 const api: AxiosInstance = axios.create({
   baseURL: BASE_URL,
@@ -322,5 +322,82 @@ export const finishPaseo = async (idPaseo: number) => {
   const res = await api.post<{ paseo: Paseo }>(`/auth/paseos/${idPaseo}/finish`);
   return res.data.paseo;
 };
+
+
+// ========= ADMIN: tipos =========
+export type AdminPaseadorPendiente = {
+  idUsuario: number;
+  nombre: string;
+  apellido: string;
+  correo: string;
+  telefono?: string | null;
+  carnetIdentidad?: string | null; // URL o filename según tu back
+  antecedentes?: string | null;    // URL o filename según tu back
+  status: boolean;                 // false = pendiente
+  rol: "PASEADOR" | "ADMIN" | "DUEÑO";
+};
+
+export type AdminPendientesResponse = {
+  total: number;
+  items: AdminPaseadorPendiente[];
+};
+
+// ========= ADMIN: endpoints =========
+export const adminListPaseadoresPendientes = async () => {
+  const res = await api.get<AdminPendientesResponse>("/auth/paseadores/pendientes");
+  return res.data;
+};
+
+export const adminAprobarPaseador = async (idUsuario: number) => {
+  const res = await api.put<{ ok: boolean; usuario: any }>(
+    `/auth/paseadores/${idUsuario}/aprobar`
+  );
+  return res.data;
+};
+
+export const adminRechazarPaseador = async (
+  idUsuario: number,
+  opts?: { revertToDueno?: boolean; motivo?: string }
+) => {
+  const res = await api.put<{ ok: boolean; usuario: any }>(
+    `/auth/paseadores/${idUsuario}/rechazar`,
+    opts ?? {}
+  );
+  return res.data;
+};
+
+// --- tipos ---
+export type AdminUsuario = {
+  idUsuario: number;
+  nombre: string;
+  apellido: string;
+  correo: string;
+  telefono?: string | null;
+  rol: "PASEADOR" | "ADMIN" | "DUEÑO";
+  status: boolean;
+  carnetIdentidad?: string | null;
+  antecedentes?: string | null;
+};
+
+export type AdminUsuariosResponse = {
+  total: number;
+  items: AdminUsuario[];
+};
+
+// --- listar TODOS los usuarios (el back debe filtrar/ordenar o devolverte todo) ---
+export const adminListUsuarios = async () => {
+  const res = await api.get<AdminUsuariosResponse>("/auth/admin/usuarios");
+  return res.data;
+};
+
+// --- habilitar/deshabilitar (toggle status) ---
+export const adminSetStatus = async (idUsuario: number, status: boolean) => {
+  const res = await api.put<{ ok: boolean; usuario: AdminUsuario }>(
+    `/auth/admin/usuarios/${idUsuario}/status`,
+    { status }
+  );
+  return res.data;
+};
+
 
 export default api;
