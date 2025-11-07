@@ -109,6 +109,9 @@ export type Paginated<T> = {
 
 export type PaseoListItem = Paseo & {
   mascota: { nombre: string; especie: string; raza: string };
+  duenio?: { nombre: string; apellido: string };
+  paseador?: { nombre: string; apellido: string } | null;
+  paseadorNombre?: string | null;
 };
 
 /** ——— Helpers ——— */
