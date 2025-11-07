@@ -20,6 +20,7 @@ model Usuario {
   rol                Rol
   passwordHash       String
   comuna             String
+  status             Boolean        @default(false)
   mascotas           Mascota[]
   paseosComoDuenio   Paseo[]        @relation("DuenioPaseo")
   paseosComoPaseador Paseo[]        @relation("PaseadorPaseo")

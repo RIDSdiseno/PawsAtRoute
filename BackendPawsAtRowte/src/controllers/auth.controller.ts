@@ -103,12 +103,9 @@ function clearRefreshCookie(res: Response) {
 ========================= */
 
 //POST Auth/register
+
 export const registerUser = async (req: Request, res: Response) => {
   try {
-    console.log("[register] isMultipart?", req.is("multipart/form-data"));
-    console.log("[register] body keys:", Object.keys(req.body || {}));
-    console.log("[register] files:", (req as any).files);
-
     const {
       rut,
       nombre,
@@ -117,15 +114,8 @@ export const registerUser = async (req: Request, res: Response) => {
       comuna,
       correo,
       clave,
-      rol,
+      rol,             // ← llega como string: "PASEADOR" | "DUEÑO"
     } = req.body;
-
-    const files = (req as any).files as
-      | {
-          carnet?: Express.Multer.File[];
-          antecedentes?: Express.Multer.File[];
-        }
-      | undefined;
 
     if (!rut || !nombre || !apellido || !telefono || !comuna || !correo || !clave || !rol) {
       return res.status(400).json({ error: "Todos los campos son obligatorios" });
@@ -133,46 +123,42 @@ export const registerUser = async (req: Request, res: Response) => {
 
     const emailNorm = String(correo).trim().toLowerCase();
 
+    const statusFlag = rol === "DUEÑO";
+
+    // ---- archivos sólo si es PASEADOR ----
+    const files = (req as any).files as
+      | { carnet?: Express.Multer.File[]; antecedentes?: Express.Multer.File[] }
+      | undefined;
+
     let carnetIdentidad: string | null = null;
     let antecedentes: string | null = null;
 
-    // Validación archivos SOLO para PASEADOR
     if (rol === "PASEADOR") {
       const carnetFile = files?.carnet?.[0];
       const antecedentesFile = files?.antecedentes?.[0];
-
       if (!carnetFile || !antecedentesFile) {
         return res.status(400).json({
           error: "Para rol PASEADOR es obligatorio adjuntar 'carnet' y 'antecedentes'.",
         });
       }
 
-      // Subir a Cloudinary SOLO si hay archivos
       const carnetRes = await uploadBufferToCloudinary(
-        carnetFile.buffer,
-        "paws/uploads/carnet",
-        carnetFile.originalname,
-        carnetFile.mimetype
+        carnetFile.buffer, "paws/uploads/carnet", carnetFile.originalname, carnetFile.mimetype
       );
       const antecedentesRes = await uploadBufferToCloudinary(
-        antecedentesFile.buffer,
-        "paws/uploads/antecedentes",
-        antecedentesFile.originalname,
-        antecedentesFile.mimetype
+        antecedentesFile.buffer, "paws/uploads/antecedentes", antecedentesFile.originalname, antecedentesFile.mimetype
       );
-
       carnetIdentidad = carnetRes.secure_url;
       antecedentes = antecedentesRes.secure_url;
     }
 
-    // ¿ya existe?
-    const existing = await prisma.usuario.findUnique({
-      where: { correo: emailNorm },
-    });
+    // ---- existencia ----
+    const existing = await prisma.usuario.findUnique({ where: { correo: emailNorm } });
     if (existing) return res.status(409).json({ error: "Usuario ya existe" });
 
     const passwordHash = await bcrypt.hash(String(clave), 10);
 
+    // ---- create con status según el rol ----
     const newUser = await prisma.usuario.create({
       data: {
         rut,
@@ -182,15 +168,18 @@ export const registerUser = async (req: Request, res: Response) => {
         comuna,
         correo: emailNorm,
         passwordHash,
-        rol, // ojo con acentos si usas enum en DB
+        rol: rol as Rol,     // ← usa directamente "PASEADOR" | "DUEÑO"
+        status: statusFlag,  // ← true si DUEÑO, false si PASEADOR
         carnetIdentidad,
         antecedentes,
       },
       select: {
         idUsuario: true,
         nombre: true,
+        apellido: true,
         correo: true,
         rol: true,
+        status: true,
         carnetIdentidad: true,
         antecedentes: true,
       },
@@ -223,13 +212,17 @@ export const login = async (req: Request, res: Response) => {
       select: {
         idUsuario: true,
         nombre: true,
+        apellido: true,
+        telefono: true,
+        rut: true,
         correo: true,
         passwordHash: true,
+        status: true,
         rol:true,
       },
     });
 
-    if (!user) {
+    if (!user || !user.status ) {
       // Dummy compare para timing safe
       await bcrypt.compare(password, "$2b$10$invalidinvalidinvalidinvalidinv12345678901234567890");
       return res.status(401).json({ error: "Credenciales inválidas" });
