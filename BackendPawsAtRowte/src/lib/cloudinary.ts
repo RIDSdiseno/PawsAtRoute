@@ -33,41 +33,22 @@ export async function uploadBufferToCloudinary(
   folder: string,
   filename: string,
   mimetype?: string
-): Promise<{ secure_url: string; public_id: string; resource_type: "raw" | "image" | "video" | "auto" | "authenticated" }> {
+): Promise<{ secure_url: string }> {
   const safeName = sanitizeFilename(filename);
-  const { base, ext } = splitExt(safeName);
-  const isPdf = (mimetype?.toLowerCase() === "application/pdf") || (ext.toLowerCase() === "pdf");
+  const isPdf = (mimetype || "").toLowerCase().includes("pdf") || /\.pdf$/i.test(filename);
 
   return new Promise((resolve, reject) => {
-    const opts: any = {
-      folder,
-      resource_type: isPdf ? "raw" : "auto",
-      // Definimos public_id sin extensión y forzamos formato cuando sea PDF
-      public_id: base,               // NO ponemos extensión aquí
-      overwrite: true,
-      use_filename: false,
-      unique_filename: false,
-      type: "upload",
-    };
-
-    if (isPdf) {
-      // Esto asegura que la URL termine en .pdf (p.ej. .../raw/upload/.../archivo.pdf)
-      opts.format = "pdf";
-    } else {
-      // Para imágenes u otros, puedes conservar filename_override si quieres que se vea el nombre
-      opts.use_filename = true;
-      opts.filename_override = safeName;
-    }
-
     const stream = cloudinary.uploader.upload_stream(
-      opts,
-      (err?: UploadApiErrorResponse, result?: UploadApiResponse) => {
+      {
+        folder,
+        resource_type: isPdf ? "raw" : "auto", // ⬅️ clave
+        use_filename: true,
+        filename_override: safeName,
+        unique_filename: true,
+      },
+      (err, result) => {
         if (err || !result) return reject(err);
-        resolve({
-          secure_url: result.secure_url,
-          public_id: result.public_id,
-          resource_type: result.resource_type as any,
-        });
+        resolve({ secure_url: result.secure_url! }); // tendrá /raw/upload/...pdf
       }
     );
     stream.end(buffer);
