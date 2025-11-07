@@ -218,6 +218,7 @@ export const login = async (req: Request, res: Response) => {
         correo: true,
         passwordHash: true,
         status: true,
+        comuna: true,
         rol:true,
       },
     });
