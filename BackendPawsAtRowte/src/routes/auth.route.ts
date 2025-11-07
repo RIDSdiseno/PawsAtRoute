@@ -61,13 +61,13 @@ r.post("/paseos/:id/start",  authGuard, startPaseo);
 r.post("/paseos/:id/finish", authGuard, finishPaseo);
 
 
-r.get("/paseadores/pendientes", requireAdmin, listarPaseadoresPendientes);
+r.get("/paseadores/pendientes", authGuard, listarPaseadoresPendientes);
 
 // Aprobar
-r.put("/paseadores/:idUsuario/aprobar", requireAdmin, aprobarPaseador);
+r.put("/paseadores/:idUsuario/aprobar", authGuard, aprobarPaseador);
 
 // Rechazar (con opción de devolver a DUEÑO)
-r.put("/paseadores/:idUsuario/rechazar", requireAdmin, rechazarPaseador);
+r.put("/paseadores/:idUsuario/rechazar", authGuard, rechazarPaseador);
 
 
 
