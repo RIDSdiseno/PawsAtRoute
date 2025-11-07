@@ -34,21 +34,26 @@ export async function uploadBufferToCloudinary(
   filename: string,
   mimetype?: string
 ): Promise<{ secure_url: string }> {
-  const safeName = sanitizeFilename(filename);
-  const isPdf = (mimetype || "").toLowerCase().includes("pdf") || /\.pdf$/i.test(filename);
+  const safeName = filename
+    .normalize("NFKD").replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^\w.-]+/g, "_").slice(0, 80);
+
+  const isPdf = (mimetype?.toLowerCase() ?? "").includes("pdf")
+                || safeName.toLowerCase().endsWith(".pdf");
 
   return new Promise((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
       {
         folder,
-        resource_type: isPdf ? "raw" : "auto", // ⬅️ clave
+        resource_type: isPdf ? "raw" : "image",
         use_filename: true,
         filename_override: safeName,
         unique_filename: true,
+        // ¡IMPORTANTE!: no añadas fl_attachment si quieres ver inline
       },
       (err, result) => {
         if (err || !result) return reject(err);
-        resolve({ secure_url: result.secure_url! }); // tendrá /raw/upload/...pdf
+        resolve({ secure_url: result.secure_url! });
       }
     );
     stream.end(buffer);
