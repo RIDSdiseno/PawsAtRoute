@@ -1142,3 +1142,96 @@ export const finishPaseo = async (req: Request, res: Response) => {
     return res.status(500).json({ error: "Error interno" });
   }
 };
+export const listarPaseadoresPendientes = async (_req: Request, res: Response) => {
+  try {
+    const items = await prisma.usuario.findMany({
+      where: { rol: Rol.PASEADOR, status: false },
+      select: {
+        idUsuario: true,
+        nombre: true,
+        apellido: true,
+        correo: true,
+        telefono: true,
+        carnetIdentidad: true,
+        antecedentes: true,
+        status: true,
+        rol: true,
+      },
+      orderBy: { idUsuario: "desc" },
+    });
+    return res.json({ total: items.length, items });
+  } catch (e) {
+    console.error("listarPaseadoresPendientes error:", e);
+    return res.status(500).json({ error: "Error interno" });
+  }
+};
+
+// PUT /api/admin/paseadores/:idUsuario/aprobar
+export const aprobarPaseador = async (req: Request, res: Response) => {
+  const idUsuario = Number(req.params.idUsuario);
+  if (!Number.isFinite(idUsuario)) return res.status(400).json({ error: "idUsuario inválido" });
+
+  try {
+    const user = await prisma.usuario.findUnique({ where: { idUsuario } });
+    if (!user) return res.status(404).json({ error: "Usuario no encontrado" });
+
+    if (user.rol !== Rol.PASEADOR) {
+      return res.status(400).json({ error: "El usuario no es postulante a PASEADOR" });
+    }
+    if (user.status === true) {
+      return res.status(400).json({ error: "El paseador ya está aprobado" });
+    }
+
+    // Validaciones opcionales de documentos:
+    // if (!user.carnetIdentidad || !user.antecedentes) {
+    //   return res.status(400).json({ error: "Faltan documentos requeridos" });
+    // }
+
+    const actualizado = await prisma.usuario.update({
+      where: { idUsuario },
+      data: { status: true }, // aprobado
+      select: {
+        idUsuario: true, nombre: true, apellido: true, correo: true, rol: true, status: true,
+      },
+    });
+
+    return res.json({ ok: true, usuario: actualizado });
+  } catch (e) {
+    console.error("aprobarPaseador error:", e);
+    return res.status(500).json({ error: "Error interno" });
+  }
+};
+
+// PUT /api/admin/paseadores/:idUsuario/rechazar
+export const rechazarPaseador = async (req: Request, res: Response) => {
+  const idUsuario = Number(req.params.idUsuario);
+  if (!Number.isFinite(idUsuario)) return res.status(400).json({ error: "idUsuario inválido" });
+
+  // Si en el body nos piden devolverlo a DUEÑO:
+  // { revertToDueno: true }
+  const revertToDueno = Boolean((req.body ?? {}).revertToDueno);
+
+  try {
+    const user = await prisma.usuario.findUnique({ where: { idUsuario } });
+    if (!user) return res.status(404).json({ error: "Usuario no encontrado" });
+
+    if (user.rol !== Rol.PASEADOR) {
+      return res.status(400).json({ error: "El usuario no es postulante a PASEADOR" });
+    }
+
+    const actualizado = await prisma.usuario.update({
+      where: { idUsuario },
+      data: revertToDueno
+        ? { status: false, rol: Rol["DUEÑO"] } // lo devuelves a DUEÑO
+        : { status: false },                    // queda como PASEADOR no aprobado
+      select: {
+        idUsuario: true, nombre: true, apellido: true, correo: true, rol: true, status: true,
+      },
+    });
+
+    return res.json({ ok: true, usuario: actualizado });
+  } catch (e) {
+    console.error("rechazarPaseador error:", e);
+    return res.status(500).json({ error: "Error interno" });
+  }
+};

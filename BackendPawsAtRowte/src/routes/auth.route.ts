@@ -13,9 +13,13 @@ import {
   getMascotasByDuenio,
   crearPaseo,
   finishPaseo,
-  startPaseo
+  startPaseo,
+  listarPaseadoresPendientes,
+  aprobarPaseador,
+  rechazarPaseador
 } from "../controllers/auth.controller";
 import { authGuard } from "../middlewares/auth.middleware";
+import { requireAdmin } from "../middlewares/requireAdmin";
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -55,6 +59,15 @@ r.get("/dueno/:id/mascotas",authGuard,getMascotasByDuenio)
 
 r.post("/paseos/:id/start",  authGuard, startPaseo);
 r.post("/paseos/:id/finish", authGuard, finishPaseo);
+
+
+r.get("/paseadores/pendientes", requireAdmin, listarPaseadoresPendientes);
+
+// Aprobar
+r.put("/paseadores/:idUsuario/aprobar", requireAdmin, aprobarPaseador);
+
+// Rechazar (con opción de devolver a DUEÑO)
+r.put("/paseadores/:idUsuario/rechazar", requireAdmin, rechazarPaseador);
 
 
 

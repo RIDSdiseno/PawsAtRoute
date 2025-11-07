@@ -9,17 +9,17 @@ datasource db {
 
 model Usuario {
   idUsuario          Int            @id @default(autoincrement())
-  rut                String
+  rut                String?
   nombre             String
   apellido           String
-  telefono           String
+  telefono           String?
   fNacimiento        DateTime?
   correo             String         @unique
   carnetIdentidad    String?
   antecedentes       String?
   rol                Rol
   passwordHash       String
-  comuna             String
+  comuna             String?
   status             Boolean        @default(false)
   mascotas           Mascota[]
   paseosComoDuenio   Paseo[]        @relation("DuenioPaseo")
@@ -83,6 +83,7 @@ model RefreshToken {
 }
 
 enum Rol {
+  ADMIN
   PASEADOR
   DUEÑO @map("DUEÑO")
   @@map("Rol")
