@@ -1,3 +1,4 @@
+// src/pages/registro.tsx
 import {
   IonBackButton,
   IonButton,
@@ -18,81 +19,99 @@ import {
   IonSelectOption,
   IonTitle,
   IonToolbar,
+  IonText,
+  IonSpinner,
 } from "@ionic/react";
 import { useIonRouter } from "@ionic/react";
 import { useState } from "react";
+import { register as apiRegister } from "../services/api"; // 👈 usa tu API
 
 const Registro: React.FC = () => {
   const router = useIonRouter();
-  const [rol, setRol] = useState<string>("");
 
-  // Estados controlados para inputs
+  // Estados
+  const [rol, setRol] = useState<string>("");
   const [nombre, setNombre] = useState("");
   const [apellido, setApellido] = useState("");
   const [telefono, setTelefono] = useState("");
   const [rut, setRut] = useState("");
   const [correo, setCorreo] = useState("");
   const [password, setPassword] = useState("");
-
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
-    // Validación final antes de enviar
-    if (
-      !nombre ||
-      !apellido ||
-      !telefono ||
-      !rut ||
-      !correo ||
-      !password ||
-      (rol === "paseador" && (!carnetFile || !antecedentesFile))
-    ) {
-      alert("Por favor completa todos los campos requeridos.");
-      return;
-    }
-
-    console.log("Formulario enviado con rol:", rol);
-    router.push("/login");
-  };
+  const [comuna, setComuna] = useState("");
 
   // Archivos (solo paseador)
   const [carnetFile, setCarnetFile] = useState<File | null>(null);
   const [antecedentesFile, setAntecedentesFile] = useState<File | null>(null);
+
+  // UI
+  const [submitting, setSubmitting] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setErrorMsg(null);
+
+    if (
+      !rol || !nombre || !apellido || !telefono || !rut ||
+      !correo || !password || !comuna
+    ) {
+      setErrorMsg("Por favor completa todos los campos requeridos.");
+      return;
+    }
+    if (rol === "paseador" && (!carnetFile || !antecedentesFile)) {
+      setErrorMsg("Para rol Paseador debes adjuntar carnet y antecedentes.");
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      // Mapea al valor que espera tu backend: "DUEÑO" | "PASEADOR"
+      const rolApi = rol === "paseador" ? "PASEADOR" : "DUEÑO";
+
+      await apiRegister({
+        rut,
+        nombre,
+        apellido,
+        telefono,
+        correo,
+        clave: password,
+        comuna,
+        rol: rolApi,
+        carnet: rolApi === "PASEADOR" ? carnetFile ?? undefined : undefined,
+        antecedentes: rolApi === "PASEADOR" ? antecedentesFile ?? undefined : undefined,
+      });
+
+      // Éxito → volvemos a /login
+      router.push("/login", "root");
+    } catch (err: any) {
+      const msg =
+        err?.response?.data?.error ||
+        err?.response?.data?.message ||
+        err?.message ||
+        "No se pudo completar el registro.";
+      setErrorMsg(msg);
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
     <IonPage>
       <IonHeader>
         <IonToolbar color="selective-yellow">
           <IonButtons slot="start">
-            <IonBackButton
-              defaultHref="/login"
-              color="prussian-blue"
-            ></IonBackButton>
+            <IonBackButton defaultHref="/login" color="prussian-blue" />
           </IonButtons>
           <IonTitle className="coffeecake" color="prussian-blue">
             Paws At Route
           </IonTitle>
         </IonToolbar>
         <div style={{ overflow: "hidden" }}>
-          <svg
-            preserveAspectRatio="none"
-            viewBox="0 0 1200 120"
-            xmlns="http://www.w3.org/2000/svg"
-            style={{
-              fill: "var(--ion-color-selective-yellow)",
-              width: "125%",
-              height: 35,
-            }}
-          >
-            <path
-              d="M0 0v46.29c47.79 22.2 103.59 32.17 158 28 70.36-5.37 136.33-33.31 206.8-37.5 73.84-4.36 147.54 16.88 218.2 35.26 69.27 18 138.3 24.88 209.4 13.08 36.15-6 69.85-17.84 104.45-29.34C989.49 25 1113-14.29 1200 52.47V0z"
-              opacity=".25"
-            />
-            <path
-              d="M0 0v15.81c13 21.11 27.64 41.05 47.69 56.24C99.41 111.27 165 111 224.58 91.58c31.15-10.15 60.09-26.07 89.67-39.8 40.92-19 84.73-46 130.83-49.67 36.26-2.85 70.9 9.42 98.6 31.56 31.77 25.39 62.32 62 103.63 73 40.44 10.79 81.35-6.69 119.13-24.28s75.16-39 116.92-43.05c59.73-5.85 113.28 22.88 168.9 38.84 30.2 8.66 59 6.17 87.09-7.5 22.43-10.89 48-26.93 60.65-49.24V0z"
-              opacity=".5"
-            />
-            <path d="M0 0v5.63C149.93 59 314.09 71.32 475.83 42.57c43-7.64 84.23-20.12 127.61-26.46 59-8.63 112.48 12.24 165.56 35.4C827.93 77.22 886 95.24 951.2 90c86.53-7 172.46-45.71 248.8-84.81V0z" />
+          <svg preserveAspectRatio="none" viewBox="0 0 1200 120" xmlns="http://www.w3.org/2000/svg"
+               style={{ fill: "var(--ion-color-selective-yellow)", width: "125%", height: 35 }}>
+            <path d="M0 0v46.29c47.79 22.2 103.59..." opacity=".25" />
+            <path d="M0 0v15.81c13 21.11..." opacity=".5" />
+            <path d="M0 0v5.63C149.93 59..." />
           </svg>
         </div>
       </IonHeader>
@@ -130,17 +149,13 @@ const Registro: React.FC = () => {
                   value={nombre}
                   onIonInput={(e) => {
                     const input = e.detail.value || "";
-                    // Solo letras y espacios
-                    const soloLetras = input.replace(
-                      /[^A-Za-zÁÉÍÓÚáéíóúÑñ\s]/g,
-                      ""
-                    );
+                    const soloLetras = input.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñ\s]/g, "");
                     setNombre(soloLetras);
                   }}
                   required
                   minlength={3}
                   maxlength={15}
-                ></IonInput>
+                />
               </IonItem>
 
               {/* Apellido */}
@@ -152,16 +167,13 @@ const Registro: React.FC = () => {
                   value={apellido}
                   onIonInput={(e) => {
                     const input = e.detail.value || "";
-                    const soloLetras = input.replace(
-                      /[^A-Za-zÁÉÍÓÚáéíóúÑñ\s]/g,
-                      ""
-                    );
+                    const soloLetras = input.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñ\s]/g, "");
                     setApellido(soloLetras);
                   }}
                   required
                   minlength={3}
                   maxlength={15}
-                ></IonInput>
+                />
               </IonItem>
 
               {/* Teléfono */}
@@ -180,7 +192,7 @@ const Registro: React.FC = () => {
                   required
                   minlength={9}
                   maxlength={9}
-                ></IonInput>
+                />
               </IonItem>
 
               {/* RUT */}
@@ -192,15 +204,12 @@ const Registro: React.FC = () => {
                   value={rut}
                   onIonInput={(e) => {
                     let input = e.detail.value || "";
-                    // Permite solo números, guion y K/k
                     input = input.replace(/[^0-9Kk-]/g, "");
-                    // Asegura un solo guion
                     input = input.replace(/(?!^)-(?=.*-)/g, "");
-                    // Máximo 10 caracteres
                     setRut(input.slice(0, 10));
                   }}
                   required
-                ></IonInput>
+                />
               </IonItem>
 
               {/* Correo */}
@@ -215,7 +224,7 @@ const Registro: React.FC = () => {
                   required
                   minlength={15}
                   maxlength={30}
-                ></IonInput>
+                />
               </IonItem>
 
               {/* Contraseña */}
@@ -228,117 +237,73 @@ const Registro: React.FC = () => {
                   value={password}
                   onIonInput={(e) => {
                     const val = e.detail.value || "";
-                    // Acepta solo caracteres válidos (bloquea espacios)
-                    const validado = val.replace(/\s/g, "");
-                    setPassword(validado);
+                    setPassword(val.replace(/\s/g, ""));
                   }}
                   required
-                  counter={true}
+                  counter
                   minlength={10}
                   maxlength={30}
                 >
-                  <IonInputPasswordToggle
-                    slot="end"
-                    color="prussian-blue"
-                  ></IonInputPasswordToggle>
+                  <IonInputPasswordToggle slot="end" color="prussian-blue" />
                 </IonInput>
               </IonItem>
+
               {/* Comuna */}
               <IonItem>
                 <IonSelect
                   label="Comuna"
                   placeholder="Selecciona tu comuna de residencia"
                   labelPlacement="stacked"
+                  value={comuna}
+                  onIonChange={(e) => setComuna(e.detail.value)}
                   required
                 >
                   <IonSelectOption value="Alhué">Alhué</IonSelectOption>
                   <IonSelectOption value="Buin">Buin</IonSelectOption>
-                  <IonSelectOption value="Calera de Tango">
-                    Calera de Tango
-                  </IonSelectOption>
+                  <IonSelectOption value="Calera de Tango">Calera de Tango</IonSelectOption>
                   <IonSelectOption value="Cerrillos">Cerrillos</IonSelectOption>
-                  <IonSelectOption value="Cerro Navia">
-                    Cerro Navia
-                  </IonSelectOption>
+                  <IonSelectOption value="Cerro Navia">Cerro Navia</IonSelectOption>
                   <IonSelectOption value="Colina">Colina</IonSelectOption>
                   <IonSelectOption value="Conchalí">Conchalí</IonSelectOption>
                   <IonSelectOption value="Curacaví">Curacaví</IonSelectOption>
                   <IonSelectOption value="El Bosque">El Bosque</IonSelectOption>
                   <IonSelectOption value="El Monte">El Monte</IonSelectOption>
-                  <IonSelectOption value="Estación Central">
-                    Estación Central
-                  </IonSelectOption>
-                  <IonSelectOption value="Huechuraba">
-                    Huechuraba
-                  </IonSelectOption>
-                  <IonSelectOption value="Independencia">
-                    Independencia
-                  </IonSelectOption>
-                  <IonSelectOption value="Isla de Maipo">
-                    Isla de Maipo
-                  </IonSelectOption>
-                  <IonSelectOption value="La Cisterna">
-                    La Cisterna
-                  </IonSelectOption>
-                  <IonSelectOption value="La Florida">
-                    La Florida
-                  </IonSelectOption>
+                  <IonSelectOption value="Estación Central">Estación Central</IonSelectOption>
+                  <IonSelectOption value="Huechuraba">Huechuraba</IonSelectOption>
+                  <IonSelectOption value="Independencia">Independencia</IonSelectOption>
+                  <IonSelectOption value="Isla de Maipo">Isla de Maipo</IonSelectOption>
+                  <IonSelectOption value="La Cisterna">La Cisterna</IonSelectOption>
+                  <IonSelectOption value="La Florida">La Florida</IonSelectOption>
                   <IonSelectOption value="La Granja">La Granja</IonSelectOption>
-                  <IonSelectOption value="La Pintana">
-                    La Pintana
-                  </IonSelectOption>
+                  <IonSelectOption value="La Pintana">La Pintana</IonSelectOption>
                   <IonSelectOption value="La Reina">La Reina</IonSelectOption>
                   <IonSelectOption value="Lampa">Lampa</IonSelectOption>
-                  <IonSelectOption value="Las Condes">
-                    Las Condes
-                  </IonSelectOption>
-                  <IonSelectOption value="Lo Barnechea">
-                    Lo Barnechea
-                  </IonSelectOption>
+                  <IonSelectOption value="Las Condes">Las Condes</IonSelectOption>
+                  <IonSelectOption value="Lo Barnechea">Lo Barnechea</IonSelectOption>
                   <IonSelectOption value="Lo Espejo">Lo Espejo</IonSelectOption>
                   <IonSelectOption value="Lo Prado">Lo Prado</IonSelectOption>
                   <IonSelectOption value="Macul">Macul</IonSelectOption>
                   <IonSelectOption value="Maipú">Maipú</IonSelectOption>
-                  <IonSelectOption value="María Pinto">
-                    María Pinto
-                  </IonSelectOption>
+                  <IonSelectOption value="María Pinto">María Pinto</IonSelectOption>
                   <IonSelectOption value="Melipilla">Melipilla</IonSelectOption>
                   <IonSelectOption value="Ñuñoa">Ñuñoa</IonSelectOption>
-                  <IonSelectOption value="Padre Hurtado">
-                    Padre Hurtado
-                  </IonSelectOption>
+                  <IonSelectOption value="Padre Hurtado">Padre Hurtado</IonSelectOption>
                   <IonSelectOption value="Paine">Paine</IonSelectOption>
-                  <IonSelectOption value="Pedro Aguirre Cerda">
-                    Pedro Aguirre Cerda
-                  </IonSelectOption>
+                  <IonSelectOption value="Pedro Aguirre Cerda">Pedro Aguirre Cerda</IonSelectOption>
                   <IonSelectOption value="Peñaflor">Peñaflor</IonSelectOption>
                   <IonSelectOption value="Peñalolén">Peñalolén</IonSelectOption>
                   <IonSelectOption value="Pirque">Pirque</IonSelectOption>
-                  <IonSelectOption value="Providencia">
-                    Providencia
-                  </IonSelectOption>
+                  <IonSelectOption value="Providencia">Providencia</IonSelectOption>
                   <IonSelectOption value="Pudahuel">Pudahuel</IonSelectOption>
-                  <IonSelectOption value="Puente Alto">
-                    Puente Alto
-                  </IonSelectOption>
+                  <IonSelectOption value="Puente Alto">Puente Alto</IonSelectOption>
                   <IonSelectOption value="Quilicura">Quilicura</IonSelectOption>
-                  <IonSelectOption value="Quinta Normal">
-                    Quinta Normal
-                  </IonSelectOption>
+                  <IonSelectOption value="Quinta Normal">Quinta Normal</IonSelectOption>
                   <IonSelectOption value="Recoleta">Recoleta</IonSelectOption>
                   <IonSelectOption value="Renca">Renca</IonSelectOption>
-                  <IonSelectOption value="San Bernardo">
-                    San Bernardo
-                  </IonSelectOption>
-                  <IonSelectOption value="San Joaquín">
-                    San Joaquín
-                  </IonSelectOption>
-                  <IonSelectOption value="San José de Maipo">
-                    San José de Maipo
-                  </IonSelectOption>
-                  <IonSelectOption value="San Miguel">
-                    San Miguel
-                  </IonSelectOption>
+                  <IonSelectOption value="San Bernardo">San Bernardo</IonSelectOption>
+                  <IonSelectOption value="San Joaquín">San Joaquín</IonSelectOption>
+                  <IonSelectOption value="San José de Maipo">San José de Maipo</IonSelectOption>
+                  <IonSelectOption value="San Miguel">San Miguel</IonSelectOption>
                   <IonSelectOption value="San Pedro">San Pedro</IonSelectOption>
                   <IonSelectOption value="San Ramón">San Ramón</IonSelectOption>
                   <IonSelectOption value="Santiago">Santiago</IonSelectOption>
@@ -348,41 +313,41 @@ const Registro: React.FC = () => {
                 </IonSelect>
               </IonItem>
 
-              {/* Campos solo visibles si es paseador */}
+              {/* Campos solo para paseador */}
               {rol === "paseador" && (
                 <>
                   <IonItem>
-                    <IonLabel position="stacked">Carnet de identidad</IonLabel>
+                    <IonLabel position="stacked">Carnet de identidad (PDF)</IonLabel>
                     <input
                       type="file"
                       accept="application/pdf"
                       required
                       onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          setCarnetFile(file);
-                          console.log("Archivo PDF seleccionado:", file.name);
-                        }
+                        const file = e.target.files?.[0] ?? null;
+                        setCarnetFile(file);
                       }}
                     />
                   </IonItem>
 
                   <IonItem>
-                    <IonLabel position="stacked">Antecedentes penales</IonLabel>
+                    <IonLabel position="stacked">Antecedentes penales (PDF)</IonLabel>
                     <input
                       type="file"
                       accept="application/pdf"
                       required
                       onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          setAntecedentesFile(file);
-                          console.log("Archivo PDF seleccionado:", file.name);
-                        }
+                        const file = e.target.files?.[0] ?? null;
+                        setAntecedentesFile(file);
                       }}
                     />
                   </IonItem>
                 </>
+              )}
+
+              {errorMsg && (
+                <IonText color="danger">
+                  <p className="ion-padding-start ion-margin-top">{errorMsg}</p>
+                </IonText>
               )}
 
               <IonButton
@@ -391,8 +356,9 @@ const Registro: React.FC = () => {
                 color="prussian-blue"
                 shape="round"
                 type="submit"
+                disabled={submitting}
               >
-                Regístrate
+                {submitting ? <IonSpinner name="dots" /> : "Regístrate"}
               </IonButton>
             </form>
           </IonCardContent>

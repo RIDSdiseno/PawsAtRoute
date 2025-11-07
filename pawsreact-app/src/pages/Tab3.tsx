@@ -1,3 +1,7 @@
+
+import { useEffect, useState } from "react";
+import { logout as apiLogout } from "../services/api";
+import { Auth, type Usuario } from "../services/auth";
 import {
   IonAvatar,
   IonBadge,
@@ -20,6 +24,38 @@ import { useIonRouter } from "@ionic/react";
 
 const Tab3: React.FC = () => {
   const router = useIonRouter();
+
+  // 👉 estado con los datos del usuario
+  const [user, setUser] = useState<Usuario | null>(null);
+  const [role, setRole] = useState<string>("");
+  const [signingOut, setSigningOut] = useState(false);
+
+  // 👉 al montar, toma los datos del localStorage (vía Auth)
+  useEffect(() => {
+    const u = Auth.getUser();
+    if (!u) {
+      // si no hay sesión, manda al login y corta
+      router.push("/login", "root");
+      return;
+    }
+    setUser(u);
+    setRole(Auth.getRole()); // sin normalizar, tal como viene del backend
+  }, [router]);
+
+  const handleLogout = async () => {
+    if (signingOut) return;
+    setSigningOut(true);
+    try {
+      await apiLogout();
+    } catch (e) {
+      console.warn("logout api error:", e);
+    } finally {
+      Auth.logout();
+      router.push("/login", "root");
+      setSigningOut(false);
+    }
+  };
+
   return (
     <IonPage>
       <IonHeader>
@@ -51,16 +87,15 @@ const Tab3: React.FC = () => {
           </svg>
         </div>
       </IonHeader>
-      <IonContent className="ion-padding" fullscreen>
+         <IonContent className="ion-padding" fullscreen>
         <IonText color="prussian-blue">
           <h1 style={{ fontWeight: "bold" }}>Mi perfil</h1>
         </IonText>
+
         <IonText>
-          <p>
-            Aquí puedes ver tu información, como tu nombre, correo y número de
-            teléfono.
-          </p>
+          <p>Aquí puedes ver tu información, como tu nombre, correo y número de teléfono.</p>
         </IonText>
+
         <div className="profile-container ion-text-center">
           <IonAvatar>
             <img
@@ -69,38 +104,45 @@ const Tab3: React.FC = () => {
               src="https://ionicframework.com/docs/img/demos/avatar.svg"
             />
           </IonAvatar>
+
           <IonText color="prussian-blue">
-            <h3>Nombre + Apellido</h3>
+            <h3>{user?.nombre} {user?.apellido ?? "Usuario"}</h3>
           </IonText>
+
           <IonBadge color="ut-orange">
-            <p>ROL DE USUARIO</p>
+            <p>{role || user?.rol || "SIN ROL"}</p>
           </IonBadge>
         </div>
+
         <IonCard>
           <IonCardHeader className="ion-text-center">
             <IonCardTitle color="prussian-blue">Mis datos</IonCardTitle>
             <IonCardSubtitle>Información de contacto</IonCardSubtitle>
           </IonCardHeader>
+
           <IonCardContent>
             <IonItem>
               <IonText color="prussian-blue" className="ion-margin-end">
                 <h2 style={{ fontWeight: "bold" }}>Correo:</h2>
               </IonText>
-              <IonText>ejemplo@gmail.com</IonText>
+              <IonText>{user?.correo ?? "-"}</IonText>
             </IonItem>
+
             <IonItem>
               <IonText color="prussian-blue" className="ion-margin-end">
                 <h2 style={{ fontWeight: "bold" }}>Teléfono:</h2>
               </IonText>
-              <IonText>123456789</IonText>
+              <IonText>{user?.telefono ?? "-"}</IonText>
             </IonItem>
+
             <IonItem>
               <IonText color="prussian-blue" className="ion-margin-end">
                 <h2 style={{ fontWeight: "bold" }}>Comuna:</h2>
               </IonText>
-              <IonText>Colina</IonText>
+              <IonText>{user?.comuna ?? "-"}</IonText>
             </IonItem>
           </IonCardContent>
+
           <IonButton
             onClick={() => router.push("/editar-perfil")}
             fill="clear"
@@ -110,9 +152,10 @@ const Tab3: React.FC = () => {
             Editar perfil
           </IonButton>
         </IonCard>
+
         <div className="ion-text-center">
-          <IonButton onClick={() => router.push("/login")} color="danger">
-            Cerrar sesión
+          <IonButton onClick={handleLogout} color="danger" disabled={signingOut}>
+            {signingOut ? "Cerrando sesión…" : "Cerrar sesión"}
           </IonButton>
         </div>
       </IonContent>
