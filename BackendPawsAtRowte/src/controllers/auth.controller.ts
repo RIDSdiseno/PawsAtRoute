@@ -7,8 +7,8 @@ import crypto from "crypto";
 import { google } from "googleapis";
 import nodemailer from "nodemailer";
 import dotenv from "dotenv";
-import { Resend } from "resend";
 import { uploadBufferToCloudinary } from "../lib/cloudinary";
+import { sendEmail } from "../lib/mailer";
 
 
 dotenv.config();
@@ -435,18 +435,7 @@ const GMAIL_REDIRECT_URI  = clean(process.env.GMAIL_REDIRECT_URI || "https://dev
 const GMAIL_REFRESH_TOKEN = clean(process.env.GMAIL_REFRESH_TOKEN);
 const FROM_EMAIL          = clean(process.env.FROM_EMAIL || "soporte.pawsatroute@gmail.com");
 
-// Cliente OAuth2
-function makeOAuth2Client() {
-  const oAuth2Client = new google.auth.OAuth2(
-    GMAIL_CLIENT_ID,
-    GMAIL_CLIENT_SECRET,
-    GMAIL_REDIRECT_URI
-  );
-  if (GMAIL_REFRESH_TOKEN) {
-    oAuth2Client.setCredentials({ refresh_token: GMAIL_REFRESH_TOKEN });
-  }
-  return oAuth2Client;
-}
+
 function b64url(input: string | Buffer) {
   return Buffer.from(input)
     .toString("base64")
@@ -494,28 +483,16 @@ function buildRawMessage({
 
 // === ENVÍO POR GMAIL API (HTTPS), sin Nodemailer ni SMTP ===
 export async function sendRecoveryEmail(correo: string, code: number) {
-  if (!GMAIL_CLIENT_ID || !GMAIL_CLIENT_SECRET || !GMAIL_REFRESH_TOKEN || !FROM_EMAIL) {
-    console.warn("[GMAIL] Faltan env vars OAuth2. Simulando envío.", { correo, code });
-    return;
+  const subject = "Recuperación de contraseña - Código de verificación";
+  const text = `Tu código de verificación es: ${code}. Es válido por 10 minutos.`;
+
+  try {
+    await sendEmail({ to: correo, subject, text });
+    console.log("[MAIL][SMTP] enviado OK a:", correo);
+  } catch (err) {
+    console.error("[MAIL][SMTP] error:", err);
+    // no relanzamos para no romper tu flujo en background
   }
-
-  const auth = makeOAuth2Client();
-  const gmail = google.gmail({ version: "v1", auth });
-
-  const raw = buildRawMessage({
-    from: `Paws At Route <${FROM_EMAIL}>`, // puede ser "Nombre <cuenta@gmail.com>"
-    to: correo,
-    subject: "Recuperación de contraseña - Código de verificación",
-    text: `Tu código de verificación es: ${code}. Es válido por 10 minutos.`,
-    // replyTo: FROM_EMAIL, // opcional
-  });
-
-  const res = await gmail.users.messages.send({
-    userId: "me",
-    requestBody: { raw },
-  });
-
-  console.log("[GMAIL] enviado OK, messageId:", res.data.id);
 }
 
 // --- 1) Enviar código
