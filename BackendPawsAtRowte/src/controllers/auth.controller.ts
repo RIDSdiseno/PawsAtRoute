@@ -4,11 +4,12 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import type { Secret } from "jsonwebtoken";
 import crypto from "crypto";
-import { google } from "googleapis";
-import nodemailer from "nodemailer";
 import dotenv from "dotenv";
 import { uploadBufferToCloudinary } from "../lib/cloudinary";
 import { sendEmail } from "../lib/mailer";
+import dns from "dns";
+dns.setDefaultResultOrder("ipv4first");
+
 
 
 dotenv.config();
@@ -481,7 +482,6 @@ function buildRawMessage({
 }
 
 
-// === ENVÍO POR GMAIL API (HTTPS), sin Nodemailer ni SMTP ===
 export async function sendRecoveryEmail(correo: string, code: number) {
   const subject = "Recuperación de contraseña - Código de verificación";
   const text = `Tu código de verificación es: ${code}. Es válido por 10 minutos.`;
