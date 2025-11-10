@@ -1,88 +1,90 @@
-// src/lib/mailer.ts
-import dns from "dns";
-dns.setDefaultResultOrder("ipv4first");
+// src/lib/mailerGmail.ts
+import { google } from "googleapis";
 
-import nodemailer from "nodemailer";
-import { Resend } from "resend";
+/** ==== ENV ==== */
+const GMAIL_CLIENT_ID     = (process.env.GMAIL_CLIENT_ID ?? "").trim();
+const GMAIL_CLIENT_SECRET = (process.env.GMAIL_CLIENT_SECRET ?? "").trim();
+const GMAIL_REDIRECT_URI  = (process.env.GMAIL_REDIRECT_URI ?? "https://developers.google.com/oauthplayground").trim();
+const GMAIL_REFRESH_TOKEN = (process.env.GMAIL_REFRESH_TOKEN ?? "").trim();
+export const FROM_EMAIL   = (process.env.FROM_EMAIL ?? "soporte.pawsatroute@gmail.com").trim();
 
-const EMAIL_PROVIDER = (process.env.EMAIL_PROVIDER || "SMTP").toUpperCase(); // "SMTP" | "RESEND"
-const FROM = process.env.FROM_EMAIL || "Paws At Route <noreply@tu-dominio.com>";
-
-/** -------- SMTP transporter (opcional) -------- */
-let smtpTransport: nodemailer.Transporter | null = null;
-let resendClient: Resend | null = null;
-
-function buildSmtpTransport() {
-  const host = process.env.SMTP_HOST || "smtp.gmail.com";
-  const port = Number(process.env.SMTP_PORT || 587);
-  const secure = String(process.env.SMTP_SECURE || (port === 465 ? "true" : "false")) === "true";
-  const requireTLS = String(process.env.SMTP_REQUIRE_TLS || (!secure ? "true" : "false")) === "true";
-
-  const t = nodemailer.createTransport({
-    host,
-    port,
-    secure,                 // 465 => true (TLS directo), 587 => false (STARTTLS)
-    requireTLS,             // fuerza STARTTLS en 587
-    auth: {
-      user: process.env.SMTP_USER!, // Gmail: tu_cuenta@gmail.com
-      pass: process.env.SMTP_PASS!, // App Password SIN espacios
-    },
-    connectionTimeout: 20_000,
-    greetingTimeout: 15_000,
-    socketTimeout: 30_000,
-    tls: { servername: host },
-    logger: true,
-    debug: true,
-  });
-
-  return t;
-}
-
-if (EMAIL_PROVIDER === "SMTP") {
-  smtpTransport = buildSmtpTransport();
-  smtpTransport.verify().then(
-    () => console.log("[MAIL] SMTP listo"),
-    (e) => console.error("[MAIL] SMTP verify falló:", e?.code || e?.message || e),
+/** OAuth2 client configurado para Gmail API */
+export function makeOAuth2Client() {
+  const oAuth2Client = new google.auth.OAuth2(
+    GMAIL_CLIENT_ID,
+    GMAIL_CLIENT_SECRET,
+    GMAIL_REDIRECT_URI
   );
-} else if (EMAIL_PROVIDER === "RESEND") {
-  resendClient = new Resend(process.env.RESEND_API_KEY!);
+  oAuth2Client.setCredentials({ refresh_token: GMAIL_REFRESH_TOKEN });
+  return oAuth2Client;
 }
 
-/** -------- Tipos para forzar overload html/text (no react) -------- */
-type ResendHtmlArgs = { from: string; to: string | string[]; subject: string; html: string };
-type ResendTextArgs = { from: string; to: string | string[]; subject: string; text: string };
+/** ===== Helpers MIME/Base64url ===== */
+function b64url(input: string | Buffer) {
+  return Buffer.from(input)
+    .toString("base64")
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/g, "");
+}
 
-/** -------- Envío unificado -------- */
-export async function sendEmail(opts: {
+// RFC 2047 para Subject en UTF-8
+function encodeHeaderUTF8(s: string) {
+  return `=?UTF-8?B?${Buffer.from(s, "utf8").toString("base64")}?=`;
+}
+
+/** Construye el raw (texto plano) para Gmail API */
+export function buildRawMessage(opts: {
+  from: string;
   to: string;
   subject: string;
-  text?: string;
-  html?: string;
+  text: string;
+  replyTo?: string;
 }) {
-  const { to, subject, text, html } = opts;
+  const { from, to, subject, text, replyTo } = opts;
+  const CRLF = "\r\n";
 
-  if (EMAIL_PROVIDER === "RESEND") {
-    // Forzamos el overload de html/text para que TS no exija 'react'
-    const payload: ResendHtmlArgs | ResendTextArgs = html
-      ? { from: FROM, to: [to], subject, html }
-      : { from: FROM, to: [to], subject, text: text ?? "" };
+  const headers =
+    `From: ${from}${CRLF}` +
+    `To: ${to}${CRLF}` +
+    `Subject: ${encodeHeaderUTF8(subject)}${CRLF}` +
+    `MIME-Version: 1.0${CRLF}` +
+    `Content-Type: text/plain; charset="UTF-8"${CRLF}` +
+    `Content-Transfer-Encoding: base64${CRLF}` +
+    (replyTo ? `Reply-To: ${replyTo}${CRLF}` : "") +
+    CRLF;
 
-    const r = await resendClient!.emails.send(payload as any);
-    if ((r as any).error) throw (r as any).error;
-    return;
-  }
+  const bodyB64 = Buffer.from(text, "utf8").toString("base64");
+  return b64url(headers + bodyB64);
+}
 
-  // SMTP
-  if (!smtpTransport) {
-    smtpTransport = buildSmtpTransport();
-  }
+/** Envía un correo simple (texto) usando Gmail API */
+export async function gmailSendText({
+  to,
+  subject,
+  text,
+  replyTo,
+}: {
+  to: string;
+  subject: string;
+  text: string;
+  replyTo?: string;
+}) {
+  const auth = makeOAuth2Client();
+  const gmail = google.gmail({ version: "v1", auth });
 
-  await smtpTransport.sendMail({
-    from: FROM,
+  const raw = buildRawMessage({
+    from: `Paws At Route <${FROM_EMAIL}>`,
     to,
     subject,
-    // manda lo que tengas (prefiere html si viene)
-    html: html ?? undefined,
     text,
+    replyTo: replyTo ?? FROM_EMAIL,
   });
+
+  const res = await gmail.users.messages.send({
+    userId: "me",
+    requestBody: { raw },
+  });
+
+  return res.data; // incluye id, threadId, labelIds
 }
