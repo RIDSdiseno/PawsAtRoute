@@ -105,6 +105,25 @@ function clearRefreshCookie(res: Response) {
 
 //POST Auth/register
 
+async function notifyPaseadorPendiente(to: string, nombre: string) {
+  const subject = "🕒 Tu registro como Paseador está en revisión";
+  const text =
+`Hola ${nombre},
+
+¡Gracias por registrarte como Paseador en Paws At Route!
+
+Tu cuenta está en revisión. En breve la administración aprobará o rechazará tu solicitud.
+Te avisaremos por este mismo medio cuando haya una resolución.
+
+Saludos,
+— Equipo Paws At Route`;
+  try {
+    await gmailSendText({ to, subject, text });
+  } catch (e) {
+    console.error("[MAIL][PASEADOR_PENDIENTE] error:", e);
+  }
+}
+
 export const registerUser = async (req: Request, res: Response) => {
   try {
     const {
@@ -115,7 +134,7 @@ export const registerUser = async (req: Request, res: Response) => {
       comuna,
       correo,
       clave,
-      rol,             // ← llega como string: "PASEADOR" | "DUEÑO"
+      rol, // "PASEADOR" | "DUEÑO"
     } = req.body;
 
     if (!rut || !nombre || !apellido || !telefono || !comuna || !correo || !clave || !rol) {
@@ -123,7 +142,6 @@ export const registerUser = async (req: Request, res: Response) => {
     }
 
     const emailNorm = String(correo).trim().toLowerCase();
-
     const statusFlag = rol === "DUEÑO";
 
     // ---- archivos sólo si es PASEADOR ----
@@ -144,20 +162,20 @@ export const registerUser = async (req: Request, res: Response) => {
       }
 
       const carnetRes = await uploadBufferToCloudinary(
-  carnetFile.buffer,
-  "paws/uploads/carnet",
-  carnetFile.originalname,
-  carnetFile.mimetype
-);
-const antecedentesRes = await uploadBufferToCloudinary(
-  antecedentesFile.buffer,
-  "paws/uploads/antecedentes",
-  antecedentesFile.originalname,
-  antecedentesFile.mimetype
-);
+        carnetFile.buffer,
+        "paws/uploads/carnet",
+        carnetFile.originalname,
+        carnetFile.mimetype
+      );
+      const antecedentesRes = await uploadBufferToCloudinary(
+        antecedentesFile.buffer,
+        "paws/uploads/antecedentes",
+        antecedentesFile.originalname,
+        antecedentesFile.mimetype
+      );
 
-carnetIdentidad = carnetRes.secure_url;  // termina en .pdf
-antecedentes   = antecedentesRes.secure_url;
+      carnetIdentidad = carnetRes.secure_url;
+      antecedentes   = antecedentesRes.secure_url;
     }
 
     // ---- existencia ----
@@ -176,8 +194,8 @@ antecedentes   = antecedentesRes.secure_url;
         comuna,
         correo: emailNorm,
         passwordHash,
-        rol: rol as Rol,     // ← usa directamente "PASEADOR" | "DUEÑO"
-        status: statusFlag,  // ← true si DUEÑO, false si PASEADOR
+        rol: rol as Rol,
+        status: statusFlag,  // DUEÑO: true, PASEADOR: false (queda pendiente)
         carnetIdentidad,
         antecedentes,
       },
@@ -193,12 +211,21 @@ antecedentes   = antecedentesRes.secure_url;
       },
     });
 
+    // --- NOTIFICACIÓN SOLO PARA PASEADOR: envío en background
+    if (rol === "PASEADOR") {
+      setImmediate(() => {
+        notifyPaseadorPendiente(newUser.correo, newUser.nombre)
+          .catch(err => console.error("[MAIL][BG] error:", err));
+      });
+    }
+
     return res.status(201).json({ user: newUser });
   } catch (error) {
     console.error("Register error", error);
     return res.status(500).json({ error: "Error interno" });
   }
 };
+
 
 
 // POST Auth/login
