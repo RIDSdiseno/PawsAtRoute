@@ -1178,23 +1178,28 @@ Si crees que es un error o deseas volver a postular, responde a este correo.
   catch (e) { console.error("[MAIL][RECHAZADO] error:", e); }
 }
 
-async function notifyStatus(to: string, nombre: string, habilitado: boolean) {
-  const subject = habilitado
-    ? "✅ Tu cuenta ha sido habilitada"
-    : "⏸️ Tu cuenta ha sido deshabilitada";
-  const text = habilitado
-    ? `Hola ${nombre},
+async function notifyHabilitado(to: string, nombre: string) {
+  const subject = "✅ Tu cuenta de Paws At Route fue habilitada";
+  const text = `Hola ${nombre},
 
-Tu cuenta ha sido habilitada nuevamente. Ya puedes usar la app con normalidad.
-
-— Equipo Paws At Route`
-    : `Hola ${nombre},
-
-Tu cuenta ha sido deshabilitada. Si necesitas más información, responde a este correo.
+Te contamos que tu cuenta ha sido habilitada nuevamente.
+Ya puedes iniciar sesión y usar la app con normalidad.
 
 — Equipo Paws At Route`;
   try { await gmailSendText({ to, subject, text }); }
-  catch (e) { console.error("[MAIL][STATUS] error:", e); }
+  catch (e) { console.error("[MAIL][HABILITADO] error:", e); }
+}
+
+async function notifyDeshabilitado(to: string, nombre: string) {
+  const subject = "⛔ Tu cuenta de Paws At Route fue deshabilitada";
+  const text = `Hola ${nombre},
+
+Tu cuenta ha sido deshabilitada por el equipo de administración.
+Si crees que se trata de un error o necesitas más información, responde a este correo.
+
+— Equipo Paws At Route`;
+  try { await gmailSendText({ to, subject, text }); }
+  catch (e) { console.error("[MAIL][DESHABILITADO] error:", e); }
 }
 
 
@@ -1327,6 +1332,20 @@ export const setEstadoUsuarioAdmin = async (req: Request, res: Response) => {
       return res.status(400).json({ error: "Parámetros inválidos" });
     }
 
+    // 1) Leer estado previo para evitar mail si no cambia
+    const previo = await prisma.usuario.findUnique({
+      where: { idUsuario },
+      select: { idUsuario: true, nombre: true, correo: true, status: true, rol: true,
+                apellido: true, telefono: true, carnetIdentidad: true, antecedentes: true },
+    });
+    if (!previo) return res.status(404).json({ error: "Usuario no encontrado" });
+
+    if (previo.status === status) {
+      // Nada que actualizar: responde sin enviar correo
+      return res.json({ ok: true, usuario: previo, unchanged: true });
+    }
+
+    // 2) Actualizar
     const usuario = await prisma.usuario.update({
       where: { idUsuario },
       data: { status },
@@ -1341,6 +1360,15 @@ export const setEstadoUsuarioAdmin = async (req: Request, res: Response) => {
         carnetIdentidad: true,
         antecedentes: true,
       },
+    });
+
+    // 3) Enviar correo en background según el nuevo estado
+    setImmediate(() => {
+      if (status) {
+        notifyHabilitado(usuario.correo, usuario.nombre);
+      } else {
+        notifyDeshabilitado(usuario.correo, usuario.nombre);
+      }
     });
 
     return res.json({ ok: true, usuario });
