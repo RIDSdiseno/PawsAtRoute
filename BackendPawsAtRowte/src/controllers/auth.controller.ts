@@ -582,8 +582,8 @@ export const resetPassword = async (req: Request, res: Response) => {
     return res.status(500).json({ error: "Error interno" });
   }
 };
-/** Util: combina una fecha (YYYY-MM-DD) con una hora (HH:mm[:ss]) a un Date */
 
+/** Util: combina una fecha (YYYY-MM-DD) con una hora (HH:mm[:ss]) a un Date */
 export const crearPaseo = async (req: Request, res: Response) => {
   console.log(
   "[DMMF Paseo]\n",
@@ -1150,6 +1150,54 @@ export const listarPaseadoresPendientes = async (_req: Request, res: Response) =
   }
 };
 
+
+// --- Notificaciones por correo ---
+async function notifyAprobado(to: string, nombre: string) {
+  const subject = "✅ Tu cuenta de Paws At Route fue aprobada";
+  const text =
+`Hola ${nombre},
+
+¡Buenas noticias! Tu cuenta de Paws At Route ha sido aprobada.
+Ya puedes iniciar sesión y comenzar a tomar paseos.
+
+— Equipo Paws At Route`;
+  try { await gmailSendText({ to, subject, text }); }
+  catch (e) { console.error("[MAIL][APROBADO] error:", e); }
+}
+
+async function notifyRechazado(to: string, nombre: string) {
+  const subject = "❌ Revisión de cuenta en Paws At Route";
+  const text =
+`Hola ${nombre},
+
+Revisamos tu solicitud y, por ahora, no ha sido aprobada.
+Si crees que es un error o deseas volver a postular, responde a este correo.
+
+— Equipo Paws At Route`;
+  try { await gmailSendText({ to, subject, text }); }
+  catch (e) { console.error("[MAIL][RECHAZADO] error:", e); }
+}
+
+async function notifyStatus(to: string, nombre: string, habilitado: boolean) {
+  const subject = habilitado
+    ? "✅ Tu cuenta ha sido habilitada"
+    : "⏸️ Tu cuenta ha sido deshabilitada";
+  const text = habilitado
+    ? `Hola ${nombre},
+
+Tu cuenta ha sido habilitada nuevamente. Ya puedes usar la app con normalidad.
+
+— Equipo Paws At Route`
+    : `Hola ${nombre},
+
+Tu cuenta ha sido deshabilitada. Si necesitas más información, responde a este correo.
+
+— Equipo Paws At Route`;
+  try { await gmailSendText({ to, subject, text }); }
+  catch (e) { console.error("[MAIL][STATUS] error:", e); }
+}
+
+
 // PUT /api/admin/paseadores/:idUsuario/aprobar
 export const aprobarPaseador = async (req: Request, res: Response) => {
   const idUsuario = Number(req.params.idUsuario);
@@ -1166,18 +1214,14 @@ export const aprobarPaseador = async (req: Request, res: Response) => {
       return res.status(400).json({ error: "El paseador ya está aprobado" });
     }
 
-    // Validaciones opcionales de documentos:
-    // if (!user.carnetIdentidad || !user.antecedentes) {
-    //   return res.status(400).json({ error: "Faltan documentos requeridos" });
-    // }
-
     const actualizado = await prisma.usuario.update({
       where: { idUsuario },
-      data: { status: true }, // aprobado
-      select: {
-        idUsuario: true, nombre: true, apellido: true, correo: true, rol: true, status: true,
-      },
+      data: { status: true },
+      select: { idUsuario: true, nombre: true, apellido: true, correo: true, rol: true, status: true },
     });
+
+    // ---- notificar en background (no bloquea la respuesta) ----
+    setImmediate(() => notifyAprobado(actualizado.correo, actualizado.nombre));
 
     return res.json({ ok: true, usuario: actualizado });
   } catch (e) {
@@ -1191,27 +1235,23 @@ export const rechazarPaseador = async (req: Request, res: Response) => {
   const idUsuario = Number(req.params.idUsuario);
   if (!Number.isFinite(idUsuario)) return res.status(400).json({ error: "idUsuario inválido" });
 
-  // Si en el body nos piden devolverlo a DUEÑO:
-  // { revertToDueno: true }
   const revertToDueno = Boolean((req.body ?? {}).revertToDueno);
 
   try {
     const user = await prisma.usuario.findUnique({ where: { idUsuario } });
     if (!user) return res.status(404).json({ error: "Usuario no encontrado" });
-
     if (user.rol !== Rol.PASEADOR) {
       return res.status(400).json({ error: "El usuario no es postulante a PASEADOR" });
     }
 
     const actualizado = await prisma.usuario.update({
       where: { idUsuario },
-      data: revertToDueno
-        ? { status: false, rol: Rol["DUEÑO"] } // lo devuelves a DUEÑO
-        : { status: false },                    // queda como PASEADOR no aprobado
-      select: {
-        idUsuario: true, nombre: true, apellido: true, correo: true, rol: true, status: true,
-      },
+      data: revertToDueno ? { status: false, rol: Rol["DUEÑO"] } : { status: false },
+      select: { idUsuario: true, nombre: true, apellido: true, correo: true, rol: true, status: true },
     });
+
+    // notificar en background (opcional)
+    setImmediate(() => notifyRechazado(actualizado.correo, actualizado.nombre));
 
     return res.json({ ok: true, usuario: actualizado });
   } catch (e) {

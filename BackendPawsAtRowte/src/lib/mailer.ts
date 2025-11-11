@@ -88,3 +88,12 @@ export async function gmailSendText({
 
   return res.data; // incluye id, threadId, labelIds
 }
+export async function sendEmail(opts: {
+  to: string;
+  subject: string;
+  text: string;
+  html?: string; // ignorado en texto, ver variante HTML abajo
+}) {
+  // por ahora, Gmail texto:
+  return gmailSendText({ to: opts.to, subject: opts.subject, text: opts.text });
+}
