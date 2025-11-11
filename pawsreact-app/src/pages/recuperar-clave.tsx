@@ -19,6 +19,7 @@ import {
   IonCardTitle,
   IonSpinner,
   IonToast,
+  IonText,
 } from "@ionic/react";
 import { useState, useCallback } from "react";
 import { useIonRouter } from "@ionic/react";
@@ -28,21 +29,129 @@ import {
   resetPassword as apiResetPassword,
 } from "../services/api";
 
+const validateEmail = (correo: string) => {
+  const erroresCorreo = [];
+  if (!correo) {
+    return "El correo es obligatorio.";
+  }
+
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)) {
+    erroresCorreo.push("Por favor, ingresa un correo válido.");
+  } else {
+    const atIndex = correo.indexOf("@");
+    const localPart = correo.substring(0, atIndex);
+    const domainPart = correo.substring(atIndex + 1);
+
+    if (localPart.length > 64) {
+      erroresCorreo.push(
+        "La parte local (antes del @) no debe exceder los 64 caracteres."
+      );
+    }
+    if (domainPart.length > 255) {
+      erroresCorreo.push(
+        "El dominio (después del @) no debe exceder los 255 caracteres."
+      );
+    }
+  }
+  return erroresCorreo.length > 0 ? erroresCorreo.join(" ") : undefined;
+};
+
+const validateOtp = (otp: string) => {
+  if (!otp) {
+    return "El código es obligatorio.";
+  }
+  if (otp.length !== 6) {
+    return "El código debe tener 6 dígitos.";
+  }
+  return undefined;
+};
+
+const validateNewPassword = (password: string) => {
+  const erroresPassword = [];
+  if (!password) {
+    return "La contraseña es obligatoria.";
+  }
+
+  if (password.length < 10 || password.length > 30) {
+    erroresPassword.push("Debe tener entre 10 y 30 caracteres.");
+  }
+  if (!/[a-z]/.test(password)) {
+    erroresPassword.push("Debe incluir al menos una minúscula.");
+  }
+  if (!/[A-Z]/.test(password)) {
+    erroresPassword.push("Debe incluir al menos una mayúscula.");
+  }
+  if (!/\d/.test(password)) {
+    erroresPassword.push("Debe incluir al menos un número.");
+  }
+  if (!/[@$!%*?&._-]/.test(password)) {
+    erroresPassword.push("Debe incluir un carácter especial (@$!%*?&._-).");
+  }
+  if (/[^A-Za-z\d@$!%*?&._-]/.test(password)) {
+    erroresPassword.push("No debe contener caracteres inválidos o espacios.");
+  }
+
+  return erroresPassword.length > 0 ? erroresPassword.join(" ") : undefined;
+};
+
+const validateConfirmPassword = (password: string, confirm: string) => {
+  if (!confirm) {
+    return "Debes confirmar la contraseña.";
+  }
+  if (password !== confirm) {
+    return "Las contraseñas no coinciden.";
+  }
+  return undefined;
+};
+
+const HeaderWave: React.FC = () => (
+  <div style={{ overflow: "hidden" }}>
+    <svg
+      preserveAspectRatio="none"
+      viewBox="0 0 1200 120"
+      xmlns="http://www.w3.org/2000/svg"
+      style={{
+        fill: "var(--ion-color-selective-yellow)",
+        width: "125%",
+        height: 35,
+      }}
+    >
+      <path
+        d="M0 0v46.29c47.79 22.2 103.59 32.17 158 28 70.36-5.37 136.33-33.31 206.8-37.5 73.84-4.36 147.54 16.88 218.2 35.26 69.27 18 138.3 24.88 209.4 13.08 36.15-6 69.85-17.84 104.45-29.34C989.49 25 1113-14.29 1200 52.47V0z"
+        opacity=".25"
+      />
+      <path
+        d="M0 0v15.81c13 21.11 27.64 41.05 47.69 56.24C99.41 111.27 165 111 224.58 91.58c31.15-10.15 60.09-26.07 89.67-39.8 40.92-19 84.73-46 130.83-49.67 36.26-2.85 70.9 9.42 98.6 31.56 31.77 25.39 62.32 62 103.63 73 40.44 10.79 81.35-6.69 119.13-24.28s75.16-39 116.92-43.05c59.73-5.85 113.28 22.88 168.9 38.84 30.2 8.66 59 6.17 87.09-7.5 22.43-10.89 48-26.93 60.65-49.24V0z"
+        opacity=".5"
+      />
+      <path d="M0 0v5.63C149.93 59 314.09 71.32 475.83 42.57c43-7.64 84.23-20.12 127.61-26.46 59-8.63 112.48 12.24 165.56 35.4C827.93 77.22 886 95.24 951.2 90c86.53-7 172.46-45.71 248.8-84.81V0z" />
+    </svg>
+  </div>
+);
+
+type FormErrors = {
+  correo?: string;
+  otp?: string;
+  password?: string;
+  confirm?: string;
+};
+
 const RecuperarClave: React.FC = () => {
   const router = useIonRouter();
-
-  // Steps: 1 correo -> 2 código -> 3 nueva clave
   const [step, setStep] = useState<1 | 2 | 3>(1);
 
-  // Form state
   const [correo, setCorreo] = useState("");
   const [codigo, setCodigo] = useState("");
   const [pass1, setPass1] = useState("");
   const [pass2, setPass2] = useState("");
 
-  // UI state
   const [loading, setLoading] = useState(false);
-  const [alert, setAlert] = useState<{ open: boolean; header: string; sub?: string }>({
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [alert, setAlert] = useState<{
+    open: boolean;
+    header: string;
+    sub?: string;
+  }>({
     open: false,
     header: "",
     sub: "",
@@ -52,11 +161,31 @@ const RecuperarClave: React.FC = () => {
     msg: "",
   });
 
-  // === Actions ===
-  const onSendCode = async () => {
+  const handleCorreoChange = useCallback(
+    (e: any) => setCorreo(String(e.detail.value || "")),
+    []
+  );
+  const handleCodigoChange = useCallback(
+    (e: any) => setCodigo(String(e.detail.value || "")),
+    []
+  );
+  const handlePass1Change = useCallback(
+    (e: any) => setPass1(String(e.detail.value || "")),
+    []
+  );
+  const handlePass2Change = useCallback(
+    (e: any) => setPass2(String(e.detail.value || "")),
+    []
+  );
+
+  const onSendCode = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrors({});
     const email = correo.trim().toLowerCase();
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setToast({ open: true, msg: "Ingresa un correo válido" });
+    const correoError = validateEmail(email);
+
+    if (correoError) {
+      setErrors({ correo: correoError });
       return;
     }
     try {
@@ -78,15 +207,18 @@ const RecuperarClave: React.FC = () => {
     }
   };
 
-  const onVerifyCode = async () => {
-    const n = Number(codigo);
-    if (!codigo || isNaN(n) || codigo.length !== 6) {
-      setToast({ open: true, msg: "El código debe tener 6 dígitos" });
+  const onVerifyCode = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrors({});
+    const otpError = validateOtp(codigo);
+
+    if (otpError) {
+      setErrors({ otp: otpError });
       return;
     }
     try {
       setLoading(true);
-      await apiVerifyCode(correo.trim().toLowerCase(), n);
+      await apiVerifyCode(correo.trim().toLowerCase(), Number(codigo));
       setAlert({
         open: true,
         header: "Código verificado",
@@ -103,15 +235,22 @@ const RecuperarClave: React.FC = () => {
     }
   };
 
-  const onResetPassword = async () => {
-    if (!pass1 || pass1.length < 10) {
-      setToast({ open: true, msg: "La contraseña debe tener al menos 10 caracteres" });
+  const onResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrors({});
+
+    const passwordError = validateNewPassword(pass1);
+    const confirmError = validateConfirmPassword(pass1, pass2);
+    const nuevosErrores: FormErrors = {};
+
+    if (passwordError) nuevosErrores.password = passwordError;
+    if (confirmError) nuevosErrores.confirm = confirmError;
+
+    if (Object.keys(nuevosErrores).length > 0) {
+      setErrors(nuevosErrores);
       return;
     }
-    if (pass1 !== pass2) {
-      setToast({ open: true, msg: "Las contraseñas no coinciden" });
-      return;
-    }
+
     try {
       setLoading(true);
       await apiResetPassword(correo.trim().toLowerCase(), pass1);
@@ -120,12 +259,26 @@ const RecuperarClave: React.FC = () => {
         header: "Contraseña cambiada",
         sub: "Actualizamos tu contraseña correctamente.",
       });
-      // pequeño delay para que el usuario lea y luego redirige
       setTimeout(() => router.push("/login"), 400);
     } catch (e: any) {
       setToast({
         open: true,
         msg: e?.response?.data?.error || "No se pudo cambiar la contraseña",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResendCode = async () => {
+    try {
+      setLoading(true);
+      await apiSendCode(correo.trim().toLowerCase());
+      setToast({ open: true, msg: "Código reenviado" });
+    } catch (e: any) {
+      setToast({
+        open: true,
+        msg: e?.response?.data?.message || "No se pudo reenviar el código",
       });
     } finally {
       setLoading(false);
@@ -143,59 +296,57 @@ const RecuperarClave: React.FC = () => {
             Paws At Route
           </IonTitle>
         </IonToolbar>
-        <div style={{ overflow: "hidden" }}>
-          <svg
-            preserveAspectRatio="none"
-            viewBox="0 0 1200 120"
-            xmlns="http://www.w3.org/2000/svg"
-            style={{ fill: "var(--ion-color-selective-yellow)", width: "125%", height: 35 }}
-          >
-            <path d="M0 0v46.29c47.79 22.2 103.59 32.17 158 28 70.36-5.37 136.33-33.31 206.8-37.5 73.84-4.36 147.54 16.88 218.2 35.26 69.27 18 138.3 24.88 209.4 13.08 36.15-6 69.85-17.84 104.45-29.34C989.49 25 1113-14.29 1200 52.47V0z" opacity=".25" />
-            <path d="M0 0v15.81c13 21.11 27.64 41.05 47.69 56.24C99.41 111.27 165 111 224.58 91.58c31.15-10.15 60.09-26.07 89.67-39.8 40.92-19 84.73-46 130.83-49.67 36.26-2.85 70.9 9.42 98.6 31.56 31.77 25.39 62.32 62 103.63 73 40.44 10.79 81.35-6.69 119.13-24.28s75.16-39 116.92-43.05c59.73-5.85 113.28 22.88 168.9 38.84 30.2 8.66 59 6.17 87.09-7.5 22.43-10.89 48-26.93 60.65-49.24V0z" opacity=".5" />
-            <path d="M0 0v5.63C149.93 59 314.09 71.32 475.83 42.57c43-7.64 84.23-20.12 127.61-26.46 59-8.63 112.48 12.24 165.56 35.4C827.93 77.22 886 95.24 951.2 90c86.53-7 172.46-45.71 248.8-84.81V0z" />
-          </svg>
-        </div>
+        <HeaderWave />
       </IonHeader>
 
       <IonContent className="ion-padding" fullscreen>
-        {/* Loader inline */}
         {loading && (
           <div className="ion-text-center ion-margin">
             <IonSpinner name="crescent" />
           </div>
         )}
 
-        {/* STEP 1: Ingreso de correo */}
         {step === 1 && (
           <IonCard>
             <IonCardHeader className="ion-text-center">
-              <IonCardTitle color="prussian-blue">Restablecer Contraseña</IonCardTitle>
-              <IonCardSubtitle>Ingresa tu correo para restablecer tu contraseña</IonCardSubtitle>
+              <IonCardTitle color="prussian-blue">
+                Restablecer Contraseña
+              </IonCardTitle>
+              <IonCardSubtitle>
+                Ingresa tu correo para restablecer tu contraseña
+              </IonCardSubtitle>
             </IonCardHeader>
             <IonCardContent>
-              <IonItem>
-                <IonInput
-                  label="Correo"
-                  labelPlacement="stacked"
-                  placeholder="ejemplo@gmail.com"
-                  type="email"
-                  required
-                  minlength={6}
-                  maxlength={60}
-                  value={correo}
-                  onIonInput={(e) => setCorreo(String(e.detail.value || ""))}
-                />
-              </IonItem>
-              <IonButton
-                expand="full"
-                shape="round"
-                color="prussian-blue"
-                className="ion-margin-top"
-                onClick={onSendCode}
-                disabled={loading}
-              >
-                Recuperar
-              </IonButton>
+              <form onSubmit={onSendCode} noValidate>
+                <IonItem>
+                  <IonInput
+                    label="Correo"
+                    labelPlacement="stacked"
+                    placeholder="ejemplo@gmail.com"
+                    type="email"
+                    required
+                    minlength={6}
+                    maxlength={60}
+                    value={correo}
+                    onIonInput={handleCorreoChange}
+                  />
+                </IonItem>
+                {errors.correo && (
+                  <IonText color="danger">
+                    <p className="ion-padding-start">{errors.correo}</p>
+                  </IonText>
+                )}
+                <IonButton
+                  expand="full"
+                  shape="round"
+                  color="prussian-blue"
+                  className="ion-margin-top"
+                  type="submit"
+                  disabled={loading}
+                >
+                  Recuperar
+                </IonButton>
+              </form>
             </IonCardContent>
           </IonCard>
         )}
@@ -203,35 +354,48 @@ const RecuperarClave: React.FC = () => {
         {step === 2 && (
           <IonCard>
             <IonCardHeader className="ion-text-center">
-              <IonCardTitle color="prussian-blue">Ingresa el código</IonCardTitle>
-              <IonCardSubtitle>Se envió un código de 6 dígitos a tu correo</IonCardSubtitle>
+              <IonCardTitle color="prussian-blue">
+                Ingresa el código
+              </IonCardTitle>
+              <IonCardSubtitle>
+                Se envió un código de 6 dígitos a tu correo
+              </IonCardSubtitle>
             </IonCardHeader>
             <IonCardContent>
-              <IonInputOtp
-                length={6}
-                value={codigo}
-                onIonChange={(e) => setCodigo(String(e.detail.value || ""))}
-              />
-              <div className="ion-text-right ion-margin-top">
+              <form onSubmit={onVerifyCode} noValidate>
+                <IonInputOtp
+                  length={6}
+                  value={codigo}
+                  onIonChange={handleCodigoChange}
+                />
+                {errors.otp && (
+                  <IonText color="danger">
+                    <p className="ion-text-center ion-margin-top">
+                      {errors.otp}
+                    </p>
+                  </IonText>
+                )}
+                <div className="ion-text-right ion-margin-top">
+                  <IonButton
+                    fill="clear"
+                    size="small"
+                    onClick={handleResendCode}
+                    disabled={loading}
+                  >
+                    Reenviar código
+                  </IonButton>
+                </div>
                 <IonButton
-                  fill="clear"
-                  size="small"
-                  onClick={onSendCode}
+                  expand="full"
+                  shape="round"
+                  color="prussian-blue"
+                  className="ion-margin-top"
+                  type="submit"
                   disabled={loading}
                 >
-                  Reenviar código
+                  Verificar
                 </IonButton>
-              </div>
-              <IonButton
-                expand="full"
-                shape="round"
-                color="prussian-blue"
-                className="ion-margin-top"
-                onClick={onVerifyCode}
-                disabled={loading}
-              >
-                Verificar
-              </IonButton>
+              </form>
             </IonCardContent>
           </IonCard>
         )}
@@ -239,55 +403,68 @@ const RecuperarClave: React.FC = () => {
         {step === 3 && (
           <IonCard>
             <IonCardHeader className="ion-text-center">
-              <IonCardTitle color="prussian-blue">Cambiar contraseña</IonCardTitle>
+              <IonCardTitle color="prussian-blue">
+                Cambiar contraseña
+              </IonCardTitle>
               <IonCardSubtitle>Ingresa tu nueva contraseña</IonCardSubtitle>
             </IonCardHeader>
             <IonCardContent>
-              <IonItem>
-                <IonInput
-                  label="Nueva contraseña"
-                  labelPlacement="stacked"
-                  type="password"
-                  required
-                  counter
-                  minlength={10}
-                  maxlength={30}
-                  value={pass1}
-                  onIonInput={(e) => setPass1(String(e.detail.value || ""))}
+              <form onSubmit={onResetPassword} noValidate>
+                <IonItem>
+                  <IonInput
+                    label="Nueva contraseña"
+                    labelPlacement="stacked"
+                    type="password"
+                    required
+                    counter
+                    minlength={10}
+                    maxlength={30}
+                    value={pass1}
+                    onIonInput={handlePass1Change}
+                  >
+                    <IonInputPasswordToggle slot="end" color="prussian-blue" />
+                  </IonInput>
+                </IonItem>
+                {errors.password && (
+                  <IonText color="danger">
+                    <p className="ion-padding-start">{errors.password}</p>
+                  </IonText>
+                )}
+                <IonItem className="ion-margin-top">
+                  <IonInput
+                    label="Confirmar contraseña"
+                    labelPlacement="stacked"
+                    type="password"
+                    required
+                    counter
+                    minlength={10}
+                    maxlength={30}
+                    value={pass2}
+                    onIonInput={handlePass2Change}
+                  >
+                    <IonInputPasswordToggle slot="end" color="prussian-blue" />
+                  </IonInput>
+                </IonItem>
+                {errors.confirm && (
+                  <IonText color="danger">
+                    <p className="ion-padding-start">{errors.confirm}</p>
+                  </IonText>
+                )}
+                <IonButton
+                  expand="full"
+                  shape="round"
+                  color="prussian-blue"
+                  className="ion-margin-top"
+                  type="submit"
+                  disabled={loading}
                 >
-                  <IonInputPasswordToggle slot="end" color="prussian-blue" />
-                </IonInput>
-              </IonItem>
-              <IonItem>
-                <IonInput
-                  label="Confirmar contraseña"
-                  labelPlacement="stacked"
-                  type="password"
-                  required
-                  counter
-                  minlength={10}
-                  maxlength={30}
-                  value={pass2}
-                  onIonInput={(e) => setPass2(String(e.detail.value || ""))}
-                >
-                  <IonInputPasswordToggle slot="end" color="prussian-blue" />
-                </IonInput>
-              </IonItem>
-              <IonButton
-                expand="full"
-                shape="round"
-                color="prussian-blue"
-                className="ion-margin-top"
-                onClick={onResetPassword}
-                disabled={loading}
-              >
-                Confirmar
-              </IonButton>
+                  Confirmar
+                </IonButton>
+              </form>
             </IonCardContent>
           </IonCard>
         )}
 
-        {/* Alert genérico de éxito */}
         <IonAlert
           isOpen={alert.open}
           header={alert.header}
@@ -295,7 +472,6 @@ const RecuperarClave: React.FC = () => {
           buttons={["Aceptar"]}
           onDidDismiss={() => setAlert({ open: false, header: "", sub: "" })}
         />
-        {/* Toast de errores */}
         <IonToast
           isOpen={toast.open}
           message={toast.msg}
