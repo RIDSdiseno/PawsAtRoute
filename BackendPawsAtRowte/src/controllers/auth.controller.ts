@@ -6,7 +6,7 @@ import type { Secret } from "jsonwebtoken";
 import crypto from "crypto";
 import dotenv from "dotenv";
 import { uploadBufferToCloudinary } from "../lib/cloudinary";
-import { sendEmail } from "../lib/mailer";
+import { gmailSendText } from "../lib/mailer";
 import dns from "dns";
 dns.setDefaultResultOrder("ipv4first");
 
@@ -487,11 +487,11 @@ export async function sendRecoveryEmail(correo: string, code: number) {
   const text = `Tu código de verificación es: ${code}. Es válido por 10 minutos.`;
 
   try {
-    await sendEmail({ to: correo, subject, text });
-    console.log("[MAIL][SMTP] enviado OK a:", correo);
+    const r = await gmailSendText({ to: correo, subject, text });
+    console.log("[GMAIL] enviado OK, messageId:", r.id);
   } catch (err) {
-    console.error("[MAIL][SMTP] error:", err);
-    // no relanzamos para no romper tu flujo en background
+    console.error("[GMAIL] error:", err);
+    // no relances si lo llamas en background
   }
 }
 

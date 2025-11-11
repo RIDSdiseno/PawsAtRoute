@@ -20,7 +20,7 @@ import {
   IonSpinner,
   IonToast,
 } from "@ionic/react";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useIonRouter } from "@ionic/react";
 import {
   sendVerificationCode as apiSendCode,
@@ -200,7 +200,6 @@ const RecuperarClave: React.FC = () => {
           </IonCard>
         )}
 
-        {/* STEP 2: Verificación de código */}
         {step === 2 && (
           <IonCard>
             <IonCardHeader className="ion-text-center">
@@ -237,7 +236,6 @@ const RecuperarClave: React.FC = () => {
           </IonCard>
         )}
 
-        {/* STEP 3: Cambio de contraseña */}
         {step === 3 && (
           <IonCard>
             <IonCardHeader className="ion-text-center">

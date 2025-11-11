@@ -208,6 +208,7 @@ const Login: React.FC = () => {
               <IonItem>
                 <IonInput
                   label="Correo"
+                  placeholder="ejemplo@gmail.com"
                   labelPlacement="stacked"
                   type="email"
                   autocomplete="email"
@@ -225,6 +226,7 @@ const Login: React.FC = () => {
               <IonItem className="ion-margin-top">
                 <IonInput
                   label="Contraseña"
+                  placeholder="********"
                   labelPlacement="stacked"
                   type="password"
                   autocomplete="current-password"
