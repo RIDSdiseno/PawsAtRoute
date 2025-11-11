@@ -1215,14 +1215,13 @@ export const aprobarPaseador = async (req: Request, res: Response) => {
     }
 
     const actualizado = await prisma.usuario.update({
-      where: { idUsuario },
-      data: { status: true },
-      select: { idUsuario: true, nombre: true, apellido: true, correo: true, rol: true, status: true },
-    });
+  where: { idUsuario },
+  data: { status: true },
+  select: { idUsuario: true, nombre: true, apellido: true, correo: true, rol: true, status: true },
+});
 
-    // ---- notificar en background (no bloquea la respuesta) ----
-    setImmediate(() => notifyAprobado(actualizado.correo, actualizado.nombre));
-
+// dispara correo en background (no bloquea la respuesta)
+setImmediate(() => notifyAprobado(actualizado.correo, actualizado.nombre));
     return res.json({ ok: true, usuario: actualizado });
   } catch (e) {
     console.error("aprobarPaseador error:", e);
