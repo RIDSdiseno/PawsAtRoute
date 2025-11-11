@@ -391,7 +391,7 @@ const Registro: React.FC = () => {
                 <IonInput
                   label="Nombre"
                   labelPlacement="stacked"
-                  placeholder="Ejemplo"
+                  placeholder="John"
                   value={nombre}
                   onIonInput={handleNombreInput}
                   minlength={3}
@@ -408,7 +408,7 @@ const Registro: React.FC = () => {
                 <IonInput
                   label="Apellido"
                   labelPlacement="stacked"
-                  placeholder="Ejemplo"
+                  placeholder="Smith"
                   value={apellido}
                   onIonInput={handleApellidoInput}
                   minlength={3}
@@ -461,6 +461,7 @@ const Registro: React.FC = () => {
               <IonItem>
                 <IonInput
                   label="Correo"
+                  placeholder="ejemplo@gmail.com"
                   labelPlacement="stacked"
                   type="email"
                   autocomplete="email"
@@ -478,6 +479,7 @@ const Registro: React.FC = () => {
               <IonItem className="ion-margin-top">
                 <IonInput
                   label="Contraseña"
+                  placeholder="********"
                   labelPlacement="stacked"
                   type="password"
                   autocomplete="new-password"
